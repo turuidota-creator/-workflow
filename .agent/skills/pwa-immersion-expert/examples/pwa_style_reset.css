@@ -1,0 +1,60 @@
+/* 
+  PWA 2025 Standard Style Reset
+  Location: .agent/skills/pwa-immersion-expert/examples/pwa_style_reset.css
+*/
+
+:root {
+    /* 统一定义安全区域变量 */
+    --sat: env(safe-area-inset-top, 0px);
+    --sar: env(safe-area-inset-right, 0px);
+    --sab: env(safe-area-inset-bottom, 0px);
+    --sal: env(safe-area-inset-left, 0px);
+}
+
+html {
+    /* 防止 iOS 滚动时背景闪烁 */
+    background-color: #1a1a1a;
+    /* 配合 viewport-fit=cover 确保高度填满 */
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    /* 使用 svh 保证高度计算的稳定性，100vh 作为回退 */
+    min-height: 100vh;
+    min-height: 100svh;
+
+    /* 内容区域内缩回安全区，背景色依然全屏 */
+    padding-top: var(--sat);
+    padding-bottom: var(--sab);
+    padding-left: var(--sal);
+    padding-right: var(--sar);
+
+    /* 模拟原生 App 的刚性滚动，防止橡皮筋效果露出底层白边 */
+    overscroll-behavior-y: none;
+
+    margin: 0;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* 固定顶部栏适配示例 */
+.header-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    /* 高度 = UI高度 + 安全区高度 */
+    height: calc(44px + var(--sat));
+    padding-top: var(--sat);
+
+    background: rgba(26, 26, 26, 0.85);
+    backdrop-filter: blur(12px);
+    z-index: 1000;
+}
+
+/* 底部安全区遮罩（针对深色主题） */
+.bottom-safe-mask {
+    height: var(--sab);
+    background: #1a1a1a;
+}
