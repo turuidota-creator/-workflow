@@ -17,6 +17,14 @@ export interface WorkflowStep {
     data?: any; // Flexible data for each step
 }
 
+export interface NewsItem {
+    category: string;
+    source: string;
+    title: string;
+    link: string;
+    raw: string;
+}
+
 export interface WorkflowSession {
     id: string;
     title: string; // e.g., "Topic: AI Sovereignty"
@@ -26,7 +34,9 @@ export interface WorkflowSession {
     steps: WorkflowStep[];
     // Data accumulator
     context: {
+        targetDate?: string; // e.g. "2024-01-20"
         topic?: string;
+        newsItems?: NewsItem[]; // Persist searched news
         level?: string;
         articleId?: string;
         articleJson?: any; // The main article object

@@ -52,7 +52,34 @@ interface Article {
 | `topic` | `"国际"` \| `"财经"` \| `"科技"` | 中文主题 | `topic` (Select) |
 | `date` | string | `YYYY-MM-DD` | `date` (Date) |
 | `wordCount` | number | **必须 > 200** | 存入 `content.meta.wordCount` |
-| `briefing` | object | 硬信息卡片 (中文) | 存入 `content.meta.briefing` |
+| `briefing` | `BriefingCard` | 硬信息卡片 (中文，**必填**) | 存入 `content.meta.briefing` |
+
+### 2.3.1 BriefingCard 硬信息卡片
+
+> [!CAUTION]
+> `briefing` 对象中的所有字段均为 **必填项**，缺失任何字段会导致审计失败。
+
+```typescript
+interface BriefingCard {
+  what: string;                // 事件内容：发生了什么
+  when: string;                // 时间：具体日期，例如 "2026年1月20日"
+  who: string;                 // 事件主体：涉及的组织/人物
+  scope: string;               // 影响范围：涵盖的地域/人群/领域
+  market_implications: string; // 市场影响：对市场/行业的具体影响
+}
+```
+
+**示例**:
+
+```json
+"briefing": {
+  "what": "欧盟与印度即将签署历史性自贸协定 (FTA)。",
+  "when": "2026年1月20日",
+  "who": "欧盟委员会；印度政府。",
+  "scope": "涵盖20亿人口的经贸与投资。",
+  "market_implications": "供应链多元化加速；印度纺织与欧盟机械受益。"
+}
+```
 
 ### 2.4 TitleBlock 标题块
 
@@ -79,6 +106,9 @@ interface IntroBlock {
 
 ### 2.6 ParagraphBlock 段落块
 
+> [!IMPORTANT]
+> **首句规范**：第一段 (p1) 的第一句 (s1) **必须包含具体日期**（如 "On January 22," 或 "This Tuesday,"），为读者提供时间锚点。
+
 ```typescript
 interface ParagraphBlock {
   type: 'paragraph';
@@ -99,6 +129,52 @@ interface TokenizedSentence {
     keywords?: string[];
   };
 }
+```
+
+### 2.6.1 ArticleToken 分词规范
+
+> [!CAUTION]
+> **关键规则**：每个单词、空格、标点符号都必须是**独立的 token**！
+> 用户点击单词时，App 需要精确匹配单个单词。如果将多个单词合并为一个 token，点击功能将失效。
+
+```typescript
+interface ArticleToken {
+  text: string;       // 单个单词、空格或标点
+  isWord: boolean;    // true = 可点击的单词, false = 空格/标点
+  glossaryId?: string; // 可选，链接到 glossary 中的词条
+}
+```
+
+**正确示例**:
+
+```json
+"tokens": [
+  { "text": "The", "isWord": true },
+  { "text": " ", "isWord": false },
+  { "text": "single", "isWord": true },
+  { "text": " ", "isWord": false },
+  { "text": "click", "isWord": true },
+  { "text": ",", "isWord": false },
+  { "text": " ", "isWord": false },
+  { "text": "once", "isWord": true },
+  { "text": " ", "isWord": false },
+  { "text": "the", "isWord": true },
+  { "text": " ", "isWord": false },
+  { "text": "basic", "isWord": true, "glossaryId": "basic_adj_1" },
+  { "text": " ", "isWord": false },
+  { "text": "unit", "isWord": true },
+  { "text": ".", "isWord": false }
+]
+```
+
+**错误示例** (❌ 不要这样):
+
+```json
+"tokens": [
+  { "text": "Robert F. Kennedy Jr.", "highlight": false },
+  { "text": " ascended", "highlight": true },
+  { "text": " the podium in Manchester", "highlight": false }
+]
 ```
 
 ### 2.7 PocketBase 映射总览
@@ -143,7 +219,8 @@ interface TokenizedSentence {
 
 ## 4. 质量熔断 (Circuit Breaker)
 
-- **规则**: `meta.wordCount < 200` -> 无效。
+- **规则**: `meta.wordCount < 210` 或 `meta.wordCount > 260` -> 无效。
+- **结构**: 必须正好 **3个自然段**。
 - **Action**: 丢弃 -> 重试 (最多 3 次) -> 失败报错。
 
 ---

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useWorkflow } from '../../context/WorkflowContext';
-import { Book, RefreshCw, Trash2, ChevronRight, Database, Plus, Check, AlertCircle, Scan } from 'lucide-react';
+import { Book, RefreshCw, Trash2, ChevronRight, Database, Plus, Check, AlertCircle, Scan, Upload } from 'lucide-react';
 
 interface GlossaryEntry {
     word: string;
@@ -211,6 +211,35 @@ export const VocabularyCompletion: React.FC = () => {
                     </button>
 
                     <button
+                        onClick={async () => {
+                            if (!session) return;
+                            try {
+                                const payload = {
+                                    article: session.context.articleJson,
+                                    glossary: status === 'success' ? glossary : session.context.glossary,
+                                    podcast_script: session.context.podcastScript,
+                                    podcast_url: session.context.podcastUrl,
+                                };
+                                const res = await fetch('/api/publish', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify(payload)
+                                });
+                                if (res.ok) alert('✅ 已上传至云端数据库');
+                                else alert('❌ 上传失败');
+                            } catch (e) {
+                                alert('❌ 上传失败: ' + String(e));
+                            }
+                        }}
+                        disabled={entries.length === 0}
+                        className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-medium transition-all disabled:opacity-50"
+                        title="立即上传当前进度到数据库"
+                    >
+                        <Upload className="w-4 h-4" />
+                        上传
+                    </button>
+
+                    <button
                         onClick={handleNext}
                         disabled={entries.length === 0}
                         className="flex items-center gap-2 bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2 rounded-lg font-medium transition-all disabled:opacity-50"
@@ -223,9 +252,16 @@ export const VocabularyCompletion: React.FC = () => {
 
             {/* Error Message */}
             {error && (
-                <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-3 rounded-lg text-sm flex items-center gap-2">
-                    <AlertCircle className="w-4 h-4 shrink-0" />
-                    {error}
+                <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-4 rounded-lg text-sm flex flex-col gap-2 animate-in fade-in slide-in-from-top-2">
+                    <div className="flex items-center gap-2 font-bold">
+                        <AlertCircle className="w-5 h-5" />
+                        <span>操作失败</span>
+                    </div>
+                    <p className="font-mono bg-black/20 p-2 rounded text-xs break-all">{error}</p>
+                    <p className="text-xs text-red-400/70">
+                        可能原因：生成的 JSON 格式无效、模型超时或网络连接中断。
+                        建议：点击“重新生成”重试。
+                    </p>
                 </div>
             )}
 

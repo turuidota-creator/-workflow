@@ -1,0 +1,2316 @@
+{
+  "article": {
+    "article": {
+      "meta": {
+        "id": "20260121_scotus_fed",
+        "slug": "scotus-fed-independence",
+        "title": "Supreme Court Hearing Reveals Unease Over Threats to Fed Independence",
+        "level": "10",
+        "topic": "财经",
+        "date": "2026-01-21",
+        "wordCount": 238,
+        "briefing": {
+          "what": "美国最高法院就总统解雇权听证会展开辩论，触及美联储独立性议题。",
+          "when": "2026年1月20日",
+          "who": "美国最高法院；美联储；美国司法部。",
+          "scope": "美国宪法分权架构与全球金融市场信心。",
+          "market_implications": "若美联储独立性受损，美元资产风险溢价将飙升，债券市场面临剧烈波动。"
+        }
+      },
+      "intro": {
+        "type": "intro",
+        "id": "intro-20260121",
+        "text": "2026年1月20日，美国最高法院针对独立监管机构架构的听证会引发华尔街高度关注。大法官们的提问显示，尽管保守派倾向于限制行政权扩张，但在触及美联储这一全球金融基石时，他们对打破“行政国家”的后果表现出罕见的犹豫。"
+      },
+      "title": {
+        "type": "title",
+        "id": "title-20260121_scotus_fed",
+        "zh": "最高法院听证会引发美联储独立性担忧",
+        "en": "Justices Signal Caution on Fed Autonomy"
+      },
+      "paragraphs": [
+        {
+          "type": "paragraph",
+          "id": "p1",
+          "paragraph": {
+            "id": "p1-content",
+            "tokenizedSentences": [
+              {
+                "id": "s1-p1",
+                "zh": "周二在最高法院进行的口头辩论暴露了保守派法律运动内部一道深刻且未决的裂痕。",
+                "analysis": {
+                  "grammar": "Metaphorical Noun Phrase",
+                  "explanation": "人话：指保守派大法官们平时意见一致，但在这个问题上吵起来了，出现了分歧。",
+                  "keywords": [
+                    "fracture",
+                    "unsettled"
+                  ]
+                },
+                "tokens": [
+                  {
+                    "text": "Oral",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "arguments",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "at",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "the",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "Supreme",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "Court",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "on",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "Tuesday",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "exposed",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "a",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "deep",
+                    "isWord": true
+                  },
+                  {
+                    "text": ",",
+                    "isWord": false
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "unsettled",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "fracture",
+                    "isWord": true,
+                    "glossaryId": "fracture_n"
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "within",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "the",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "conservative",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "legal",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "movement",
+                    "isWord": true
+                  },
+                  {
+                    "text": ".",
+                    "isWord": false
+                  }
+                ]
+              },
+              {
+                "id": "s2-p1",
+                "zh": "争议的核心是一个看似简单的问题：总统是否拥有不受制约的宪法权力，可以随意罢免独立机构的负责人？",
+                "analysis": {
+                  "grammar": "Inverted Question Structure",
+                  "explanation": "人话：核心就在于总统是不是想炒谁就炒谁，哪怕是那些本该独立运作的官员。"
+                },
+                "tokens": [
+                  {
+                    "text": "At",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "the",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "heart",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "of",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "the",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "dispute",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "was",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "a",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "deceptively",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "simple",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "question",
+                    "isWord": true
+                  },
+                  {
+                    "text": ":",
+                    "isWord": false
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "does",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "the",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "President",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "possess",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "the",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "unchecked",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "constitutional",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "authority",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "to",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "remove",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "the",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "heads",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "of",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "independent",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "agencies",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "at",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "will",
+                    "isWord": true
+                  },
+                  {
+                    "text": "?",
+                    "isWord": false
+                  }
+                ]
+              },
+              {
+                "id": "s3-p1",
+                "zh": "尽管法院的保守派绝对多数长期以来一直试图拆解所谓的“行政国家”，但几位大法官似乎对自己法理推演的逻辑终局感到明显不安：一个完全政治化、受制于白宫突发奇想的美联储。",
+                "analysis": {
+                  "grammar": "Contrastive Clause with Appositive",
+                  "explanation": "潜台词：他们虽然想削弱政府权力，但一想到这会导致美联储变成总统的傀儡，自己也吓了一跳。",
+                  "keywords": [
+                    "jurisprudence",
+                    "whims"
+                  ]
+                },
+                "tokens": [
+                  {
+                    "text": "While",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "the",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "court",
+                    "isWord": true
+                  },
+                  {
+                    "text": "'",
+                    "isWord": false
+                  },
+                  {
+                    "text": "s",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "conservative",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "supermajority",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "has",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "long",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "sought",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "to",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "dismantle",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "the",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "so-called",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "\"",
+                    "isWord": false
+                  },
+                  {
+                    "text": "administrative",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "state",
+                    "isWord": true
+                  },
+                  {
+                    "text": "\"",
+                    "isWord": false
+                  },
+                  {
+                    "text": ",",
+                    "isWord": false
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "several",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "justices",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "appeared",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "visibly",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "uncomfortable",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "with",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "the",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "logical",
+                    "isWord": true
+                  },
+                  {
+                    "text": ",",
+                    "isWord": false
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "inevitable",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "endpoint",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "of",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "their",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "own",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "jurisprudence",
+                    "isWord": true,
+                    "glossaryId": "jurisprudence_n"
+                  },
+                  {
+                    "text": ":",
+                    "isWord": false
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "a",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "fully",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "politicized",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "Federal",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "Reserve",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "subject",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "to",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "Oval",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "Office",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "whims",
+                    "isWord": true,
+                    "glossaryId": "whim_n"
+                  },
+                  {
+                    "text": ".",
+                    "isWord": false
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "paragraph",
+          "id": "p2",
+          "paragraph": {
+            "id": "p2-content",
+            "tokenizedSentences": [
+              {
+                "id": "s1-p2",
+                "zh": "对全球金融架构而言，其风险之高已无以复加。",
+                "analysis": {
+                  "grammar": "Idiomatic Comparative",
+                  "explanation": "人话：事关重大，不能再大了。"
+                },
+                "tokens": [
+                  {
+                    "text": "The",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "stakes",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "for",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "the",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "global",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "financial",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "architecture",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "could",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "not",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "be",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "higher",
+                    "isWord": true
+                  },
+                  {
+                    "text": ".",
+                    "isWord": false
+                  }
+                ]
+              },
+              {
+                "id": "s2-p2",
+                "zh": "几十年来，央行独立性一直被公认为现代货币稳定的关键枢纽，它赋予决策者抵御通胀所需的盾牌，而不必担心眼前的选举报复。",
+                "analysis": {
+                  "grammar": "Metaphorical Definition",
+                  "explanation": "人话：Linchpin 是车轮上的关键插销。这里指央行独立性是整个系统不散架的保证。",
+                  "keywords": [
+                    "linchpin",
+                    "retribution"
+                  ]
+                },
+                "tokens": [
+                  {
+                    "text": "For",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "decades",
+                    "isWord": true
+                  },
+                  {
+                    "text": ",",
+                    "isWord": false
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "central",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "bank",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "independence",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "has",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "been",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "the",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "undisputed",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "linchpin",
+                    "isWord": true,
+                    "glossaryId": "linchpin_n"
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "of",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "modern",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "monetary",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "stability",
+                    "isWord": true
+                  },
+                  {
+                    "text": ",",
+                    "isWord": false
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "granting",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "policymakers",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "the",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "shield",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "they",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "need",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "to",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "curb",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "inflation",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "without",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "fearing",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "immediate",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "electoral",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "retribution",
+                    "isWord": true,
+                    "glossaryId": "retribution_n"
+                  },
+                  {
+                    "text": ".",
+                    "isWord": false
+                  }
+                ]
+              },
+              {
+                "id": "s3-p2",
+                "zh": "投资者担心，如果法院裁定美联储主席必须完全听命于总统，美国可能面临重返沃尔克时代之前那种动荡、通胀频发的繁荣与萧条周期的风险。",
+                "analysis": {
+                  "grammar": "Conditional Clause",
+                  "explanation": "潜台词：'At the pleasure of' 是法律术语，意味着总统可以随时无理由解雇你，没有任何职业保障。",
+                  "keywords": [
+                    "pleasure",
+                    "volatile"
+                  ]
+                },
+                "tokens": [
+                  {
+                    "text": "Investors",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "worry",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "that",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "if",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "the",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "court",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "rules",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "the",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "Fed",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "Chair",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "serves",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "strictly",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "at",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "the",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "pleasure",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "of",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "the",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "President",
+                    "isWord": true
+                  },
+                  {
+                    "text": ",",
+                    "isWord": false
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "the",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "U.S.",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "risks",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "a",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "return",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "to",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "the",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "volatile",
+                    "isWord": true
+                  },
+                  {
+                    "text": ",",
+                    "isWord": false
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "inflation-prone",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "boom-and-bust",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "cycles",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "that",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "plagued",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "the",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "pre-Volcker",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "era",
+                    "isWord": true
+                  },
+                  {
+                    "text": ".",
+                    "isWord": false
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "paragraph",
+          "id": "p3",
+          "paragraph": {
+            "id": "p3-content",
+            "tokenizedSentences": [
+              {
+                "id": "s1-p3",
+                "zh": "在紧张的一小时交锋中，副总检察长警告说，取消这些法定保护将从根本上改变三权分立。",
+                "analysis": {
+                  "grammar": "Indirect Speech",
+                  "explanation": "人话：政府律师警告说，这么干会把美国宪法的根基都给刨了。"
+                },
+                "tokens": [
+                  {
+                    "text": "During",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "the",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "tense",
+                    "isWord": true
+                  },
+                  {
+                    "text": ",",
+                    "isWord": false
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "hour-long",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "exchange",
+                    "isWord": true
+                  },
+                  {
+                    "text": ",",
+                    "isWord": false
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "the",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "Solicitor",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "General",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "warned",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "that",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "erasing",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "these",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "statutory",
+                    "isWord": true,
+                    "glossaryId": "statutory_adj"
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "protections",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "would",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "fundamentally",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "alter",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "the",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "separation",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "of",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "powers",
+                    "isWord": true
+                  },
+                  {
+                    "text": ".",
+                    "isWord": false
+                  }
+                ]
+              },
+              {
+                "id": "s2-p3",
+                "zh": "意识到经济上的危险处境，首席大法官罗伯茨暗示了一种潜在的“例外”策略，即一项狭义的裁决，可能专门为金融监管机构保留现状，同时限制其他机构。",
+                "analysis": {
+                  "grammar": "Participial Phrase",
+                  "explanation": "人话：罗伯茨看情况不对，准备搞个“双标”，放过美联储，只搞其他人。",
+                  "keywords": [
+                    "precipice",
+                    "carve-out"
+                  ]
+                },
+                "tokens": [
+                  {
+                    "text": "Sensing",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "the",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "economic",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "precipice",
+                    "isWord": true,
+                    "glossaryId": "precipice_n"
+                  },
+                  {
+                    "text": ",",
+                    "isWord": false
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "Chief",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "Justice",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "Roberts",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "hinted",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "at",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "a",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "potential",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "\"",
+                    "isWord": false
+                  },
+                  {
+                    "text": "carve-out",
+                    "isWord": true
+                  },
+                  {
+                    "text": "\"",
+                    "isWord": false
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "strategy",
+                    "isWord": true
+                  },
+                  {
+                    "text": ",",
+                    "isWord": false
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "a",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "narrow",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "ruling",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "that",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "might",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "preserve",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "the",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "status",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "quo",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "specifically",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "for",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "financial",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "regulators",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "while",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "curbing",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "others",
+                    "isWord": true
+                  },
+                  {
+                    "text": ".",
+                    "isWord": false
+                  }
+                ]
+              },
+              {
+                "id": "s3-p3",
+                "zh": "这种犹豫的信号表明，即使对于一个激进的法院来说，美元的信誉仍然是一条太危险而不敢触碰的“高压线”。",
+                "analysis": {
+                  "grammar": "Metaphorical Predicate",
+                  "explanation": "人话：Third rail 是地铁的高压供电轨。意思是美元信誉这东西谁碰谁死，法院也不敢乱来。",
+                  "keywords": [
+                    "hesitation",
+                    "third rail"
+                  ]
+                },
+                "tokens": [
+                  {
+                    "text": "This",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "signaled",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "hesitation",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "suggests",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "that",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "even",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "for",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "an",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "aggressive",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "court",
+                    "isWord": true
+                  },
+                  {
+                    "text": ",",
+                    "isWord": false
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "the",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "credibility",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "of",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "the",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "dollar",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "remains",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "a",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "third",
+                    "isWord": true,
+                    "glossaryId": "third_rail_n"
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "rail",
+                    "isWord": true,
+                    "glossaryId": "third_rail_n"
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "too",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "dangerous",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "to",
+                    "isWord": true
+                  },
+                  {
+                    "text": " ",
+                    "isWord": false
+                  },
+                  {
+                    "text": "touch",
+                    "isWord": true
+                  },
+                  {
+                    "text": ".",
+                    "isWord": false
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "podcastUrl": ""
+    },
+    "glossary": {
+      "fracture_n": {
+        "id": "fracture_n",
+        "word": "fracture",
+        "phonetic": "/ˈfræktʃər/",
+        "definition": "A break or split, often used metaphorically to describe a disagreement within a group.",
+        "zh": "裂痕；分歧",
+        "tags": [
+          "level10",
+          "political"
+        ]
+      },
+      "jurisprudence_n": {
+        "id": "jurisprudence_n",
+        "word": "jurisprudence",
+        "phonetic": "/ˌdʒʊərɪsˈpruːdəns/",
+        "definition": "The theory or philosophy of law; a legal system.",
+        "zh": "法理；法律体系",
+        "tags": [
+          "level10",
+          "legal"
+        ]
+      },
+      "whim_n": {
+        "id": "whim_n",
+        "word": "whim",
+        "phonetic": "/wɪm/",
+        "definition": "A sudden desire or change of mind, especially one that is unusual or unexplained.",
+        "zh": "突发奇想；一时兴起",
+        "tags": [
+          "level10",
+          "general"
+        ]
+      },
+      "linchpin_n": {
+        "id": "linchpin_n",
+        "word": "linchpin",
+        "phonetic": "/ˈlɪntʃpɪn/",
+        "definition": "A person or thing vital to an enterprise or organization.",
+        "zh": "关键；枢纽",
+        "tags": [
+          "level10",
+          "business"
+        ]
+      },
+      "retribution_n": {
+        "id": "retribution_n",
+        "word": "retribution",
+        "phonetic": "/ˌretrɪˈbjuːʃn/",
+        "definition": "Punishment inflicted on someone as vengeance for a wrong or criminal act.",
+        "zh": "报复；惩罚",
+        "tags": [
+          "level10",
+          "formal"
+        ]
+      },
+      "statutory_adj": {
+        "id": "statutory_adj",
+        "word": "statutory",
+        "phonetic": "/ˈstætʃətɔːri/",
+        "definition": "Required, permitted, or enacted by statute (written law).",
+        "zh": "法定的；法规的",
+        "tags": [
+          "level10",
+          "legal"
+        ]
+      },
+      "precipice_n": {
+        "id": "precipice_n",
+        "word": "precipice",
+        "phonetic": "/ˈpresɪpɪs/",
+        "definition": "A very steep rock face or cliff, often used metaphorically for a dangerous situation.",
+        "zh": "悬崖；绝境",
+        "tags": [
+          "level10",
+          "literary"
+        ]
+      },
+      "third_rail_n": {
+        "id": "third_rail_n",
+        "word": "third rail",
+        "phonetic": "/ˈθɜːrd reɪl/",
+        "definition": "A metaphor for a subject so controversial that it is dangerous to discuss or tamper with.",
+        "zh": "（政治上的）高压线；禁区",
+        "tags": [
+          "level10",
+          "idiom"
+        ]
+      }
+    }
+  },
+  "glossary": [
+    {
+      "word": "fracture",
+      "lemma": "fracture",
+      "definition": "裂缝；骨折",
+      "contextDefinition": "（组织或运动内部的）裂痕、深刻分歧",
+      "pos": "n.",
+      "sentence": "Oral arguments at the Supreme Court on Tuesday exposed a deep, unsettled fracture within the conservative legal movement.",
+      "id": "fracture_n_8f3e2a1b"
+    },
+    {
+      "word": "unsettled",
+      "lemma": "unsettle",
+      "definition": "未解决的；动荡的",
+      "contextDefinition": "（法律争议）尚未定论的、悬而未决的",
+      "pos": "adj.",
+      "sentence": "Oral arguments at the Supreme Court on Tuesday exposed a deep, unsettled fracture within the conservative legal movement.",
+      "id": "unsettle_adj_9a8b7c6d"
+    },
+    {
+      "word": "dismantle",
+      "lemma": "dismantle",
+      "definition": "拆除；解散",
+      "contextDefinition": "拆解、削弱（行政国家机构的权力）",
+      "pos": "v.",
+      "sentence": "While the court's conservative supermajority has long sought to dismantle the so-called \"administrative state\"...",
+      "id": "dismantle_v_5f4e3d2c"
+    },
+    {
+      "word": "jurisprudence",
+      "lemma": "jurisprudence",
+      "definition": "法理学；法律体系",
+      "contextDefinition": "法理推演；法律哲学逻辑",
+      "pos": "n.",
+      "sentence": "...several justices appeared visibly uncomfortable with the logical, inevitable endpoint of their own jurisprudence...",
+      "id": "jurisprudence_n_c4d5e6f7"
+    },
+    {
+      "word": "whims",
+      "lemma": "whim",
+      "definition": "突发奇想；一时的兴致",
+      "contextDefinition": "（政治领导人）随意的决定或反复无常的想法",
+      "pos": "n.",
+      "sentence": "...a fully politicized Federal Reserve subject to Oval Office whims.",
+      "id": "whim_n_a1b2c3d4"
+    },
+    {
+      "word": "linchpin",
+      "lemma": "linchpin",
+      "definition": "关键；枢纽",
+      "contextDefinition": "（整个系统或架构中）最核心的支柱",
+      "pos": "n.",
+      "sentence": "For decades, central bank independence has been the undisputed linchpin of modern monetary stability...",
+      "id": "linchpin_n_e9f0a1b2"
+    },
+    {
+      "word": "retribution",
+      "lemma": "retribution",
+      "definition": "报应；惩罚",
+      "contextDefinition": "（因政策决定而遭受的）选举报复或政治惩处",
+      "pos": "n.",
+      "sentence": "...granting policymakers the shield they need to curb inflation without fearing immediate electoral retribution.",
+      "id": "retribution_n_d3c2b1a0"
+    },
+    {
+      "word": "volatile",
+      "lemma": "volatile",
+      "definition": "易变的；不稳定的",
+      "contextDefinition": "（经济或市场）剧烈波动且难以预测的",
+      "pos": "adj.",
+      "sentence": "...the U.S. risks a return to the volatile, inflation-prone boom-and-bust cycles...",
+      "id": "volatile_adj_7d8e9f0a"
+    },
+    {
+      "word": "plagued",
+      "lemma": "plague",
+      "definition": "折磨；使受苦",
+      "contextDefinition": "（负面现象）长期困扰或纠缠",
+      "pos": "v.",
+      "sentence": "...boom-and-bust cycles that plagued the pre-Volcker era.",
+      "id": "plague_v_0b1c2d3e"
+    },
+    {
+      "word": "statutory",
+      "lemma": "statutory",
+      "definition": "法定的；依照法令的",
+      "contextDefinition": "法律明文规定的（保护措施）",
+      "pos": "adj.",
+      "sentence": "...the Solicitor General warned that erasing these statutory protections would fundamentally alter the separation of powers.",
+      "id": "statutory_adj_b5a4c3d2"
+    },
+    {
+      "word": "precipice",
+      "lemma": "precipice",
+      "definition": "悬崖；绝壁",
+      "contextDefinition": "（经济或政治）极其危险的边缘、绝境",
+      "pos": "n.",
+      "sentence": "Sensing the economic precipice, Chief Justice Roberts hinted at a potential \"carve-out\" strategy...",
+      "id": "precipice_n_f8e7d6c5"
+    },
+    {
+      "word": "carve-out",
+      "lemma": "carve-out",
+      "definition": "排除协议；例外条款",
+      "contextDefinition": "（法律裁决中）专门针对特定机构保留的例外待遇",
+      "pos": "n.",
+      "sentence": "Chief Justice Roberts hinted at a potential \"carve-out\" strategy...",
+      "id": "carveout_n_2b3c4d5e"
+    },
+    {
+      "word": "third rail",
+      "lemma": "third rail",
+      "definition": "（地铁的）第三轨；高压线",
+      "contextDefinition": "（政治上）极度敏感、不可触碰的禁区",
+      "pos": "n.",
+      "sentence": "...the credibility of the dollar remains a third rail too dangerous to touch.",
+      "id": "thirdrail_n_1a2b3c4d"
+    }
+  ],
+  "podcast_script": "Hello everyone, welcome to ReadRead Daily. I'm Leo.\n今天我们要解读的文章聚焦于美国最高法院的一场关键听证会，题目是：最高法院听证会引发美联储独立性担忧。\n\n先给大家交代一下背景：2026年1月20日，美国最高法院针对“总统是否有权随意解雇独立机构负责人”展开了辩论。\n这原本是一个关于宪法分权的法律问题，但因为牵涉到美联储，瞬间变成了华尔街最紧张的时刻。\n如果美联储失去独立性，变成总统的附庸，全球金融市场的基石可能就要动摇了。\n\n作者开篇第一句就点出了现场的氛围：保守派大法官们平时在法律问题上很团结，但这次，他们内部出现了严重的分歧。\n如果让你来描述这种“分歧”，你可能会用 disagreement 或者 conflict。\n但作者用了一个医学上的词：Fracture，骨折，裂痕。这暗示这种分歧是深层的、结构性的。\n请听原文：\n\nOral arguments at the Supreme Court on Tuesday exposed a deep, unsettled fracture within the conservative legal movement.\n\n这里的 fracture 用得很形象。\nUnsettled 这个词也值得玩味，它不仅表示“未解决的”，还带有一种“动荡不安”的情绪。\n大家感受一下这种裂痕带来的紧张感：\n\nOral arguments at the Supreme Court on Tuesday exposed a deep, unsettled fracture within the conservative legal movement.\n\n接着，作者指出了争议的核心。\n这是一个看似简单的问题：总统是不是想炒谁鱿鱼就能炒谁，哪怕是那些本该独立运作的官员？\n这句话里有一个短语叫 at will，意思是“随意、任意”。\n听听作者是如何用 deceptively simple 来形容这个问题的：\n\nAt the heart of the dispute was a deceptively simple question: does the President possess the unchecked constitutional authority to remove the heads of independent agencies at will?\n\n语法上注意 deceptively simple，看似简单，实则暗藏玄机。\nUnchecked authority，指不受制约的权力。\n这句话的节奏感很强，层层递进，我们再听一遍：\n\nAt the heart of the dispute was a deceptively simple question: does the President possess the unchecked constitutional authority to remove the heads of independent agencies at will?\n\n接下来这句话非常精彩。\n保守派虽然一直想削弱政府机构的权力，也就是所谓的“行政国家”，但当他们意识到自己的逻辑推演下去，会导致美联储变成总统的傀儡时，他们自己也吓了一跳。\n这里有一个很棒的词叫 Whims，指“突发奇想、心血来潮”。\nOval Office whims，指白宫椭圆形办公室里那位总统的一时兴起。\n请听原文：\n\nWhile the court's conservative supermajority has long sought to dismantle the so-called \"administrative state\", several justices appeared visibly uncomfortable with the logical, inevitable endpoint of their own jurisprudence: a fully politicized Federal Reserve subject to Oval Office whims.\n\n这句话逻辑很长，While 引导了一个强烈的对比。\nJurisprudence 是个高阶词，指“法理”或“法律体系”。\n作者说这是他们自己法理的 inevitable endpoint，必然终局。\n意思是：你们自己推导出来的逻辑，结果把自己吓到了。\n带着这种讽刺感，我们再听一遍：\n\nWhile the court's conservative supermajority has long sought to dismantle the so-called \"administrative state\", several justices appeared visibly uncomfortable with the logical, inevitable endpoint of their own jurisprudence: a fully politicized Federal Reserve subject to Oval Office whims.\n\n为什么他们会害怕？因为代价太大了。\n作者用了一句极简的表达：对全球金融架构而言，风险之高已无以复加。\nStakes 指的是赌注，也是风险。\nCould not be higher，双重否定表最高级。\n请听原文：\n\nThe stakes for the global financial architecture could not be higher.\n\n紧接着，作者解释了原因。\n几十年来，央行独立性一直是现代货币稳定的关键。\n如果让你形容“关键”，除了 key，你还能想到什么？\n作者用了一个机械工程的词：Linchpin，车轮上的制动销，引申为“关键枢纽”。\n它给了决策者一面 Shield，盾牌，让他们敢于对抗通胀，而不必担心被选民报复。\n请听原文：\n\nFor decades, central bank independence has been the undisputed linchpin of modern monetary stability, granting policymakers the shield they need to curb inflation without fearing immediate electoral retribution.\n\n这里的 Retribution 是“报复、惩罚”的高级说法，通常指因果报应。\nElectoral retribution，指因为政策不受欢迎而输掉选举。\nLinchpin 和 Shield 这两个意象，把抽象的“独立性”具象化了。\n我们再细细品味一下：\n\nFor decades, central bank independence has been the undisputed linchpin of modern monetary stability, granting policymakers the shield they need to curb inflation without fearing immediate electoral retribution.\n\n投资者担心什么呢？\n如果法院裁定美联储主席必须“听命于”总统，美国经济可能会倒退回几十年前那种动荡的时代。\n这里用了一个法律术语：at the pleasure of，字面意思是“看某人心情”，法律上指“可随时无理由解雇”。\n还有一个形容词 Plagued，像瘟疫一样折磨。\n请听原文：\n\nInvestors worry that if the court rules the Fed Chair serves strictly at the pleasure of the President, the U.S. risks a return to the volatile, inflation-prone boom-and-bust cycles that plagued the pre-Volcker era.\n\nVolatile，形容易变的、不稳定的。\nBoom-and-bust cycles，繁荣与萧条的周期循环。\nPre-Volcker era 指的是沃尔克之前的时代，那是美国通胀失控的噩梦时期。\n这句话警示意味很浓，我们再听一遍：\n\nInvestors worry that if the court rules the Fed Chair serves strictly at the pleasure of the President, the U.S. risks a return to the volatile, inflation-prone boom-and-bust cycles that plagued the pre-Volcker era.\n\n辩论现场气氛紧张。\n副总检察长警告说，取消这些法律保护，将从根本上改变三权分立。\nStatutory protections，指“法定的保护”，源自 Statute（法令）。\n请听原文：\n\nDuring the tense, hour-long exchange, the Solicitor General warned that erasing these statutory protections would fundamentally alter the separation of powers.\n\n首席大法官罗伯茨是个聪明人，他看出了经济上的危险。\n于是他暗示了一种策略：搞个“例外”。\n也就是，也许可以专门放过金融监管机构，只限制其他机构。\n这里有两个很棒的词。\n一个是 Precipice，悬崖，绝境。Sensing the economic precipice，感觉到了经济悬崖。\n另一个是 Carve-out，把一块肉切出来，引申为“例外条款”。\n请听原文：\n\nSensing the economic precipice, Chief Justice Roberts hinted at a potential \"carve-out\" strategy, a narrow ruling that might preserve the status quo specifically for financial regulators while curbing others.\n\nCarve-out strategy，这种说法在地缘政治和法律谈判中非常常见。\nPreserve the status quo，维持现状。\n罗伯茨想用这种“双标”的方法来避免金融灾难。\n我们再听一遍这个微妙的政治操作：\n\nSensing the economic precipice, Chief Justice Roberts hinted at a potential \"carve-out\" strategy, a narrow ruling that might preserve the status quo specifically for financial regulators while curbing others.\n\n最后，作者总结道：这种犹豫表明，美元的信誉是一条谁都不敢碰的“高压线”。\nThird rail，地铁的第三轨，带高压电的。\n在政治语境下，Third rail 指那些极度敏感、一碰就死的议题。\n请听原文：\n\nThis signaled hesitation suggests that even for an aggressive court, the credibility of the dollar remains a third rail too dangerous to touch.\n\n这句话用 Third rail 来比喻美元信誉，非常精准。\n即使是激进的（Aggressive）法院，也不敢拿美元霸权开玩笑。\n带着这种敬畏感，我们最后听一遍：\n\nThis signaled hesitation suggests that even for an aggressive court, the credibility of the dollar remains a third rail too dangerous to touch.\n\n总结一下，今天的文章让我们看到了法律逻辑与现实经济利益之间的碰撞。\n虽然保守派想重塑行政权力，但在美元和金融稳定面前，他们不得不小心翼翼。\n这就是语言的力量，像 fracture, linchpin, third rail 这些词，把复杂的政治博弈描绘得栩栩如生。\n\nThanks for listening to ReadRead Daily. I'm Leo.\nSee you next time!"
+}

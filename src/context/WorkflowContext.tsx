@@ -5,9 +5,9 @@ import { WorkflowSession, INITIAL_STEPS } from '../types/workflow';
 interface WorkflowContextType {
     sessions: WorkflowSession[];
     activeSessionId: string | null;
-    createSession: () => void;
+    createSession: (initialContext?: Record<string, any>) => void;
     switchSession: (id: string) => void;
-    updateSession: (id: string, updates: Partial<WorkflowSession>) => void;
+    updateSession: (id: string, updates: Partial<WorkflowSession> | ((prev: WorkflowSession) => Partial<WorkflowSession>)) => void;
     deleteSession: (id: string) => void;
     getActiveSession: () => WorkflowSession | undefined;
 }
@@ -130,7 +130,7 @@ export const WorkflowProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         };
     }, [deserializeSession, request]);
 
-    const createSession = useCallback(() => {
+    const createSession = useCallback((initialContext: Record<string, any> = {}) => {
         const newSession: WorkflowSession = {
             id: '',
             title: 'New Workflow',
@@ -138,7 +138,7 @@ export const WorkflowProvider: React.FC<{ children: React.ReactNode }> = ({ chil
             status: 'idle',
             currentStepId: 'topic-discovery',
             steps: JSON.parse(JSON.stringify(INITIAL_STEPS)),
-            context: {}
+            context: initialContext
         };
 
         void (async () => {
@@ -162,10 +162,11 @@ export const WorkflowProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         setActiveSessionId(id);
     }, []);
 
-    const updateSession = useCallback((id: string, updates: Partial<WorkflowSession>) => {
+    const updateSession = useCallback((id: string, updates: Partial<WorkflowSession> | ((prev: WorkflowSession) => Partial<WorkflowSession>)) => {
         setSessions(prev => prev.map(session => {
             if (session.id !== id) return session;
-            const updatedSession = { ...session, ...updates };
+            const newValues = typeof updates === 'function' ? updates(session) : updates;
+            const updatedSession = { ...session, ...newValues };
             scheduleSave(updatedSession);
             return updatedSession;
         }));

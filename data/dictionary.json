@@ -1,0 +1,842 @@
+{
+  "absolute": {
+    "word": "absolute",
+    "phonetic": "/ˈæbsəluːt/",
+    "definitions": [
+      {
+        "pos": "adj.",
+        "zh": "绝对的；完全的",
+        "en": "Not qualified or diminished in any way; total."
+      },
+      {
+        "pos": "n.",
+        "zh": "绝对事物",
+        "en": "A value or principle which is regarded as universally valid or which may be viewed without relation to other things."
+      }
+    ]
+  },
+  "addressing": {
+    "word": "addressing",
+    "phonetic": "/əˈdresɪŋ/",
+    "definitions": [
+      {
+        "pos": "v.",
+        "zh": "致辞；演说 (address的现在分词)",
+        "en": "Speaking to (a person or an assembly), typically in a formal way."
+      },
+      {
+        "pos": "v.",
+        "zh": "处理；设法解决",
+        "en": "Thinking about and beginning to deal with (an issue or problem)."
+      }
+    ]
+  },
+  "agenda": {
+    "word": "agenda",
+    "phonetic": "/əˈdʒendə/",
+    "definitions": [
+      {
+        "pos": "n.",
+        "zh": "议程",
+        "en": "A list of items to be discussed at a formal meeting."
+      },
+      {
+        "pos": "n.",
+        "zh": "意图；行动计划",
+        "en": "A plan of things to be done or problems to be addressed."
+      }
+    ]
+  },
+  "aggressively": {
+    "word": "aggressively",
+    "phonetic": "/əˈɡresɪvli/",
+    "definitions": [
+      {
+        "pos": "adv.",
+        "zh": "侵略地；攻击地",
+        "en": "In a manner resulting from or displaying aggression."
+      },
+      {
+        "pos": "adv.",
+        "zh": "积极进取地",
+        "en": "In a determined and forceful way."
+      }
+    ]
+  },
+  "agitator": {
+    "word": "agitator",
+    "phonetic": "/ˈædʒɪteɪtər/",
+    "definitions": [
+      {
+        "pos": "n.",
+        "zh": "煽动者",
+        "en": "A person who urges others to protest or rebel."
+      },
+      {
+        "pos": "n.",
+        "zh": "搅拌器",
+        "en": "An apparatus for stirring liquid."
+      }
+    ]
+  },
+  "allowing": {
+    "word": "allowing",
+    "phonetic": "/əˈlaʊɪŋ/",
+    "definitions": [
+      {
+        "pos": "v.",
+        "zh": "允许；给予 (allow的现在分词)",
+        "en": "Giving permission for or admitting."
+      }
+    ]
+  },
+  "audience": {
+    "word": "audience",
+    "phonetic": "/ˈɔːdiəns/",
+    "definitions": [
+      {
+        "pos": "n.",
+        "zh": "观众；听众",
+        "en": "The assembled spectators or listeners at a public event."
+      }
+    ]
+  },
+  "between": {
+    "word": "between",
+    "phonetic": "/bɪˈtwiːn/",
+    "definitions": [
+      {
+        "pos": "prep.",
+        "zh": "在...之间",
+        "en": "At, into, or across the space separating (two objects or regions)."
+      },
+      {
+        "pos": "adv.",
+        "zh": "在中间",
+        "en": "In or along the space separating two objects or regions."
+      }
+    ]
+  },
+  "bid": {
+    "word": "bid",
+    "phonetic": "/bɪd/",
+    "definitions": [
+      {
+        "pos": "n.",
+        "zh": "出价；投标",
+        "en": "An offer of a price, especially at an auction."
+      },
+      {
+        "pos": "v.",
+        "zh": "出价；吩咐",
+        "en": "To offer (a certain price) for something, especially at an auction."
+      }
+    ]
+  },
+  "bureaucratic": {
+    "word": "bureaucratic",
+    "phonetic": "/ˌbjʊərəˈkrætɪk/",
+    "definitions": [
+      {
+        "pos": "adj.",
+        "zh": "官僚的；繁文缛节的",
+        "en": "Relating to the business of running an organization, or government."
+      }
+    ]
+  },
+  "calculated": {
+    "word": "calculated",
+    "phonetic": "/ˈkælkjuleɪtɪd/",
+    "definitions": [
+      {
+        "pos": "adj.",
+        "zh": "精心策划的；蓄意的",
+        "en": "Done with full awareness of the likely consequences."
+      },
+      {
+        "pos": "v.",
+        "zh": "计算 (calculate的过去式)",
+        "en": "Determined (the amount or number of something) mathematically."
+      }
+    ]
+  },
+  "campaign": {
+    "word": "campaign",
+    "phonetic": "/kæmˈpeɪn/",
+    "definitions": [
+      {
+        "pos": "n.",
+        "zh": "运动；战役",
+        "en": "A series of military or political operations intended to achieve a particular goal."
+      },
+      {
+        "pos": "v.",
+        "zh": "从事运动",
+        "en": "Work in an organized and active way toward a particular goal."
+      }
+    ]
+  },
+  "candidate": {
+    "word": "candidate",
+    "phonetic": "/ˈkændɪdeɪt/",
+    "definitions": [
+      {
+        "pos": "n.",
+        "zh": "候选人",
+        "en": "A person who applies for a job or is nominated for election."
+      }
+    ]
+  },
+  "categorical": {
+    "word": "categorical",
+    "phonetic": "/ˌkætəˈɡɔːrɪkl/",
+    "definitions": [
+      {
+        "pos": "adj.",
+        "zh": "绝对的；明确的",
+        "en": "Unambiguously explicit and direct."
+      }
+    ]
+  },
+  "command": {
+    "word": "command",
+    "phonetic": "/kəˈmænd/",
+    "definitions": [
+      {
+        "pos": "v.",
+        "zh": "命令；指挥",
+        "en": "Give an authoritative order."
+      },
+      {
+        "pos": "n.",
+        "zh": "命令；控制",
+        "en": "Authority, especially over armed forces."
+      }
+    ]
+  },
+  "commission": {
+    "word": "commission",
+    "phonetic": "/kəˈmɪʃn/",
+    "definitions": [
+      {
+        "pos": "n.",
+        "zh": "委员会",
+        "en": "A group of people officially charged with a particular function."
+      },
+      {
+        "pos": "n.",
+        "zh": "佣金",
+        "en": "An amount of money, typically a set percentage of the value involved, paid to an agent in a commercial transaction."
+      },
+      {
+        "pos": "v.",
+        "zh": "委任；委托制作",
+        "en": "Order or authorize the production of (something)."
+      }
+    ]
+  },
+  "contender": {
+    "word": "contender",
+    "phonetic": "/kənˈtendər/",
+    "definitions": [
+      {
+        "pos": "n.",
+        "zh": "竞争者；争夺者",
+        "en": "A person or group competing with others to achieve something."
+      }
+    ]
+  },
+  "contenders": {
+    "word": "contenders",
+    "phonetic": "/kənˈtendərz/",
+    "definitions": [
+      {
+        "pos": "n.",
+        "zh": "竞争者 (contender的复数)",
+        "en": "Plural form of contender; people or groups competing with others."
+      }
+    ]
+  },
+  "contentious": {
+    "word": "contentious",
+    "phonetic": "/kənˈtenʃəs/",
+    "definitions": [
+      {
+        "pos": "adj.",
+        "zh": "有争议的；爱争论的",
+        "en": "Causing or likely to cause an argument; controversial."
+      }
+    ]
+  },
+  "control": {
+    "word": "control",
+    "phonetic": "/kənˈtroʊl/",
+    "definitions": [
+      {
+        "pos": "n.",
+        "zh": "控制；管理",
+        "en": "The power to influence or direct people's behavior or the course of events."
+      },
+      {
+        "pos": "v.",
+        "zh": "控制；支配",
+        "en": "Determine the behavior or supervise the running of."
+      }
+    ]
+  },
+  "critique": {
+    "word": "critique",
+    "phonetic": "/krɪˈtiːk/",
+    "definitions": [
+      {
+        "pos": "n.",
+        "zh": "评论；批评",
+        "en": "A detailed analysis and assessment of something, especially a literary, philosophical, or political theory."
+      },
+      {
+        "pos": "v.",
+        "zh": "批判；评论",
+        "en": "Evaluate (a theory or practice) in a detailed and analytical way."
+      }
+    ]
+  },
+  "cross-country": {
+    "word": "cross-country",
+    "phonetic": "/ˌkrɒsˈkʌntri/",
+    "definitions": [
+      {
+        "pos": "adj.",
+        "zh": "越野的；横跨全国的",
+        "en": "Across fields or countryside rather than on roads; from one side of a country to the other."
+      },
+      {
+        "pos": "n.",
+        "zh": "越野赛跑",
+        "en": "A sport in which people run a race over open country."
+      }
+    ]
+  },
+  "crusade": {
+    "word": "crusade",
+    "phonetic": "/kruːˈseɪd/",
+    "definitions": [
+      {
+        "pos": "n.",
+        "zh": "改革运动；十字军东征",
+        "en": "A vigorous campaign for political, social, or religious change; a medieval military expedition."
+      },
+      {
+        "pos": "v.",
+        "zh": "从事改革运动",
+        "en": "Lead or take part in a vigorous campaign for social, political, or religious change."
+      }
+    ]
+  },
+  "declared": {
+    "word": "declared",
+    "phonetic": "/dɪˈkleəd/",
+    "definitions": [
+      {
+        "pos": "adj.",
+        "zh": "公开宣布的；公然的",
+        "en": "Openly or formally asserted or announced."
+      },
+      {
+        "pos": "v.",
+        "zh": "宣布；声明 (past tense)",
+        "en": "Past tense of declare; to say something in a solemn and emphatic manner."
+      }
+    ]
+  },
+  "delegate": {
+    "word": "delegate",
+    "phonetic": "/ˈdelɪɡət/ (n), /ˈdelɪɡeɪt/ (v)",
+    "definitions": [
+      {
+        "pos": "n.",
+        "zh": "代表",
+        "en": "A person sent or authorized to represent others, in particular an elected representative sent to a conference."
+      },
+      {
+        "pos": "v.",
+        "zh": "委派；授权",
+        "en": "Entrust (a task or responsibility) to another person, typically one who is less senior than oneself."
+      }
+    ]
+  },
+  "democratic": {
+    "word": "democratic",
+    "phonetic": "/ˌdeməˈkrætɪk/",
+    "definitions": [
+      {
+        "pos": "adj.",
+        "zh": "民主的；大众的",
+        "en": "Relating to or supporting democracy or its principles; favoring social equality."
+      }
+    ]
+  },
+  "dictates": {
+    "word": "dictates",
+    "phonetic": "/ˈdɪkteɪts/ (n), /dɪkˈteɪts/ (v)",
+    "definitions": [
+      {
+        "pos": "v.",
+        "zh": "命令；规定 (3rd person singular)",
+        "en": "Lay down authoritatively; prescribe."
+      },
+      {
+        "pos": "n.",
+        "zh": "命令；指示 (plural)",
+        "en": "Orders or principles that must be obeyed."
+      }
+    ]
+  },
+  "dismiss": {
+    "word": "dismiss",
+    "phonetic": "/dɪsˈmɪs/",
+    "definitions": [
+      {
+        "pos": "v.",
+        "zh": "解雇；驳回；不予理会",
+        "en": "Order or allow to leave; treat as unworthy of serious consideration; discharge from employment."
+      }
+    ]
+  },
+  "disruptor": {
+    "word": "disruptor",
+    "phonetic": "/dɪsˈrʌptər/",
+    "definitions": [
+      {
+        "pos": "n.",
+        "zh": "破坏者；颠覆者（尤指商业创新）",
+        "en": "A person or thing that prevents something, especially a system, process, or event, from continuing as usual or as expected; a company that changes the traditional way an industry operates."
+      }
+    ]
+  },
+  "distinction": {
+    "word": "distinction",
+    "phonetic": "/dɪˈstɪŋkʃn/",
+    "definitions": [
+      {
+        "pos": "n.",
+        "zh": "区别；差别",
+        "en": "A difference or contrast between similar things or people."
+      },
+      {
+        "pos": "n.",
+        "zh": "卓越；荣誉",
+        "en": "Excellence that sets someone or something apart from others."
+      }
+    ]
+  },
+  "dynasty": {
+    "word": "dynasty",
+    "phonetic": "/ˈdɪnəsti/",
+    "definitions": [
+      {
+        "pos": "n.",
+        "zh": "朝代；王朝",
+        "en": "A line of hereditary rulers of a country; a succession of people from the same family who play a prominent role in business, politics, or another field."
+      }
+    ]
+  },
+  "effectively": {
+    "word": "effectively",
+    "phonetic": "/ɪˈfektɪvli/",
+    "definitions": [
+      {
+        "pos": "adv.",
+        "zh": "有效地",
+        "en": "In such a manner as to achieve a desired result."
+      },
+      {
+        "pos": "adv.",
+        "zh": "实际上；事实上",
+        "en": "Actually but not officially or explicitly."
+      }
+    ]
+  },
+  "election": {
+    "word": "election",
+    "phonetic": "/ɪˈlekʃn/",
+    "definitions": [
+      {
+        "pos": "n.",
+        "zh": "选举；当选",
+        "en": "A formal and organized process of electing or being elected, especially of members of a political body."
+      }
+    ]
+  },
+  "embarked": {
+    "word": "embarked",
+    "phonetic": "/ɪmˈbɑːkt/",
+    "definitions": [
+      {
+        "pos": "v.",
+        "zh": "着手；开始 (past tense)",
+        "en": "Began a course of action, especially one that is important or demanding."
+      },
+      {
+        "pos": "v.",
+        "zh": "上船；登机 (past tense)",
+        "en": "Went on board a ship, aircraft, or other vehicle."
+      }
+    ]
+  },
+  "emphatic": {
+    "word": "emphatic",
+    "phonetic": "/ɪmˈfætɪk/",
+    "definitions": [
+      {
+        "pos": "adj.",
+        "zh": "强调的；坚决的",
+        "en": "Showing or giving emphasis; expressing something forcibly and clearly."
+      }
+    ]
+  },
+  "encumbrances": {
+    "word": "encumbrances",
+    "phonetic": "/ɪnˈkʌmbrənsɪz/",
+    "definitions": [
+      {
+        "pos": "n.",
+        "zh": "累赘；妨碍物 (plural)",
+        "en": "Impediments or burdens."
+      },
+      {
+        "pos": "n.",
+        "zh": "（财产上的）留置权；抵押 (plural)",
+        "en": "Mortgages or other claims on property or assets."
+      }
+    ]
+  },
+  "entry": {
+    "word": "entry",
+    "phonetic": "/ˈentri/",
+    "definitions": [
+      {
+        "pos": "n.",
+        "zh": "进入；入口",
+        "en": "An act of going or coming in; a place of entrance."
+      },
+      {
+        "pos": "n.",
+        "zh": "条目；参赛作品",
+        "en": "An item written or printed in a diary, list, account book, or reference book."
+      }
+    ]
+  },
+  "era": {
+    "word": "era",
+    "phonetic": "/ˈɪərə/",
+    "definitions": [
+      {
+        "pos": "n.",
+        "zh": "时代；年代",
+        "en": "A long and distinct period of history with a particular feature or characteristic."
+      }
+    ]
+  },
+  "eschewing": {
+    "word": "eschewing",
+    "phonetic": "/ɪsˈtʃuːɪŋ/",
+    "definitions": [
+      {
+        "pos": "v.",
+        "zh": "避开；戒绝 (present participle)",
+        "en": "Deliberately avoiding using; abstaining from."
+      }
+    ]
+  },
+  "establishment": {
+    "word": "establishment",
+    "phonetic": "/ɪˈstæblɪʃmənt/",
+    "definitions": [
+      {
+        "pos": "n.",
+        "zh": "建立；确立",
+        "en": "The action of establishing something or being established."
+      },
+      {
+        "pos": "n.",
+        "zh": "机构；企业",
+        "en": "A business organization, public institution, or household."
+      },
+      {
+        "pos": "n.",
+        "zh": "当权派；体制",
+        "en": "A group in a society exercising power and influence over matters of policy or taste, and seen as resisting change."
+      }
+    ]
+  },
+  "excursion": {
+    "word": "excursion",
+    "phonetic": "/ɪkˈskɜːrʒn/",
+    "definitions": [
+      {
+        "pos": "n.",
+        "zh": "远足；短途旅行",
+        "en": "A short journey or trip, especially one engaged in as a leisure activity."
+      }
+    ]
+  },
+  "expectant": {
+    "word": "expectant",
+    "phonetic": "/ɪkˈspektənt/",
+    "definitions": [
+      {
+        "pos": "adj.",
+        "zh": "期待的；期望的",
+        "en": "Having or showing an excited feeling that something is about to happen, especially something good."
+      },
+      {
+        "pos": "adj.",
+        "zh": "怀孕的",
+        "en": "Pregnant."
+      }
+    ]
+  },
+  "explicitly": {
+    "word": "explicitly",
+    "phonetic": "/ɪkˈsplɪsɪtli/",
+    "definitions": [
+      {
+        "pos": "adv.",
+        "zh": "明确地；明白地",
+        "en": "In a clear and detailed manner, leaving no room for confusion or doubt."
+      }
+    ]
+  },
+  "federal": {
+    "word": "federal",
+    "phonetic": "/ˈfedərəl/",
+    "definitions": [
+      {
+        "pos": "adj.",
+        "zh": "联邦的；联邦政府的",
+        "en": "Relating to a system of government where states share power with a central government."
+      }
+    ]
+  },
+  "feint": {
+    "word": "feint",
+    "phonetic": "/feɪnt/",
+    "definitions": [
+      {
+        "pos": "n.",
+        "zh": "佯攻；虚晃",
+        "en": "A deceptive or pretended blow, thrust, or other movement."
+      },
+      {
+        "pos": "v.",
+        "zh": "佯攻；虚晃一枪",
+        "en": "To make a deceptive or distracting movement."
+      }
+    ]
+  },
+  "financial": {
+    "word": "financial",
+    "phonetic": "/faɪˈnænʃl/",
+    "definitions": [
+      {
+        "pos": "adj.",
+        "zh": "金融的；财政的",
+        "en": "Relating to finance."
+      }
+    ]
+  },
+  "forcing": {
+    "word": "forcing",
+    "phonetic": "/ˈfɔːrsɪŋ/",
+    "definitions": [
+      {
+        "pos": "v.",
+        "zh": "强迫；迫使 (force的现在分词)",
+        "en": "Making a way through or into by physical strength; compelling someone to do something."
+      },
+      {
+        "pos": "n.",
+        "zh": "强迫；促成",
+        "en": "The action of using force or compelling."
+      }
+    ]
+  },
+  "formal": {
+    "word": "formal",
+    "phonetic": "/ˈfɔːrml/",
+    "definitions": [
+      {
+        "pos": "adj.",
+        "zh": "正式的；正规的",
+        "en": "Done in accordance with rules of convention or etiquette; suitable for or constituting an official or important situation or occasion."
+      }
+    ]
+  },
+  "framed": {
+    "word": "framed",
+    "phonetic": "/freɪmd/",
+    "definitions": [
+      {
+        "pos": "v.",
+        "zh": "给…装框；陷害 (frame的过去式和过去分词)",
+        "en": "Enclosed in a frame; produced false evidence against an innocent person."
+      },
+      {
+        "pos": "adj.",
+        "zh": "有框的",
+        "en": "Provided with a frame."
+      }
+    ]
+  },
+  "friction": {
+    "word": "friction",
+    "phonetic": "/ˈfrɪkʃn/",
+    "definitions": [
+      {
+        "pos": "n.",
+        "zh": "摩擦；摩擦力",
+        "en": "The resistance that one surface or object encounters when moving over another."
+      },
+      {
+        "pos": "n.",
+        "zh": "矛盾；冲突",
+        "en": "Conflict or animosity caused by a clash of wills, temperaments, or opinions."
+      }
+    ]
+  },
+  "gamble": {
+    "word": "gamble",
+    "phonetic": "/ˈɡæmbl/",
+    "definitions": [
+      {
+        "pos": "v.",
+        "zh": "赌博；打赌",
+        "en": "Play games of chance for money; bet."
+      },
+      {
+        "pos": "n.",
+        "zh": "冒险；赌博",
+        "en": "An act of gambling; an enterprise undertaken or attempted with a risk of loss and a chance of profit or success."
+      }
+    ]
+  },
+  "general": {
+    "word": "general",
+    "phonetic": "/ˈdʒenrəl/",
+    "definitions": [
+      {
+        "pos": "adj.",
+        "zh": "一般的；普遍的；总的",
+        "en": "Affecting or concerning all or most people, places, or things; widespread."
+      },
+      {
+        "pos": "n.",
+        "zh": "将军；上将",
+        "en": "A commander of an army, or an army officer of very high rank."
+      }
+    ]
+  },
+  "grapple": {
+    "word": "grapple",
+    "phonetic": "/ˈɡræpl/",
+    "definitions": [
+      {
+        "pos": "v.",
+        "zh": "扭打；搏斗",
+        "en": "Engage in a close fight or struggle without weapons; wrestle."
+      },
+      {
+        "pos": "v.",
+        "zh": "努力解决；克服",
+        "en": "Struggle with or work hard to deal with or overcome."
+      }
+    ]
+  },
+  "hampshire": {
+    "word": "hampshire",
+    "phonetic": "/ˈhæmpʃər/",
+    "definitions": [
+      {
+        "pos": "n.",
+        "zh": "汉普郡（英国郡名）",
+        "en": "A county on the southern coast of England."
+      }
+    ]
+  },
+  "hard": {
+    "word": "hard",
+    "phonetic": "/hɑːrd/",
+    "definitions": [
+      {
+        "pos": "adj.",
+        "zh": "硬的；坚固的",
+        "en": "Solid, firm, and rigid; not easily broken, bent, or pierced."
+      },
+      {
+        "pos": "adj.",
+        "zh": "困难的",
+        "en": "Difficult to understand or do."
+      },
+      {
+        "pos": "adv.",
+        "zh": "努力地；猛烈地",
+        "en": "With a great deal of effort, force, or intensity."
+      }
+    ]
+  },
+  "health": {
+    "word": "health",
+    "phonetic": "/helθ/",
+    "definitions": [
+      {
+        "pos": "n.",
+        "zh": "健康；卫生",
+        "en": "The state of being free from illness or injury."
+      }
+    ]
+  },
+  "high-profile": {
+    "word": "high-profile",
+    "phonetic": "/ˌhaɪ ˈproʊfaɪl/",
+    "definitions": [
+      {
+        "pos": "adj.",
+        "zh": "高调的；引人注目的",
+        "en": "Attracting much attention or publicity."
+      }
+    ]
+  },
+  "him": {
+    "word": "him",
+    "phonetic": "/hɪm/",
+    "definitions": [
+      {
+        "pos": "pron.",
+        "zh": "他（宾格）",
+        "en": "Used as the object of a verb or preposition to refer to a male person or animal previously mentioned or easily identified."
+      }
+    ]
+  },
+  "ignore": {
+    "word": "ignore",
+    "phonetic": "/ɪɡˈnɔːr/",
+    "definitions": [
+      {
+        "pos": "v.",
+        "zh": "忽视；不理睬",
+        "en": "Refuse to take notice of or acknowledge; disregard intentionally."
+      }
+    ]
+  },
+  "inhabit": {
+    "word": "inhabit",
+    "phonetic": "/ɪnˈhæbɪt/",
+    "definitions": [
+      {
+        "pos": "v.",
+        "zh": "居住于；栖息于",
+        "en": "(of a person, animal, or group) live in or occupy."
+      }
+    ]
+  }
+}

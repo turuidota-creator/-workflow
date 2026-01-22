@@ -14,14 +14,26 @@ const StatusIcon = ({ status }: { status: string }) => {
     }
 };
 
+
 export const Sidebar: React.FC = () => {
     const { sessions, activeSessionId, createSession, switchSession, deleteSession } = useWorkflow();
+    const [showDateModal, setShowDateModal] = React.useState(false);
+    const [selectedDate, setSelectedDate] = React.useState(new Date().toISOString().split('T')[0]);
+
+    const handleCreateClick = () => {
+        setShowDateModal(true);
+    };
+
+    const handleConfirmCreate = () => {
+        createSession({ targetDate: selectedDate });
+        setShowDateModal(false);
+    };
 
     return (
-        <div className="w-64 border-r border-white/10 bg-black/20 flex flex-col h-full backdrop-blur-sm">
+        <div className="w-64 border-r border-white/10 bg-black/20 flex flex-col h-full backdrop-blur-sm relative">
             <div className="p-4 border-b border-white/5">
                 <button
-                    onClick={createSession}
+                    onClick={handleCreateClick}
                     className="w-full flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2 rounded-md transition-all active:scale-95 font-medium shadow-lg shadow-blue-500/20"
                 >
                     <Plus className="w-4 h-4" />
@@ -91,6 +103,36 @@ export const Sidebar: React.FC = () => {
                     Content Workflow v0.1.0
                 </div>
             </div>
+
+            {/* Date Selection Modal */}
+            {showDateModal && (
+                <div className="absolute top-16 left-4 right-4 bg-slate-900 border border-white/10 shadow-xl rounded-lg p-4 z-50 animate-in zoom-in-95 duration-200">
+                    <h4 className="text-sm font-medium text-white mb-3 flex items-center gap-2">
+                        <Clock className="w-4 h-4 text-blue-400" />
+                        Select Topic Date
+                    </h4>
+                    <input
+                        type="date"
+                        value={selectedDate}
+                        onChange={(e) => setSelectedDate(e.target.value)}
+                        className="w-full bg-black/40 border border-white/10 rounded px-2 py-1.5 text-sm text-white mb-4 focus:outline-none focus:border-blue-500"
+                    />
+                    <div className="flex gap-2">
+                        <button
+                            onClick={() => setShowDateModal(false)}
+                            className="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs py-1.5 rounded transition-colors"
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            onClick={handleConfirmCreate}
+                            className="flex-1 bg-blue-600 hover:bg-blue-500 text-white text-xs py-1.5 rounded transition-colors font-medium"
+                        >
+                            Confirm
+                        </button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

@@ -1,0 +1,1704 @@
+{
+  "article": {
+    "article": {
+      "meta": {
+        "id": "20260122_rfk_jr_tour",
+        "slug": "rfk-jr-tour-not-running",
+        "title": "RFK Jr. Launches Tour, Quells Bid Rumors",
+        "level": "10",
+        "topic": "国际",
+        "date": "2026-01-22",
+        "wordCount": 234,
+        "briefing": {
+          "title": "小肯尼迪开启巡讲",
+          "summary": "小罗伯特·F·肯尼迪在新罕布什尔州启动全国巡讲，明确否认竞选总统。此举旨在避开选举监管，通过外部影响力推动公共卫生议程，展示了非候选人对政治议程的潜在塑造力。",
+          "source": "NYTimes Politics"
+        }
+      },
+      "intro": {
+        "type": "intro",
+        "id": "intro-20260122",
+        "text": "2026年1月22日，小罗伯特·F·肯尼迪在新罕布什尔州启动全国巡讲，明确否认将竞选总统，转而聚焦公共卫生议题。"
+      },
+      "title": {
+        "type": "title",
+        "id": "title-20260122_rfk",
+        "zh": "小肯尼迪开启巡讲，否认竞选总统",
+        "en": "RFK Jr. Launches Tour, Quells Bid Rumors"
+      },
+      "paragraphs": [
+        {
+          "type": "paragraph",
+          "id": "p1",
+          "paragraph": {
+            "id": "p1-content",
+            "tokenizedSentences": [
+              {
+                "id": "s1-p1",
+                "tokens": [
+                  {
+                    "text": "Robert"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "F."
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "Kennedy"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "Jr."
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "embarked"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "on"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "a"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "high-profile"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "cross-country"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "tour"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "this"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "Tuesday"
+                  },
+                  {
+                    "text": ","
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "moving"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "swiftly"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "to"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "quell"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "intensifying"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "speculation"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "regarding"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "a"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "potential"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "presidential"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "bid"
+                  },
+                  {
+                    "text": "."
+                  }
+                ],
+                "zh": "小罗伯特·F·肯尼迪本周二开启了备受瞩目的跨国巡讲，迅速平息了关于他可能竞选总统的愈演愈烈的猜测。",
+                "analysis": {
+                  "grammar": "Subject (Robert F. Kennedy Jr.) + Predicate (embarked on) + Object (tour) + Participle Phrase (moving swiftly...)",
+                  "explanation": "人话：一上来就搞个大新闻，其实是为了澄清谣言。"
+                }
+              },
+              {
+                "id": "s2-p1",
+                "tokens": [
+                  {
+                    "text": "Addressing"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "an"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "expectant"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "audience"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "in"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "New"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "Hampshire"
+                  },
+                  {
+                    "text": ","
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "the"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "scion"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "of"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "the"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "Democratic"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "dynasty"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "was"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "emphatic"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "and"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "categorical"
+                  },
+                  {
+                    "text": ":"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "he"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "will"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "not"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "be"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "a"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "contender"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "in"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "the"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "upcoming"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "general"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "election"
+                  },
+                  {
+                    "text": "."
+                  }
+                ],
+                "zh": "面对新罕布什尔州充满期待的听众，这位民主党豪门的后裔态度坚决且明确：他不会参与即将到来的大选角逐。",
+                "analysis": {
+                  "grammar": "Participle Phrase (Addressing...) + Subject (the scion) + Verb (was) + Adjectives (emphatic and categorical)",
+                  "explanation": "潜台词：别猜了，我不玩这个游戏。"
+                }
+              },
+              {
+                "id": "s3-p1",
+                "tokens": [
+                  {
+                    "text": "Instead"
+                  },
+                  {
+                    "text": ","
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "he"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "framed"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "the"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "excursion"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "as"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "a"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "crusade"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "for"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "systemic"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "public"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "health"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "reform"
+                  },
+                  {
+                    "text": ","
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "a"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "calculated"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "maneuver"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "allowing"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "him"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "to"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "command"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "the"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "national"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "spotlight"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "without"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "the"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "bureaucratic"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "encumbrances"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "and"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "regulatory"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "friction"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "of"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "a"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "formal"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "campaign"
+                  },
+                  {
+                    "text": "."
+                  }
+                ],
+                "zh": "相反，他将此次出行定义为一场致力于系统性公共卫生改革的运动，这一精心计算的举措使他能够在没有正式竞选的官僚负担和监管摩擦的情况下，占据全国聚光灯。",
+                "analysis": {
+                  "grammar": "Subject (he) + Verb (framed) + Object (the excursion) + Appositive (a calculated maneuver...) + Infinitive Phrase (allowing him to...)",
+                  "explanation": "人话：不当候选人既能出风头，又不用受那份洋罪。"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "paragraph",
+          "id": "p2",
+          "paragraph": {
+            "id": "p2-content",
+            "tokenizedSentences": [
+              {
+                "id": "s1-p2",
+                "tokens": [
+                  {
+                    "text": "The"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "distinction"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "between"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "a"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "declared"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "candidate"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "and"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "a"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "political"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "agitator"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "is"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "often"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "perilously"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "thin"
+                  },
+                  {
+                    "text": ","
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "yet"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "Kennedy"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "seems"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "intent"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "on"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "walking"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "that"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "line"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "with"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "precision"
+                  },
+                  {
+                    "text": "."
+                  }
+                ],
+                "zh": "正式候选人与政治煽动者之间的界限往往极其模糊，然而肯尼迪似乎有意精准地行走在这条钢丝上。",
+                "analysis": {
+                  "grammar": "Subject (The distinction) + Verb (is) + Adjective (thin) + Conjunction (yet) + Subject (Kennedy) + Verb (seems intent...)",
+                  "explanation": "人话：他想玩那种“似选非选”的高端局。"
+                }
+              },
+              {
+                "id": "s2-p2",
+                "tokens": [
+                  {
+                    "text": "By"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "explicitly"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "eschewing"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "a"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "run"
+                  },
+                  {
+                    "text": ","
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "he"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "effectively"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "sidesteps"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "the"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "rigorous"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "financial"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "and"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "legal"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "scrutiny"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "of"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "the"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "Federal"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "Election"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "Commission"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "while"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "retaining"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "the"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "absolute"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "latitude"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "to"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "critique"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "the"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "establishment"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "from"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "the"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "outside"
+                  },
+                  {
+                    "text": "."
+                  }
+                ],
+                "zh": "通过明确放弃参选，他有效地避开了联邦选举委员会严格的财务和法律审查，同时保留了从外部批评体制的绝对自由。",
+                "analysis": {
+                  "grammar": "Prepositional Phrase (By explicitly eschewing...) + Subject (he) + Verb (sidesteps) + Object (scrutiny) + Conjunction (while retaining...)",
+                  "explanation": "潜台词：不进体制内，就不受体制管，骂起来更带劲。"
+                }
+              },
+              {
+                "id": "s3-p2",
+                "tokens": [
+                  {
+                    "text": "This"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "strategy"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "operates"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "as"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "a"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "gamble"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "that"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "soft"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "power"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "is"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "more"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "potent"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "than"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "the"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "mechanics"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "of"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "hard"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "votes"
+                  },
+                  {
+                    "text": ","
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "prioritizing"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "narrative"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "control"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "over"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "delegate"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "math"
+                  },
+                  {
+                    "text": "."
+                  }
+                ],
+                "zh": "这种策略实际上是一场赌博，赌的是软实力比硬选票的机制更为有效，优先考虑叙事控制权而非代表票数。",
+                "analysis": {
+                  "grammar": "Subject (strategy) + Verb (operates) + Prepositional Phrase (as a gamble) + Relative Clause (that soft power is...) + Participle (prioritizing...)",
+                  "explanation": "人话：他在赌影响力比选票更管用。"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "paragraph",
+          "id": "p3",
+          "paragraph": {
+            "id": "p3-content",
+            "tokenizedSentences": [
+              {
+                "id": "s1-p3",
+                "tokens": [
+                  {
+                    "text": "While"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "skeptics"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "dismiss"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "this"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "non-candidacy"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "as"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "a"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "tactical"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "feint"
+                  },
+                  {
+                    "text": "—"
+                  },
+                  {
+                    "text": "a"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "way"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "to"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "test"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "the"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "waters"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "before"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "a"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "late"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "entry"
+                  },
+                  {
+                    "text": "—"
+                  },
+                  {
+                    "text": "taking"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "him"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "at"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "his"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "word"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "reveals"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "a"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "sharper"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "political"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "reality"
+                  },
+                  {
+                    "text": "."
+                  }
+                ],
+                "zh": "虽然怀疑论者将这种“不参选”斥为战术性的虚晃一枪——即在后期介入前试探选民温度——但相信他的话揭示了一个更尖锐的政治现实。",
+                "analysis": {
+                  "grammar": "Subordinate Clause (While skeptics dismiss...) + Gerund Phrase (taking him at his word) + Verb (reveals) + Object (reality)",
+                  "explanation": "潜台词：有人觉得他在演，但如果他是认真的，那事情更有趣。"
+                }
+              },
+              {
+                "id": "s2-p3",
+                "tokens": [
+                  {
+                    "text": "One"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "need"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "not"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "inhabit"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "the"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "Oval"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "Office"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "to"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "aggressively"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "shape"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "its"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "agenda"
+                  },
+                  {
+                    "text": "."
+                  }
+                ],
+                "zh": "人们不需要入主椭圆形办公室就能积极地塑造其议程。",
+                "analysis": {
+                  "grammar": "Subject (One) + Verb (need not inhabit) + Object (the Oval Office) + Infinitive (to aggressively shape...)",
+                  "explanation": "人话：不在其位，照样可以谋其政。"
+                }
+              },
+              {
+                "id": "s3-p3",
+                "tokens": [
+                  {
+                    "text": "In"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "an"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "era"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "where"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "narrative"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "often"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "dictates"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "policy"
+                  },
+                  {
+                    "text": ","
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "Kennedy's"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "tour"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "serves"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "as"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "a"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "potent"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "disruptor"
+                  },
+                  {
+                    "text": ","
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "forcing"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "mainstream"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "contenders"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "to"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "grapple"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "with"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "contentious"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "issues"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "they"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "would"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "prefer"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "to"
+                  },
+                  {
+                    "text": " "
+                  },
+                  {
+                    "text": "ignore"
+                  },
+                  {
+                    "text": "."
+                  }
+                ],
+                "zh": "在这个叙事往往决定政策的时代，肯尼迪的巡讲充当了一个强有力的干扰器，迫使主流竞争者去应对那些他们本想忽略的争议性议题。",
+                "analysis": {
+                  "grammar": "Prepositional Phrase (In an era...) + Subject (tour) + Verb (serves as) + Object (disruptor) + Participle (forcing...)",
+                  "explanation": "人话：他就像条鲶鱼，逼得其他大鱼不得不动起来。"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "glossary": {
+      "scion": "豪门后裔",
+      "encumbrances": "累赘/负担",
+      "eschewing": "避开/放弃",
+      "latitude": "自由度/回旋余地",
+      "feint": "佯攻/虚晃一枪",
+      "quell": "平息/镇压",
+      "categorical": "绝对的/明确的",
+      "agitator": "煽动者",
+      "contentious": "有争议的"
+    }
+  },
+  "glossary": [
+    {
+      "contextDefinition": "平息（指迅速消除关于其竞选总统的谣言）",
+      "definition": "平息；镇压；消除",
+      "lemma": "quell",
+      "pos": "v.",
+      "sentence": "Robert F. Kennedy Jr. embarked on a high-profile cross-country tour this Tuesday, moving swiftly to quell intensifying speculation regarding a potential presidential bid.",
+      "word": "quell"
+    },
+    {
+      "contextDefinition": "豪门后裔（指肯尼迪家族的继承人）",
+      "definition": "名门后裔；幼枝",
+      "lemma": "scion",
+      "pos": "n.",
+      "sentence": "Addressing an expectant audience in New Hampshire, the scion of the Democratic dynasty was emphatic and categorical: he will not be a contender in the upcoming general election.",
+      "word": "scion"
+    },
+    {
+      "contextDefinition": "态度坚决的（指明确表达不参选的立场）",
+      "definition": "强调的；坚决的",
+      "lemma": "emphatic",
+      "pos": "adj.",
+      "sentence": "Addressing an expectant audience in New Hampshire, the scion of the Democratic dynasty was emphatic and categorical: he will not be a contender in the upcoming general election.",
+      "word": "emphatic"
+    },
+    {
+      "contextDefinition": "明确的（指毫无保留、不留余地的否认）",
+      "definition": "绝对的；明确的",
+      "lemma": "categorical",
+      "pos": "adj.",
+      "sentence": "Addressing an expectant audience in New Hampshire, the scion of the Democratic dynasty was emphatic and categorical: he will not be a contender in the upcoming general election.",
+      "word": "categorical"
+    },
+    {
+      "contextDefinition": "改革运动（指致力于推动公共卫生系统变革的行动）",
+      "definition": "十字军东征；改革运动",
+      "lemma": "crusade",
+      "pos": "n.",
+      "sentence": "Instead, he framed the excursion as a crusade for systemic public health reform, a calculated maneuver allowing him to command the national spotlight without the bureaucratic encumbrances and regulatory friction of a formal campaign.",
+      "word": "crusade"
+    },
+    {
+      "contextDefinition": "策略（指精心计算的政治行动）",
+      "definition": "策略；演习；机动",
+      "lemma": "maneuver",
+      "pos": "n.",
+      "sentence": "Instead, he framed the excursion as a crusade for systemic public health reform, a calculated maneuver allowing him to command the national spotlight without the bureaucratic encumbrances and regulatory friction of a formal campaign.",
+      "word": "maneuver"
+    },
+    {
+      "contextDefinition": "负担（指正式竞选带来的繁琐官僚程序和限制）",
+      "definition": "累赘；妨碍物；负担",
+      "lemma": "encumbrance",
+      "pos": "n.",
+      "sentence": "Instead, he framed the excursion as a crusade for systemic public health reform, a calculated maneuver allowing him to command the national spotlight without the bureaucratic encumbrances and regulatory friction of a formal campaign.",
+      "word": "encumbrances"
+    },
+    {
+      "contextDefinition": "政治煽动者（指在体制外制造舆论、推动议程的人）",
+      "definition": "煽动者；鼓动者",
+      "lemma": "agitator",
+      "pos": "n.",
+      "sentence": "The distinction between a declared candidate and a political agitator is often perilously thin, yet Kennedy seems intent on walking that line with precision.",
+      "word": "agitator"
+    },
+    {
+      "contextDefinition": "放弃（指明确拒绝参加竞选）",
+      "definition": "避开；戒除；放弃",
+      "lemma": "eschew",
+      "pos": "v.",
+      "sentence": "By explicitly eschewing a run, he effectively sidesteps the rigorous financial and legal scrutiny of the Federal Election Commission while retaining the absolute latitude to critique the establishment from the outside.",
+      "word": "eschewing"
+    },
+    {
+      "contextDefinition": "审查（指联邦选举委员会对候选人的严格监管）",
+      "definition": "仔细审查；监视",
+      "lemma": "scrutiny",
+      "pos": "n.",
+      "sentence": "By explicitly eschewing a run, he effectively sidesteps the rigorous financial and legal scrutiny of the Federal Election Commission while retaining the absolute latitude to critique the establishment from the outside.",
+      "word": "scrutiny"
+    },
+    {
+      "contextDefinition": "自由度（指在体制外批评政府的行动空间）",
+      "definition": "纬度；回旋余地；自由",
+      "lemma": "latitude",
+      "pos": "n.",
+      "sentence": "By explicitly eschewing a run, he effectively sidesteps the rigorous financial and legal scrutiny of the Federal Election Commission while retaining the absolute latitude to critique the establishment from the outside.",
+      "word": "latitude"
+    },
+    {
+      "contextDefinition": "虚晃一枪（指战术性的假动作，掩盖真实意图）",
+      "definition": "佯攻；虚晃",
+      "lemma": "feint",
+      "pos": "n.",
+      "sentence": "While skeptics dismiss this non-candidacy as a tactical feint—a way to test the waters before a late entry—taking him at his word reveals a sharper political reality.",
+      "word": "feint"
+    },
+    {
+      "contextDefinition": "应对（指被迫处理棘手问题）",
+      "definition": "扭打；努力解决；应对",
+      "lemma": "grapple",
+      "pos": "v.",
+      "sentence": "In an era where narrative often dictates policy, Kennedy's tour serves as a potent disruptor, forcing mainstream contenders to grapple with contentious issues they would prefer to ignore.",
+      "word": "grapple"
+    },
+    {
+      "contextDefinition": "有争议的（指主流政客避之不及的敏感议题）",
+      "definition": "引起争议的；爱争论的",
+      "lemma": "contentious",
+      "pos": "adj.",
+      "sentence": "In an era where narrative often dictates policy, Kennedy's tour serves as a potent disruptor, forcing mainstream contenders to grapple with contentious issues they would prefer to ignore.",
+      "word": "contentious"
+    }
+  ],
+  "podcast_script": "Hello everyone, welcome to ReadRead Daily. I'm Leo.\n今天我们要解读 2026年1月22日 的一篇政治头条，关于美国政坛的常青树家族——肯尼迪家族的最新动态。\n文章的标题很有意思：RFK Jr. Launches Tour, Quells Bid Rumors.\n小肯尼迪开启了全国巡讲，但他此行的目的，竟然是为了“平息”关于他竞选总统的谣言。这听起来是不是有点矛盾？\n明明是大张旗鼓的巡讲，却说是为了不竞选。这背后到底在下什么棋？\n让我们走进今天的文章。\n\n作者开篇第一句就充满了动感。他想表达：小肯尼迪本周二开启了一场备受瞩目的跨国巡讲，迅速平息了关于他可能竞选总统的愈演愈烈的猜测。\n如果让你来写“开启了一场巡讲”，你可能会用 started a tour。\n但作者用了一个更有航海史诗感的词：Embarked on。\n而对于“平息谣言”，作者用了一个非常有力量的动词：Quell。\n请听原文：\n\nRobert F. Kennedy Jr. embarked on a high-profile cross-country tour this Tuesday, moving swiftly to quell intensifying speculation regarding a potential presidential bid.\n\n这句话的结构很典型。\n逗号后面的 moving swiftly to quell... 是现在分词短语作状语，表示伴随的状态和目的。\n这里的 Quell 原意是指镇压叛乱，用在这里指“平息猜测”，暗示这股猜测的势头很猛，必须强力压制。\nIntensifying speculation，指那种越来越强烈的猜测。\n\n接下来，他在新罕布什尔州面对期待已久的听众，给出了明确的答复。\n作者写道：面对充满期待的听众，这位民主党豪门的后裔态度坚决且明确：他不会参与即将到来的大选角逐。\n这里有两个词用得非常高级。\n一个是形容肯尼迪身份的 Scion，指的是名门望族的后裔、幼枝。\n另一个是形容他态度的 emphatic and categorical。\nCategorical 意思是“绝对的、无条件的”，没有任何回旋余地。\n我们来听听这句掷地有声的表达：\n\nAddressing an expectant audience in New Hampshire, the scion of the Democratic dynasty was emphatic and categorical: he will not be a contender in the upcoming general election.\n\n带着这个坚决的语气，我们再听一遍。注意 Scion 和 Categorical 的发音：\n\nAddressing an expectant audience in New Hampshire, the scion of the Democratic dynasty was emphatic and categorical: he will not be a contender in the upcoming general election.\n\n既然不竞选，那他图什么呢？\n作者解释说：相反，他将此次出行定义为一场致力于系统性公共卫生改革的“运动”。\n这一精心计算的举措，使他能够在没有正式竞选的官僚负担和监管摩擦的情况下，占据全国聚光灯。\n这里有一个很棒的词组：Bureaucratic encumbrances。\nEncumbrance 指的是累赘、负担，特指那些阻碍你行动的繁文缛节。\n请听原文：\n\nInstead, he framed the excursion as a crusade for systemic public health reform, a calculated maneuver allowing him to command the national spotlight without the bureaucratic encumbrances and regulatory friction of a formal campaign.\n\n这里用 Crusade 来形容他的改革运动，这个词带有宗教般的狂热和神圣感，比单纯的 Campaign 要强烈得多。\nManeuver 指的是策略性的调动或演习。\n作者认为，这是一步“以退为进”的高招。\n\n第二段紧接着分析这种策略的微妙之处。\n作者说：正式候选人与政治煽动者之间的界限往往极其模糊，然而肯尼迪似乎有意精准地行走在这条钢丝上。\n“政治煽动者”，英文是 Agitator，通常指在体制外制造舆论、搞事情的人。\n而形容这种界限之薄，作者用了一个副词：Perilously thin，薄得令人发指，甚至带有危险性。\n请听原文：\n\nThe distinction between a declared candidate and a political agitator is often perilously thin, yet Kennedy seems intent on walking that line with precision.\n\n那么，他不参选的具体好处是什么？\n作者写道：通过明确放弃参选，他有效地避开了联邦选举委员会严格的财务和法律审查，同时保留了从外部批评体制的绝对自由。\n“放弃”这个概念，作者用了一个非常书面、非常高雅的词：Eschewing。\nEschew 意味着刻意避开、戒除。\n而“自由度”或“回旋余地”，这里用的是 Latitude，原意是纬度，引申为行动的自由空间。\n请听原文：\n\nBy explicitly eschewing a run, he effectively sidesteps the rigorous financial and legal scrutiny of the Federal Election Commission while retaining the absolute latitude to critique the establishment from the outside.\n\n这句话里的 Sidestep 也很形象，侧身避开，比 avoid 更有一种灵巧的感觉。\n带着对这种政治走位的理解，我们再听一遍：\n\nBy explicitly eschewing a run, he effectively sidesteps the rigorous financial and legal scrutiny of the Federal Election Commission while retaining the absolute latitude to critique the establishment from the outside.\n\n作者总结这种策略的本质：这实际上是一场赌博。\n赌的是软实力比硬选票的机制更为有效，优先考虑叙事控制权而非代表票数。\n这里有一个精彩的对比：Soft power vs Mechanics of hard votes。\n请听原文：\n\nThis strategy operates as a gamble that soft power is more potent than the mechanics of hard votes, prioritizing narrative control over delegate math.\n\n进入最后一段，作者对这种现象进行了更深层的剖析。\n虽然怀疑论者将这种“不参选”斥为战术性的虚晃一枪——即在后期介入前试探选民温度——但相信他的话揭示了一个更尖锐的政治现实。\n“虚晃一枪”，英文叫 Feint，这是拳击或击剑里的术语，指佯攻。\n请听原文：\n\nWhile skeptics dismiss this non-candidacy as a tactical feint—a way to test the waters before a late entry—taking him at his word reveals a sharper political reality.\n\n这个“尖锐的现实”是什么呢？\n作者金句频出：人们不需要入主椭圆形办公室就能积极地塑造其议程。\nInhabit，居住、入主。\n这句话极其精炼，道出了现代政治的某种真谛。\n请听原文：\n\nOne need not inhabit the Oval Office to aggressively shape its agenda.\n\n文章最后总结道：在这个叙事往往决定政策的时代，肯尼迪的巡讲充当了一个强有力的干扰器。\n它迫使主流竞争者去应对那些他们本想忽略的争议性议题。\n“干扰器”用的是 Disruptor，这是商业和科技圈的常用词，现在也被用到了政治上。\n而“应对、扭打、努力解决”，用的是 Grapple with。\nContentious issues，指那些容易引起争吵的、有争议的议题。\n请听原文：\n\nIn an era where narrative often dictates policy, Kennedy's tour serves as a potent disruptor, forcing mainstream contenders to grapple with contentious issues they would prefer to ignore.\n\n带着这种对“叙事霸权”的思考，我们再来完整感受一下这句话的压迫感：\n\nIn an era where narrative often dictates policy, Kennedy's tour serves as a potent disruptor, forcing mainstream contenders to grapple with contentious issues they would prefer to ignore.\n\n总结一下，小肯尼迪的这波操作，看似是退出，实则是用一种更自由、更不受限的方式介入政治。\n他避开了 Encumbrances（负担），保留了 Latitude（自由度），通过 Narrative（叙事）来施加影响。\n这或许就是所谓的“不战而屈人之兵”在现代选举中的变体吧。\n\nThanks for listening to ReadRead Daily. I'm Leo.\nSee you next time!"
+}

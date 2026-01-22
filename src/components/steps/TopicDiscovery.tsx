@@ -2,15 +2,7 @@
 import React, { useState, useMemo } from 'react';
 import { useWorkflow } from '../../context/WorkflowContext';
 import { Search, Loader2, Newspaper, ChevronRight, ExternalLink, Sparkles, BookOpen, Users, AlertCircle } from 'lucide-react';
-
-// 新闻条目结构
-interface NewsItem {
-    category: string;  // 类别：科技/政治/财经等
-    source: string;    // 来源：Hacker News/NYTimes Politics等
-    title: string;     // 标题
-    link: string;      // 原文链接
-    raw: string;       // 原始完整字符串（用于传递给后续流程）
-}
+import { NewsItem } from '../../types/workflow';
 
 // 研究结果结构
 interface ResearchResult {
@@ -94,16 +86,38 @@ export const TopicDiscovery: React.FC = () => {
     const { updateSession, getActiveSession } = useWorkflow();
     const session = getActiveSession();
 
-    // 基础状态
+    // Initialize states (using previous logic for initial render)
     const [isSearching, setIsSearching] = useState(false);
     const [selectedTopic, setSelectedTopic] = useState<string | null>(session?.context.topic || null);
-    const [newsItems, setNewsItems] = useState<NewsItem[]>(DEFAULT_TOPICS);
+    const [newsItems, setNewsItems] = useState<NewsItem[]>(
+        session?.context.newsItems && session.context.newsItems.length > 0
+            ? session.context.newsItems
+            : DEFAULT_TOPICS
+    );
 
     // 深度研究状态
     const [enableResearch, setEnableResearch] = useState(true);
     const [isResearching, setIsResearching] = useState(false);
-    const [researchResult, setResearchResult] = useState<ResearchResult | null>(null);
+    const [researchResult, setResearchResult] = useState<ResearchResult | null>(
+        (session?.context.researchResult as unknown as ResearchResult) || null
+    );
     const [researchError, setResearchError] = useState<string | null>(null);
+
+    // Sync state when switching sessions
+    React.useEffect(() => {
+        if (session) {
+            setSelectedTopic(session.context.topic || null);
+            setNewsItems(
+                session.context.newsItems && session.context.newsItems.length > 0
+                    ? session.context.newsItems
+                    : DEFAULT_TOPICS
+            );
+            setResearchResult((session.context.researchResult as unknown as ResearchResult) || null);
+            setIsSearching(false);
+            setIsResearching(false);
+            setResearchError(null);
+        }
+    }, [session?.id]);
 
     // 获取选中的新闻项
     const selectedNewsItem = useMemo(() => {
@@ -136,11 +150,26 @@ export const TopicDiscovery: React.FC = () => {
         try {
             const res = await fetch('/api/news/scan');
             const data = await res.json();
+            let newItems: NewsItem[] = [];
+
             if (data.items && Array.isArray(data.items)) {
-                setNewsItems(data.items);
+                newItems = data.items;
             } else if (data.topics && Array.isArray(data.topics)) {
                 const parsed = data.topics.map(parseNewsTopic);
-                setNewsItems(parsed);
+                newItems = parsed;
+            }
+
+            if (newItems.length > 0) {
+                setNewsItems(newItems);
+                // Persist news items to session context immediately
+                if (session) {
+                    updateSession(session.id, {
+                        context: {
+                            ...session.context,
+                            newsItems: newItems
+                        }
+                    });
+                }
             }
         } catch (e) {
             console.error("Failed to scan news:", e);
@@ -164,7 +193,8 @@ export const TopicDiscovery: React.FC = () => {
                 body: JSON.stringify({
                     newsTitle: selectedNewsItem.title,
                     newsSource: selectedNewsItem.source,
-                    topic: selectedTopic
+                    topic: selectedTopic,
+                    targetDate: session?.context.targetDate // Pass the target date to backend
                 })
             });
 
@@ -173,7 +203,7 @@ export const TopicDiscovery: React.FC = () => {
             if (data.error) {
                 setResearchError(data.error);
             } else {
-                const normalized = normalizeResearchResult(data, selectedTopic);
+                const normalized = normalizeResearchResult(data, selectedTopic || '');
                 if (normalized) {
                     setResearchResult(normalized);
                 } else {

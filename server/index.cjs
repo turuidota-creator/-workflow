@@ -304,7 +304,7 @@ app.post('/api/test-gemini', async (req, res) => {
  */
 app.post('/api/generate', async (req, res) => {
     try {
-        const { topic, level = "10", researchContext } = req.body;
+        const { topic, level = "10", researchContext, targetDate } = req.body;
 
         // 1. Get API Key and Model from config
         const envPath = path.join(PROJECT_ROOT, '.env');
@@ -316,7 +316,9 @@ app.post('/api/generate', async (req, res) => {
 
         if (!apiKey) return res.status(400).json({ error: "Missing GEMINI_API_KEY" });
 
-        console.log(`[Generate] Using model: ${modelName}`);
+        // Use targetDate if provided, otherwise use today
+        const articleDate = targetDate || new Date().toISOString().split('T')[0];
+        console.log(`[Generate] Using model: ${modelName}, Article Date: ${articleDate}`);
 
         // 2. Read System Prompt (SKILL.md)
         const skillPath = path.join(SKILLS_DIR, 'article-generator', 'SKILL.md');
@@ -329,7 +331,8 @@ app.post('/api/generate', async (req, res) => {
         let userPrompt = `
         Target Topic: ${topic}
         Target Level: ${level}
-        Time: ${new Date().toISOString().split('T')[0]}.
+        Article Date (meta.date): ${articleDate}
+        IMPORTANT: Use this exact date for the meta.date field in the output JSON.
         `;
 
         // If we have research context, include it for richer content generation
@@ -369,8 +372,6 @@ app.post('/api/generate', async (req, res) => {
         // Read Style Prompts
         const promptsDir = path.join(AGENT_DIR, 'prompts');
         const style = req.body.style; // 'A' or 'B'
-        let stylePrompt = '';
-
         if (style === 'A') {
             const stylePath = path.join(promptsDir, 'style_old_editor.md');
             if (fs.existsSync(stylePath)) stylePrompt = fs.readFileSync(stylePath, 'utf-8');
@@ -383,7 +384,28 @@ app.post('/api/generate', async (req, res) => {
         Task: Transform this research into the JSON format defined in the System Prompt.
         
         ${stylePrompt}
+        `;
 
+        // Refinement Logic (Rewrite with Feedback)
+        const { previousDraft, feedback } = req.body;
+        if (previousDraft && feedback) {
+            userPrompt += `
+            
+            [Refinement Task - CRITICAL]
+            The previous draft failed specific audit checks. You must fix these errors while maintaining the required style.
+            
+            Previous Draft (JSON):
+            ${JSON.stringify(previousDraft).substring(0, 15000)} ... (truncated if too long) ...
+
+            Audit Feedback / Errors to Fix:
+            ${feedback}
+
+            Action: Rewrite the article to fix these errors.
+            CRITICAL REQUIREMENT: You MUST regenerate the full 'tokens' array for every sentence. The 'tokens' array contains the English text and MUST NOT be empty. Do not omit the English tokens.
+            `;
+        }
+
+        userPrompt += `
         IMPORTANT: Return ONLY valid JSON, no markdown code blocks.
         `;
 
@@ -419,7 +441,24 @@ app.post('/api/generate', async (req, res) => {
 
         // 5. Parse JSON (Validation)
         try {
-            const json = JSON.parse(generatedText.replace(/```json/g, '').replace(/```/g, ''));
+            // Robust JSON extraction
+            let jsonString = generatedText;
+
+            // Try to find markdown block first
+            const markdownMatch = jsonString.match(/```json\s*([\s\S]*?)\s*```/);
+            if (markdownMatch) {
+                jsonString = markdownMatch[1];
+            } else {
+                // If no markdown block, try to find the outer-most JSON object
+                const firstBrace = jsonString.indexOf('{');
+                const lastBrace = jsonString.lastIndexOf('}');
+
+                if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+                    jsonString = jsonString.substring(firstBrace, lastBrace + 1);
+                }
+            }
+
+            const json = JSON.parse(jsonString);
             res.json(json);
         } catch (e) {
             console.error("JSON Parse Error:", e);
@@ -448,7 +487,7 @@ app.get('/api/health', (req, res) => {
  */
 app.post('/api/research', async (req, res) => {
     try {
-        const { topic, newsTitle, newsSource } = req.body;
+        const { topic, newsTitle, newsSource, targetDate } = req.body;
 
         if (!topic && !newsTitle) {
             return res.status(400).json({ error: "Missing topic or newsTitle" });
@@ -465,7 +504,8 @@ app.post('/api/research', async (req, res) => {
         if (!apiKey) return res.status(400).json({ error: "Missing GEMINI_API_KEY" });
 
         const searchTopic = newsTitle || topic;
-        console.log(`[Research] Starting deep research on: ${searchTopic} using model: ${researchModel}`);
+        const dateContext = targetDate ? `Focus on news and events from ${targetDate}.` : '';
+        console.log(`[Research] Starting deep research on: ${searchTopic} (Date: ${targetDate || 'any'}) using model: ${researchModel}`);
 
         // 2. Construct research prompt
         const promptsDir = path.join(AGENT_DIR, 'prompts');
@@ -481,6 +521,7 @@ You are a news research assistant. I need you to analyze and provide comprehensi
 
 **News Topic**: {{topic}}
 {{source_line}}
+{{date_context}}
 
 Please provide:
 1. **Summary** (综合摘要): A 2-3 sentence overview of the core issue
@@ -511,6 +552,8 @@ IMPORTANT: Return ONLY valid JSON, no markdown formatting.
         researchPrompt = researchPrompt.replace('{{topic}}', searchTopic);
         const sourceLine = newsSource ? `**Original Source**: ${newsSource}` : '';
         researchPrompt = researchPrompt.replace('{{source_line}}', sourceLine);
+        researchPrompt = researchPrompt.replace('{{date_context}}', dateContext);
+
 
 
         // 3. Call Gemini with grounding
@@ -631,7 +674,7 @@ app.post('/api/vocabulary', async (req, res) => {
 
         // 4. Call Gemini
         console.log('Generating vocabulary glossary...');
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3-pro-preview:generateContent?key=${apiKey}`, {
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -700,10 +743,14 @@ function saveDictionary(dict) {
 
 // Helper: Extract words from article
 function extractWordsFromArticle(articleJson) {
-    const words = new Set();
-    const text = JSON.stringify(articleJson);
+    const uniqueWords = new Set();
+    let rawCount = 0;
 
-    // Extract all English words (3+ characters, excludes common words)
+    // Navigate the structure safely
+    const data = articleJson.article || articleJson;
+    const paragraphs = data.paragraphs || [];
+
+    // Common stop words to exclude from GLOSSARY (but count in Total)
     const commonWords = new Set([
         'the', 'and', 'for', 'are', 'but', 'not', 'you', 'all', 'can', 'had',
         'her', 'was', 'one', 'our', 'out', 'has', 'his', 'how', 'its', 'may',
@@ -717,18 +764,45 @@ function extractWordsFromArticle(articleJson) {
         'made', 'much', 'must', 'over', 'said', 'same', 'should', 'some', 'still',
         'such', 'take', 'these', 'thing', 'think', 'those', 'through', 'under',
         'well', 'what', 'where', 'while', 'will', 'work', 'year', 'your', 'there',
-        'their', 'were', 'will', 'would', 'could', 'should', 'before', 'because'
+        'their', 'were', 'will', 'would', 'could', 'should', 'before', 'because',
+        'into', 'just', 'more', 'over', 'some', 'then', 'time', 'very', 'when',
+        'your', 'from', 'have', 'make', 'said', 'that', 'they', 'this', 'want'
     ]);
 
-    const matches = text.match(/\b[a-zA-Z]{4,}\b/g) || [];
-    matches.forEach(word => {
-        const lower = word.toLowerCase();
-        if (!commonWords.has(lower)) {
-            words.add(lower);
-        }
+    paragraphs.forEach(p => {
+        // Handle nested structure from generated article
+        const sentences = p.paragraph?.tokenizedSentences || (Array.isArray(p) ? p : []);
+
+        sentences.forEach(s => {
+            if (s.tokens && Array.isArray(s.tokens)) {
+                s.tokens.forEach(t => {
+                    // 1. Get Text
+                    const text = t.text || t.value || t.word || '';
+                    if (!text) return;
+
+                    // 2. Raw Count Rule (Same as Frontend Audit): English Check
+                    // Must contain English letters and NO Chinese
+                    if (/[a-zA-Z]/.test(text) && !/[\u4e00-\u9fa5]/.test(text)) {
+                        rawCount++;
+
+                        // 3. Vocabulary Extraction Rule:
+                        // - 3+ chars (relaxed from 4 to include key words like 'war', 'act')
+                        // - Not in stop words
+                        // - Clean punctuation (e.g., "tour," -> "tour")
+                        const cleanWord = text.replace(/[^a-zA-Z-]/g, '').toLowerCase();
+                        if (cleanWord.length >= 3 && !commonWords.has(cleanWord)) {
+                            uniqueWords.add(cleanWord);
+                        }
+                    }
+                });
+            }
+        });
     });
 
-    return Array.from(words).sort();
+    return {
+        rawCount,
+        vocabularyList: Array.from(uniqueWords).sort()
+    };
 }
 
 /**
@@ -744,7 +818,7 @@ app.post('/api/dictionary/scan', async (req, res) => {
         }
 
         // Extract words from article
-        const articleWords = extractWordsFromArticle(articleJson);
+        const { rawCount, vocabularyList } = extractWordsFromArticle(articleJson);
 
         // Load existing dictionary
         const dictionary = loadDictionary();
@@ -754,7 +828,7 @@ app.post('/api/dictionary/scan', async (req, res) => {
         const existingWords = [];
         const missingWords = [];
 
-        articleWords.forEach(word => {
+        vocabularyList.forEach(word => {
             if (dictWords.has(word)) {
                 existingWords.push({ word, inDict: true, entry: dictionary[word] });
             } else {
@@ -763,13 +837,14 @@ app.post('/api/dictionary/scan', async (req, res) => {
         });
 
         res.json({
-            totalArticleWords: articleWords.length,
+            totalArticleWords: rawCount, // Now using the standard raw count
+            scannableWords: vocabularyList.length,
             existingCount: existingWords.length,
             missingCount: missingWords.length,
             existingWords,
             missingWords,
-            coveragePercent: articleWords.length > 0
-                ? Math.round((existingWords.length / articleWords.length) * 100)
+            coveragePercent: vocabularyList.length > 0
+                ? Math.round((existingWords.length / vocabularyList.length) * 100)
                 : 100
         });
 
@@ -819,7 +894,7 @@ app.post('/api/dictionary/generate', async (req, res) => {
         IMPORTANT: Return ONLY valid JSON.
         `;
 
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3-pro-preview:generateContent?key=${apiKey}`, {
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -1387,15 +1462,46 @@ app.post('/api/publish', async (req, res) => {
                 console.log(`Publishing to PocketBase: ${pbUrl}`);
 
                 // Create article record
+                // Map frontend article JSON to PocketBase schema
+                // Handle both flat structure (legacy) and nested structure (article-generator skill)
+                const articleRoot = payload.article || {};
+                const articleData = articleRoot.article || articleRoot;
+
+                const pbPayload = {
+                    // Required fields
+                    title_zh: articleData.title?.zh || articleData.title?.cn || '无标题',
+                    title_en: articleData.title?.en || 'Untitled',
+                    date: articleData.meta?.date || new Date().toISOString(),
+                    level: articleData.meta?.level || "10",
+                    topic: articleData.meta?.topic || "科技",
+
+                    // Content fields
+                    intro: articleData.intro || (articleData.briefing ? { text: articleData.briefing } : null),
+                    content: {
+                        meta: articleData.meta,
+                        paragraphs: articleData.paragraphs
+                    },
+
+                    // Other fields from payload
+                    glossary: payload.glossary || articleRoot.glossary,
+                    podcast_script: payload.podcast_script,
+                    podcast_url: payload.podcast_url || articleData.podcastUrl,
+                };
+
+                // Try to map topic more accurately if possible
+                if (articleData.topic && ["国际", "财经", "科技"].includes(articleData.topic)) {
+                    pbPayload.topic = articleData.topic;
+                }
+
+                // Get auth token
+                const { token } = await getPocketBaseAuth();
+                const headers = { 'Content-Type': 'application/json' };
+                if (token) headers['Authorization'] = token;
+
                 const articleRes = await fetch(`${pbUrl}/api/collections/articles/records`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        ...payload.article,
-                        glossary: payload.glossary,
-                        podcast_script: payload.podcast_script,
-                        podcast_url: payload.podcast_url,
-                    })
+                    headers: headers,
+                    body: JSON.stringify(pbPayload)
                 });
 
                 if (articleRes.ok) {
@@ -1698,6 +1804,10 @@ app.get('/api/workflow-sessions', async (req, res) => {
         const { url: pbUrl, token } = await getPocketBaseAuth();
         const clientToken = req.get('Authorization');
         const authToken = clientToken || token;
+
+        console.log(`[Workflow-Session Debug] Client Token Present: ${!!clientToken}`);
+        console.log(`[Workflow-Session Debug] Using Token Type: ${clientToken ? 'Client' : 'Server (Superuser)'}`);
+
         if (!pbUrl) {
             return res.status(500).json({ error: 'PocketBase URL not configured' });
         }
@@ -1711,14 +1821,64 @@ app.get('/api/workflow-sessions', async (req, res) => {
             endpoint.searchParams.set('sort', req.query.sort);
         }
 
+        console.log(`[Workflow-Session Debug] Fetching from: ${endpoint.toString()}`);
+
         const headers = { 'Content-Type': 'application/json', Authorization: authToken };
-        const response = await fetch(endpoint.toString(), { method: 'GET', headers });
+        let response = await fetch(endpoint.toString(), { method: 'GET', headers });
+
+        console.log(`[Workflow-Session Debug] PB Response Status: ${response.status}`);
+
+        // Retry with superuser token if client token failed
+        if (!response.ok && (response.status === 401 || response.status === 403) && clientToken && token && clientToken !== token) {
+            console.log('[Workflow-Session Debug] Client token failed (401/403). Retrying with Superuser token...');
+            headers.Authorization = token;
+            response = await fetch(endpoint.toString(), { method: 'GET', headers });
+            console.log(`[Workflow-Session Debug] Retry Response Status: ${response.status}`);
+        }
+
         if (!response.ok) {
-            return res.status(response.status).json({ error: await response.text() });
+            const errorText = await response.text();
+            console.error(`[Workflow-Session Debug] PB Error: ${errorText}`);
+
+            // Retry without sort/filter params if 400 (likely invalid sort field)
+            if (response.status === 400) {
+                console.log('[Workflow-Session Debug] 400 Bad Request. Retrying without query parameters...');
+                try {
+                    // Try with just perPage, no sort
+                    const retryEndpoint = new URL(`${pbUrl}/api/collections/workflow_sessions/records?perPage=200`);
+                    const retryRes = await fetch(retryEndpoint.toString(), { headers: { Authorization: authToken } });
+
+                    if (retryRes.ok) {
+                        const retryData = await retryRes.json();
+                        console.log(`[Workflow-Session Debug] Retry success! Found ${retryData.items?.length} items.`);
+                        return res.json({ items: retryData.items || [] });
+                    } else {
+                        console.log(`[Workflow-Session Debug] Retry failed: ${retryRes.status} ${await retryRes.text()}`);
+                    }
+                } catch (e) {
+                    console.error('[Workflow-Session Debug] Retry exception:', e);
+                }
+            }
+
+            // [Debug logic for listing collections - keeping this for now]
+            try {
+                const collectionsRes = await fetch(`${pbUrl}/api/collections`, { headers: { Authorization: token } });
+                if (collectionsRes.ok) {
+                    const collections = await collectionsRes.json();
+                    const availableNames = (Array.isArray(collections) ? collections : collections.items).map(c => c.name);
+                    console.log(`[Workflow-Session Debug] Available Collections: ${availableNames.join(', ')}`);
+                }
+            } catch (err) {
+                console.error('[Workflow-Session Debug] Failed to list collections:', err.message);
+            }
+
+            return res.status(response.status).json({ error: errorText });
         }
         const data = await response.json();
+        console.log(`[Workflow-Session Debug] Found ${data.items ? data.items.length : 0} sessions`);
         return res.json({ items: data.items || [] });
     } catch (e) {
+        console.error(`[Workflow-Session Debug] Exception: ${e.message}`);
         return res.status(500).json({ error: e.message });
     }
 });
@@ -1799,6 +1959,83 @@ app.delete('/api/workflow-sessions/:id', async (req, res) => {
         return res.status(204).send();
     } catch (e) {
         return res.status(500).json({ error: e.message });
+    }
+});
+
+// ================= PUBLISH ARTICLE TO POCKETBASE =================
+/**
+ * POST /api/publish
+ * Publish article data (including podcast_script) to PocketBase articles collection
+ */
+app.post('/api/publish', async (req, res) => {
+    try {
+        const { article, glossary, podcast_script, podcast_url } = req.body;
+
+        if (!article) {
+            return res.status(400).json({ error: 'Missing article data' });
+        }
+
+        const { url: pbUrl, token } = await getPocketBaseAuth();
+        if (!pbUrl) {
+            return res.status(500).json({ error: 'PocketBase URL not configured' });
+        }
+        if (!token) {
+            return res.status(401).json({ error: 'PocketBase authentication failed' });
+        }
+
+        // Extract article data
+        const articleData = article.article || article;
+        const meta = articleData.meta || {};
+
+        // Prepare data for PocketBase articles collection
+        const pbData = {
+            date: meta.date || new Date().toISOString().split('T')[0],
+            level: meta.level || '10',
+            topic: meta.topic || '国际',
+            title_zh: articleData.title?.zh || meta.title || '',
+            title_en: articleData.title?.en || meta.title || '',
+            intro: JSON.stringify(articleData.intro || {}),
+            content: JSON.stringify({ meta, paragraphs: articleData.paragraphs || [] }),
+            glossary: JSON.stringify(glossary || articleData.glossary || {}),
+            podcast_script: podcast_script || '',
+            podcast_url: podcast_url || ''
+        };
+
+        console.log('[Publish] Saving article to PocketBase:', {
+            title: pbData.title_zh,
+            date: pbData.date,
+            hasPodcastScript: !!pbData.podcast_script
+        });
+
+        // Create new article in PocketBase
+        const response = await fetch(`${pbUrl}/api/collections/articles/records`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': token
+            },
+            body: JSON.stringify(pbData)
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('[Publish] PocketBase Error:', errorText);
+            return res.status(response.status).json({ error: errorText });
+        }
+
+        const result = await response.json();
+        console.log('[Publish] Article saved successfully:', result.id);
+
+        res.json({
+            success: true,
+            articleId: result.id,
+            glossaryCount: Object.keys(glossary || {}).length,
+            url: `${pbUrl}/api/collections/articles/records/${result.id}`
+        });
+
+    } catch (e) {
+        console.error('[Publish] Server Error:', e);
+        res.status(500).json({ error: e.message });
     }
 });
 

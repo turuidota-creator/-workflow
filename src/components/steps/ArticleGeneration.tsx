@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { useWorkflow } from '../../context/WorkflowContext';
-import { Bot, Play, CheckCircle2, AlertTriangle, RefreshCw } from 'lucide-react';
+import { Bot, Play, CheckCircle2, AlertTriangle, RefreshCw, Upload, ChevronRight } from 'lucide-react';
 import { cn } from '../../lib/utils';
 
 export const ArticleGeneration: React.FC = () => {
@@ -33,12 +33,172 @@ export const ArticleGeneration: React.FC = () => {
     // Selection
     const [selectedSide, setSelectedSide] = useState<'A' | 'B' | null>(null);
 
-    const generateSide = async (side: 'A' | 'B') => {
-        if (!session?.context.topic) return;
+    // Audit Helper
+    const runAudit = (jsonStr: string) => {
+        try {
+            const data = JSON.parse(jsonStr);
+            const articleData = data.article || data;
+            const paragraphs = articleData.paragraphs || [];
+            const meta = articleData.meta || {};
+            const briefing = meta.briefing || {};
+
+            let totalWords = 0;
+            paragraphs.forEach((p: any) => {
+                const sentences = p.paragraph?.tokenizedSentences || (Array.isArray(p) ? p : []);
+                sentences.forEach((s: any) => {
+                    if (s.tokens && Array.isArray(s.tokens)) {
+                        s.tokens.forEach((t: any) => {
+                            const text = t.text || t.value || t.word || '';
+                            if (!text) return;
+                            // Split by whitespace and count each word that:
+                            // - Contains at least one English letter
+                            // - Does not contain Chinese characters
+                            const words = text.split(/\s+/);
+                            words.forEach((word: string) => {
+                                // Clean punctuation from word edges
+                                const cleanWord = word.replace(/^[^\w]+|[^\w]+$/g, '');
+                                if (cleanWord && /[a-zA-Z]/.test(cleanWord) && !/[\u4e00-\u9fa5]/.test(cleanWord)) {
+                                    totalWords++;
+                                }
+                            });
+                        });
+                    }
+                });
+            });
+
+            // Briefing field validation (what, when, who, scope, market_implications)
+            const hasWhat = !!(briefing.what && briefing.what.trim());
+            const hasWhen = !!(briefing.when && briefing.when.trim());
+            const hasWho = !!(briefing.who && briefing.who.trim());
+            const hasScope = !!(briefing.scope && briefing.scope.trim());
+            const hasMarketImplications = !!(briefing.market_implications && briefing.market_implications.trim());
+            const isBriefingComplete = hasWhat && hasWhen && hasWho && hasScope && hasMarketImplications;
+
+            return {
+                wordCount: totalWords,
+                paraCount: paragraphs.length,
+                hasTitle: !!(articleData.title?.zh || articleData.title?.cn),
+                hasBriefing: !!(articleData.intro?.text || Object.keys(briefing).length > 0),
+                hasGlossary: !!(data.glossary && Object.keys(data.glossary).length > 0),
+                // Briefing sub-fields
+                hasWhat,
+                hasWhen,
+                hasWho,
+                hasScope,
+                hasMarketImplications,
+                isBriefingComplete,
+                isWordCountValid: totalWords >= 210 && totalWords <= 260,
+                isParaCountValid: paragraphs.length === 3,
+                valid: (totalWords >= 210 && totalWords <= 260) && paragraphs.length === 3 && isBriefingComplete
+            };
+        } catch (e) {
+            return null;
+        }
+    };
+
+    const AuditStatus = ({ json }: { json: string }) => {
+        if (!json) return null;
+        const result = runAudit(json);
+        if (!result) return <div className="text-red-400 text-xs">JSON 解析错误</div>;
+
+        return (
+            <div className="mt-4 p-3 bg-black/40 rounded-lg border border-white/10 text-xs space-y-2">
+                <div className="font-semibold text-slate-400 mb-1 flex items-center justify-between">
+                    <span>审计状态 (Audit Status)</span>
+                    {result.valid ? <span className="text-green-400">✅ 通过</span> : <span className="text-red-400">❌ 未通过</span>}
+                </div>
+
+                <div className="grid grid-cols-2 gap-2">
+                    <div className="flex items-center justify-between">
+                        <span className="text-slate-500">字数 (210-260)</span>
+                        <span className={result.isWordCountValid ? "text-green-400" : "text-red-400 font-bold"}>
+                            {result.wordCount} {result.isWordCountValid ? "✅" : "⚠️"}
+                        </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                        <span className="text-slate-500">段落 (3段)</span>
+                        <span className={result.isParaCountValid ? "text-green-400" : "text-red-400 font-bold"}>
+                            {result.paraCount} {result.isParaCountValid ? "✅" : "⚠️"}
+                        </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                        <span className="text-slate-500">标题</span>
+                        <span className={result.hasTitle ? "text-green-400" : "text-red-400"}>
+                            {result.hasTitle ? "✅" : "❌"}
+                        </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                        <span className="text-slate-500">Glossary</span>
+                        <span className={result.hasGlossary ? "text-green-400" : "text-slate-500"}>
+                            {result.hasGlossary ? "✅" : "⚪"}
+                        </span>
+                    </div>
+                </div>
+
+                {/* Briefing Fields Audit */}
+                <div className="pt-2 border-t border-white/5">
+                    <div className="font-semibold text-slate-400 mb-1 flex items-center justify-between">
+                        <span>Briefing 硬信息</span>
+                        {result.isBriefingComplete ? <span className="text-green-400">✅ 完整</span> : <span className="text-yellow-400">⚠️ 缺失字段</span>}
+                    </div>
+                    <div className="grid grid-cols-3 gap-1 text-[10px]">
+                        <div className="flex items-center gap-1">
+                            <span className={result.hasWhat ? "text-green-400" : "text-red-400"}>
+                                {result.hasWhat ? "✓" : "✗"}
+                            </span>
+                            <span className="text-slate-500">事件内容</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                            <span className={result.hasWhen ? "text-green-400" : "text-red-400"}>
+                                {result.hasWhen ? "✓" : "✗"}
+                            </span>
+                            <span className="text-slate-500">时间</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                            <span className={result.hasWho ? "text-green-400" : "text-red-400"}>
+                                {result.hasWho ? "✓" : "✗"}
+                            </span>
+                            <span className="text-slate-500">主体</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                            <span className={result.hasScope ? "text-green-400" : "text-red-400"}>
+                                {result.hasScope ? "✓" : "✗"}
+                            </span>
+                            <span className="text-slate-500">范围</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                            <span className={result.hasMarketImplications ? "text-green-400" : "text-red-400"}>
+                                {result.hasMarketImplications ? "✓" : "✗"}
+                            </span>
+                            <span className="text-slate-500">市场影响</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    };
+
+    const generateSide = async (side: 'A' | 'B', isRewrite = false, shouldPersist = true) => {
+        if (!session?.context.topic) return null;
 
         const setStatus = side === 'A' ? setStatusA : setStatusB;
         const setJson = side === 'A' ? setJsonA : setJsonB;
         const setError = side === 'A' ? setErrorA : setErrorB;
+
+        let previousDraft = null;
+        let feedback = null;
+
+        if (isRewrite) {
+            const currentJson = side === 'A' ? jsonA : jsonB;
+            const audit = runAudit(currentJson);
+            if (audit && !audit.valid) {
+                previousDraft = JSON.parse(currentJson);
+                const feedbackMessages = [];
+                if (!audit.isWordCountValid) feedbackMessages.push(`Word count is ${audit.wordCount}, must be between 210 and 260.`);
+                if (!audit.isParaCountValid) feedbackMessages.push(`Paragraph count is ${audit.paraCount}, must be exactly 3.`);
+                feedback = feedbackMessages.join('\n');
+            }
+        }
 
         setStatus('generating');
         setError('');
@@ -51,8 +211,10 @@ export const ArticleGeneration: React.FC = () => {
                     topic: session.context.topic,
                     level: "10",
                     style: side,
-                    // 传递深度研究结果作为上下文
-                    researchContext: session.context.researchResult || null
+                    researchContext: session.context.researchResult || null,
+                    targetDate: session.context.targetDate, // Pass the target date
+                    previousDraft,
+                    feedback
                 })
             });
 
@@ -73,38 +235,67 @@ export const ArticleGeneration: React.FC = () => {
             } else {
                 newStatus = 'success';
                 newJson = JSON.stringify(data, null, 2);
-
                 setStatus('success');
                 setJson(newJson);
             }
 
-            // Persist to session
-            if (session) {
-                const currentState = session.context.generationState || {};
-                updateSession(session.id, {
-                    context: {
-                        ...session.context,
-                        generationState: {
-                            ...currentState,
-                            [side]: {
-                                status: newStatus,
-                                json: newJson,
-                                error: newError
+            const resultState = {
+                status: newStatus,
+                json: newJson,
+                error: newError
+            };
+
+            // Persist to session only if requested
+            if (shouldPersist && session) {
+                updateSession(session.id, (prevSession) => {
+                    const currentState = prevSession.context.generationState || {};
+                    return {
+                        context: {
+                            ...prevSession.context,
+                            generationState: {
+                                ...currentState,
+                                [side]: resultState
                             }
                         }
-                    }
+                    };
                 });
             }
 
+            return resultState;
+
         } catch (e) {
+            const errString = String(e);
             setStatus('error');
-            setError(String(e));
+            setError(errString);
+            return { status: 'error', json: '', error: errString };
         }
     };
 
-    const handleGenerateAll = () => {
-        generateSide('A');
-        generateSide('B');
+    const handleGenerateAll = async () => {
+        if (!session) return;
+
+        // Run both in parallel without individual persistence
+        const [resA, resB] = await Promise.all([
+            generateSide('A', false, false),
+            generateSide('B', false, false)
+        ]);
+
+        // Atomic update for both
+        if (resA && resB) {
+            updateSession(session.id, (prevSession) => {
+                const currentState = prevSession.context.generationState || {};
+                return {
+                    context: {
+                        ...prevSession.context,
+                        generationState: {
+                            ...currentState,
+                            A: resA,
+                            B: resB
+                        }
+                    }
+                };
+            });
+        }
     };
 
     const handleNext = () => {
@@ -126,25 +317,123 @@ export const ArticleGeneration: React.FC = () => {
         }
     };
 
+    // View Mode State (independent for each side)
+    const [viewModeA, setViewModeA] = useState<'json' | 'preview'>('preview');
+    const [viewModeB, setViewModeB] = useState<'json' | 'preview'>('preview');
+
+    // ... (existing code)
+
+    // Helper to render the preview content
+    const renderPreview = (jsonStr: string) => {
+        try {
+            if (!jsonStr) return <div className="p-8 text-center text-muted-foreground">暂无内容</div>;
+            const root = JSON.parse(jsonStr);
+            const data = root.article || root; // Support both nested and flat for backward compatibility
+
+            return (
+                <div className="h-full overflow-y-auto p-6 space-y-6 text-sm">
+                    {/* Header */}
+                    <div className="space-y-4 border-b border-white/10 pb-6">
+                        <div className="space-y-2">
+                            <h2 className="text-xl font-bold text-primary">{data.title?.en || "No Title"}</h2>
+                            <h3 className="text-lg text-slate-300">{data.title?.zh || data.title?.cn || "无标题"}</h3>
+                        </div>
+                        {(data.intro?.text || data.briefing) && (
+                            <div className="p-4 rounded-lg bg-white/5 space-y-2">
+                                <div className="font-semibold text-xs text-slate-400 uppercase tracking-wider">Briefing</div>
+                                <p className="text-slate-300 leading-relaxed">{data.intro?.text || data.briefing}</p>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Content */}
+                    <div className="space-y-6">
+                        {data.paragraphs?.map((para: any, idx: number) => {
+                            // Handle both new TokienizedSentence structure and old simple structure
+                            // New structure: paragraph.tokenizedSentences array
+                            // Old/Simpler? structure maybe simple paragraph object
+
+                            // Check if it's the complex nested structure
+                            const sentences = para.paragraph?.tokenizedSentences || (Array.isArray(para) ? para : []);
+                            const simpleEn = para.en;
+                            const simpleCn = para.cn;
+
+                            if (simpleEn) {
+                                // Fallback to flat structure if available
+                                return (
+                                    <div key={idx} className="space-y-1">
+                                        <p className="text-slate-200 leading-relaxed font-medium">{simpleEn}</p>
+                                        <p className="text-slate-400 leading-relaxed text-xs">{simpleCn}</p>
+                                    </div>
+                                );
+                            }
+
+                            if (sentences.length > 0) {
+                                // Reconstruct paragraph from sentences
+                                // Handle both object tokens (with value/word) and string tokens
+                                const enText = sentences.map((s: any) => {
+                                    if (!s.tokens) return '';
+                                    if (Array.isArray(s.tokens)) {
+                                        return s.tokens.map((t: any) => {
+                                            if (typeof t === 'string') return t;
+                                            return t.text || t.value || t.word || '';
+                                        }).join('');
+                                    }
+                                    return '';
+                                }).join(' ');
+
+                                const cnText = sentences.map((s: any) => s.zh).join('。');
+
+                                return (
+                                    <div key={idx} className="space-y-1">
+                                        <p className="text-slate-200 leading-relaxed font-medium">{enText}</p>
+                                        <p className="text-slate-400 leading-relaxed text-xs">{cnText}</p>
+                                    </div>
+                                );
+                            }
+
+                            return null;
+                        }) || (
+                                <div className="text-red-400">无法预览：JSON 结构不符合预期</div>
+                            )}
+                    </div>
+                </div>
+            );
+        } catch (e) {
+            console.error("Preview Render Error:", e);
+            return (
+                <div className="p-8 flex flex-col items-center justify-center text-red-400 gap-2">
+                    <AlertTriangle className="w-6 h-6" />
+                    <p>JSON 解析失败，请检查原始数据。</p>
+                    <p className="text-xs text-muted-foreground">{String(e)}</p>
+                </div>
+            );
+        }
+    };
+
     // Helper to render a column
     const renderColumn = (side: 'A' | 'B', status: string, json: string, error: string) => {
         const isSelected = selectedSide === side;
         const title = side === 'A' ? "Style A: The Old Editor" : "Style B: The Show-off";
         const desc = side === 'A' ? "精准、克制、新闻专业风" : "华丽、复杂、炫技风";
+        const viewMode = side === 'A' ? viewModeA : viewModeB;
+        const setViewMode = side === 'A' ? setViewModeA : setViewModeB;
 
         return (
             <div
                 onClick={() => status === 'success' && setSelectedSide(side)}
                 className={cn(
-                    "flex-1 flex flex-col border rounded-xl overflow-hidden transition-all cursor-pointer relative",
+                    "flex-1 flex flex-col border rounded-xl overflow-hidden transition-all relative",
                     isSelected
                         ? "border-primary bg-primary/5 ring-2 ring-primary/20"
                         : "border-white/10 bg-black/20 hover:bg-black/30",
-                    status === 'success' ? "opacity-100" : "opacity-90"
+                    status === 'success' ? "opacity-100" : "opacity-90",
+                    // Disable pointer events for selection if clicking inside interactive elements
+                    ""
                 )}
             >
                 {/* Header */}
-                <div className="p-4 border-b border-white/5 flex justify-between items-start">
+                <div className="p-4 border-b border-white/5 flex justify-between items-start bg-black/20">
                     <div>
                         <div className="flex items-center gap-2">
                             <div className={cn("w-2 h-2 rounded-full", side === 'A' ? "bg-blue-400" : "bg-purple-400")} />
@@ -152,14 +441,54 @@ export const ArticleGeneration: React.FC = () => {
                         </div>
                         <p className="text-xs text-muted-foreground mt-1">{desc}</p>
                     </div>
-                    {isSelected && <CheckCircle2 className="w-5 h-5 text-primary" />}
+
+                    {/* Mode Toggle & Rewrite */}
+                    <div className="flex items-center gap-3">
+                        {status === 'success' && (
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    generateSide(side, true); // Trigger rewrite
+                                }}
+                                className="px-2 py-1 text-xs bg-white/5 hover:bg-white/10 border border-white/10 rounded flex items-center gap-1 text-slate-300 transition-colors"
+                                title="基于当前审计结果重写"
+                            >
+                                <RefreshCw className="w-3 h-3" /> 重写
+                            </button>
+                        )}
+
+                        <div className="flex bg-black/40 rounded-lg p-0.5 border border-white/10" onClick={e => e.stopPropagation()}>
+                            <button
+                                onClick={() => setViewMode('preview')}
+                                className={cn(
+                                    "px-3 py-1 text-xs rounded-md transition-all font-medium",
+                                    viewMode === 'preview' ? "bg-white/10 text-white shadow-sm" : "text-muted-foreground hover:text-white"
+                                )}
+                            >
+                                预览
+                            </button>
+                            <button
+                                onClick={() => setViewMode('json')}
+                                className={cn(
+                                    "px-3 py-1 text-xs rounded-md transition-all font-medium",
+                                    viewMode === 'json' ? "bg-white/10 text-white shadow-sm" : "text-muted-foreground hover:text-white"
+                                )}
+                            >
+                                JSON
+                            </button>
+                        </div>
+                        {isSelected && <CheckCircle2 className="w-5 h-5 text-primary" />}
+                    </div>
                 </div>
 
                 {/* Content Area */}
-                <div className="flex-1 relative min-h-[600px]">
+                <div className="flex-1 relative min-h-[600px] flex flex-col">
                     {status === 'generating' && (
                         <div className="absolute inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm z-10">
-                            <RefreshCw className="w-8 h-8 animate-spin text-muted-foreground" />
+                            <div className="flex flex-col items-center gap-4">
+                                <RefreshCw className="w-8 h-8 animate-spin text-primary" />
+                                <span className="text-xs text-muted-foreground animate-pulse">正在以此风格生成文章...</span>
+                            </div>
                         </div>
                     )}
 
@@ -170,19 +499,39 @@ export const ArticleGeneration: React.FC = () => {
                         </div>
                     )}
 
-                    <textarea
-                        value={json}
-                        onChange={(e) => side === 'A' ? setJsonA(e.target.value) : setJsonB(e.target.value)}
-                        placeholder={status === 'idle' ? "等待生成..." : ""}
-                        readOnly={false}
-                        className="w-full h-full bg-transparent p-4 font-mono text-xs text-green-400 focus:outline-none resize-none leading-relaxed"
-                        onClick={(e) => e.stopPropagation()} // Allow editing without triggering selection maybe? Actually selection is fine.
-                    />
+                    {/* View: JSON Editor */}
+                    <div className={cn("flex-1 relative", viewMode === 'json' ? "block" : "hidden")}>
+                        <textarea
+                            value={json}
+                            onChange={(e) => side === 'A' ? setJsonA(e.target.value) : setJsonB(e.target.value)}
+                            placeholder={status === 'idle' ? "等待生成..." : ""}
+                            spellCheck={false}
+                            className="absolute inset-0 w-full h-full bg-transparent p-4 font-mono text-xs text-green-400 focus:outline-none resize-none leading-relaxed"
+                            onClick={(e) => e.stopPropagation()}
+                        />
+                    </div>
+
+                    {/* View: Preview */}
+                    <div
+                        className={cn("flex-1 relative bg-black/10 flex flex-col", viewMode === 'preview' ? "block" : "hidden")}
+                        onClick={(e) => e.stopPropagation()} // Prevent selection when clicking valid preview content interactions
+                    >
+                        <div className="flex-1 overflow-hidden">
+                            {renderPreview(json)}
+                        </div>
+
+                        {/* Audit Panel (only in preview mode and success status) */}
+                        {status === 'success' && (
+                            <div className="p-4 border-t border-white/5 bg-black/20">
+                                <AuditStatus json={json} />
+                            </div>
+                        )}
+                    </div>
                 </div>
 
-                {/* Footer Action (Implicit Selection) */}
+                {/* Footer Action (Implicit Selection Hint) */}
                 {status === 'success' && !isSelected && (
-                    <div className="absolute bottom-4 right-4 bg-black/80 text-xs px-3 py-1 rounded-full border border-white/10 text-white/50 pointer-events-none">
+                    <div className="absolute bottom-4 right-4 bg-black/80 text-xs px-3 py-1 rounded-full border border-white/10 text-white/50 pointer-events-none z-20">
                         点击卡片选中
                     </div>
                 )}
@@ -214,12 +563,42 @@ export const ArticleGeneration: React.FC = () => {
                     </button>
 
                     <button
+                        onClick={async () => {
+                            if (!session || !selectedSide) return;
+                            const json = selectedSide === 'A' ? jsonA : jsonB;
+                            try {
+                                const payload = {
+                                    article: JSON.parse(json),
+                                    glossary: session.context.glossary,
+                                    podcast_script: session.context.podcastScript,
+                                    podcast_url: session.context.podcastUrl,
+                                };
+                                const res = await fetch('/api/publish', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify(payload)
+                                });
+                                if (res.ok) alert('✅ 已上传至云端数据库');
+                                else alert('❌ 上传失败');
+                            } catch (e) {
+                                alert('❌ 上传失败: ' + String(e));
+                            }
+                        }}
+                        disabled={!selectedSide}
+                        className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-medium transition-all disabled:opacity-50"
+                        title="立即上传当前进度到数据库"
+                    >
+                        <Upload className="w-4 h-4" />
+                        上传
+                    </button>
+
+                    <button
                         onClick={handleNext}
                         disabled={!selectedSide}
                         className="flex items-center gap-2 bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2 rounded-lg font-medium transition-all disabled:opacity-50"
                     >
-                        确认选择 ({selectedSide || 'None'})
-                        <CheckCircle2 className="w-4 h-4" />
+                        下一步
+                        <ChevronRight className="w-4 h-4" />
                     </button>
                 </div>
             </div>

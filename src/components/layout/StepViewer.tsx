@@ -23,7 +23,7 @@ const STEP_COMPONENTS: Record<StepId, React.FC> = {
 
 
 export const StepViewer: React.FC = () => {
-    const { getActiveSession } = useWorkflow();
+    const { getActiveSession, updateSession } = useWorkflow();
     const session = getActiveSession();
 
     if (!session) {
@@ -36,6 +36,13 @@ export const StepViewer: React.FC = () => {
 
     const ActiveComponent = STEP_COMPONENTS[session.currentStepId];
 
+    const handleStepClick = (stepId: StepId, status: string) => {
+        // Allow navigation if step is not pending, or if it is the current step
+        if (status !== 'pending' || stepId === session.currentStepId) {
+            updateSession(session.id, { currentStepId: stepId });
+        }
+    };
+
     return (
         <div className="flex-1 flex flex-col h-full bg-background/50">
             <header className="h-16 border-b border-white/10 flex items-center px-6 justify-between bg-black/10 backdrop-blur-md">
@@ -46,17 +53,22 @@ export const StepViewer: React.FC = () => {
                     </span>
                 </div>
 
-                {/* Stepper Visualization could go here */}
+                {/* Stepper Visualization */}
                 <div className="flex items-center gap-2">
-                    {session.steps.map((step, idx) => (
-                        <div
-                            key={step.id}
-                            className={`h-2 w-2 rounded-full ${step.id === session.currentStepId ? 'bg-primary' : (
-                                step.status === 'completed' ? 'bg-green-500' : 'bg-slate-700'
-                            )}`}
-                            title={step.label}
-                        />
-                    ))}
+                    {session.steps.map((step) => {
+                        const isClickable = step.status !== 'pending' || step.id === session.currentStepId;
+                        return (
+                            <div
+                                key={step.id}
+                                onClick={() => handleStepClick(step.id, step.status)}
+                                className={`h-3 w-3 rounded-full transition-all ${step.id === session.currentStepId
+                                    ? 'bg-primary ring-2 ring-primary/30 scale-125'
+                                    : (step.status === 'completed' ? 'bg-green-500 hover:bg-green-400' : 'bg-slate-700')
+                                    } ${isClickable ? 'cursor-pointer' : 'cursor-not-allowed opacity-50'}`}
+                                title={`${step.label} (${step.status})`}
+                            />
+                        );
+                    })}
                 </div>
             </header>
 
