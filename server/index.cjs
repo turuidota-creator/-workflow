@@ -1696,10 +1696,12 @@ app.get('/api/database/collections/:name/records', async (req, res) => {
 app.get('/api/workflow-sessions', async (req, res) => {
     try {
         const { url: pbUrl, token } = await getPocketBaseAuth();
+        const clientToken = req.get('Authorization');
+        const authToken = clientToken || token;
         if (!pbUrl) {
             return res.status(500).json({ error: 'PocketBase URL not configured' });
         }
-        if (!token) {
+        if (!authToken) {
             return res.status(401).json({ error: 'PocketBase authentication failed' });
         }
 
@@ -1709,7 +1711,7 @@ app.get('/api/workflow-sessions', async (req, res) => {
             endpoint.searchParams.set('sort', req.query.sort);
         }
 
-        const headers = { 'Content-Type': 'application/json', Authorization: token };
+        const headers = { 'Content-Type': 'application/json', Authorization: authToken };
         const response = await fetch(endpoint.toString(), { method: 'GET', headers });
         if (!response.ok) {
             return res.status(response.status).json({ error: await response.text() });
@@ -1724,16 +1726,18 @@ app.get('/api/workflow-sessions', async (req, res) => {
 app.post('/api/workflow-sessions', async (req, res) => {
     try {
         const { url: pbUrl, token } = await getPocketBaseAuth();
+        const clientToken = req.get('Authorization');
+        const authToken = clientToken || token;
         if (!pbUrl) {
             return res.status(500).json({ error: 'PocketBase URL not configured' });
         }
-        if (!token) {
+        if (!authToken) {
             return res.status(401).json({ error: 'PocketBase authentication failed' });
         }
 
         const response = await fetch(`${pbUrl}/api/collections/workflow_sessions/records`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', Authorization: token },
+            headers: { 'Content-Type': 'application/json', Authorization: authToken },
             body: JSON.stringify(req.body)
         });
         if (!response.ok) {
@@ -1749,16 +1753,18 @@ app.post('/api/workflow-sessions', async (req, res) => {
 app.patch('/api/workflow-sessions/:id', async (req, res) => {
     try {
         const { url: pbUrl, token } = await getPocketBaseAuth();
+        const clientToken = req.get('Authorization');
+        const authToken = clientToken || token;
         if (!pbUrl) {
             return res.status(500).json({ error: 'PocketBase URL not configured' });
         }
-        if (!token) {
+        if (!authToken) {
             return res.status(401).json({ error: 'PocketBase authentication failed' });
         }
 
         const response = await fetch(`${pbUrl}/api/collections/workflow_sessions/records/${req.params.id}`, {
             method: 'PATCH',
-            headers: { 'Content-Type': 'application/json', Authorization: token },
+            headers: { 'Content-Type': 'application/json', Authorization: authToken },
             body: JSON.stringify(req.body)
         });
         if (!response.ok) {
@@ -1774,16 +1780,18 @@ app.patch('/api/workflow-sessions/:id', async (req, res) => {
 app.delete('/api/workflow-sessions/:id', async (req, res) => {
     try {
         const { url: pbUrl, token } = await getPocketBaseAuth();
+        const clientToken = req.get('Authorization');
+        const authToken = clientToken || token;
         if (!pbUrl) {
             return res.status(500).json({ error: 'PocketBase URL not configured' });
         }
-        if (!token) {
+        if (!authToken) {
             return res.status(401).json({ error: 'PocketBase authentication failed' });
         }
 
         const response = await fetch(`${pbUrl}/api/collections/workflow_sessions/records/${req.params.id}`, {
             method: 'DELETE',
-            headers: { Authorization: token }
+            headers: { Authorization: authToken }
         });
         if (!response.ok) {
             return res.status(response.status).json({ error: await response.text() });

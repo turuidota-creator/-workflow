@@ -57,7 +57,19 @@ export const WorkflowProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     }, []);
 
     const request = useCallback(async (url: string, options: RequestInit) => {
-        const response = await fetch(url, options);
+        const headers = new Headers(options.headers);
+        const rawAuth = window.localStorage.getItem('pb_auth');
+        if (rawAuth) {
+            try {
+                const auth = JSON.parse(rawAuth) as { token?: string };
+                if (auth?.token && !headers.has('Authorization')) {
+                    headers.set('Authorization', auth.token);
+                }
+            } catch {
+                // ignore malformed auth
+            }
+        }
+        const response = await fetch(url, { ...options, headers });
         if (!response.ok) {
             const errorText = await response.text();
             throw new Error(`Request failed (${response.status}): ${errorText}`);
