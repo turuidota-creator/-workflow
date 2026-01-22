@@ -59,6 +59,10 @@ export const Publishing: React.FC = () => {
                 // Mark workflow as completed
                 updateSession(session.id, {
                     status: 'completed',
+                    context: {
+                        ...session.context,
+                        articleId: data.articleId || data.id
+                    },
                     steps: session.steps.map(s =>
                         s.id === 'publishing' ? { ...s, status: 'completed' } : s
                     )
