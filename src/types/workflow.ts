@@ -35,6 +35,7 @@ export interface WorkflowSession {
     // Data accumulator
     context: {
         targetDate?: string; // e.g. "2024-01-20"
+        category?: string;
         topic?: string;
         newsItems?: NewsItem[]; // Persist searched news
         level?: string;
@@ -72,4 +73,3 @@ export const INITIAL_STEPS: WorkflowStep[] = [
     { id: 'publish-preview', label: '发布预览', status: 'pending' },
     { id: 'publishing', label: '最终发布', status: 'pending' },
 ];
-

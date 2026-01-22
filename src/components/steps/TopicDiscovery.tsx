@@ -83,7 +83,7 @@ function normalizeResearchResult(data: unknown, fallbackTopic: string): Research
 }
 
 export const TopicDiscovery: React.FC = () => {
-    const { updateSession, getActiveSession } = useWorkflow();
+    const { updateSession, getActiveSession, sessions } = useWorkflow();
     const session = getActiveSession();
 
     // Initialize states (using previous logic for initial render)
@@ -217,6 +217,29 @@ export const TopicDiscovery: React.FC = () => {
         }
     };
 
+    const formatDateLabel = (targetDate: string) => {
+        const [year, month, day] = targetDate.split('-');
+        if (year && month && day) {
+            return `${Number(month)}月${Number(day)}日`;
+        }
+        return targetDate;
+    };
+
+    const buildUniqueTitle = (targetDate: string, category: string) => {
+        const baseTitle = `${formatDateLabel(targetDate)}${category}`;
+        const usedTitles = new Set(
+            sessions.filter(current => current.id !== session?.id).map(current => current.title)
+        );
+        if (!usedTitles.has(baseTitle)) {
+            return baseTitle;
+        }
+        let index = 2;
+        while (usedTitles.has(`${baseTitle}${index}`)) {
+            index += 1;
+        }
+        return `${baseTitle}${index}`;
+    };
+
     const handleConfirm = async () => {
         if (!session || !selectedTopic) return;
 
@@ -226,10 +249,17 @@ export const TopicDiscovery: React.FC = () => {
             // 研究完成后再继续（此时 researchResult 会被更新）
         }
 
+        const category = selectedNewsItem?.category;
+        const nextTitle = category && session.context.targetDate
+            ? buildUniqueTitle(session.context.targetDate, category)
+            : session.title;
+
         // 更新 session，传递研究结果
         updateSession(session.id, {
+            title: nextTitle,
             context: {
                 ...session.context,
+                category,
                 topic: selectedTopic,
                 researchResult: researchResult || undefined
             },
