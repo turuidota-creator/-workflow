@@ -1690,6 +1690,110 @@ app.get('/api/database/collections/:name/records', async (req, res) => {
     }
 });
 
+/**
+ * Workflow sessions (use PocketBase admin auth).
+ */
+app.get('/api/workflow-sessions', async (req, res) => {
+    try {
+        const { url: pbUrl, token } = await getPocketBaseAuth();
+        if (!pbUrl) {
+            return res.status(500).json({ error: 'PocketBase URL not configured' });
+        }
+        if (!token) {
+            return res.status(401).json({ error: 'PocketBase authentication failed' });
+        }
+
+        const endpoint = new URL(`${pbUrl}/api/collections/workflow_sessions/records`);
+        endpoint.searchParams.set('perPage', '200');
+        if (req.query.sort) {
+            endpoint.searchParams.set('sort', req.query.sort);
+        }
+
+        const headers = { 'Content-Type': 'application/json', Authorization: token };
+        const response = await fetch(endpoint.toString(), { method: 'GET', headers });
+        if (!response.ok) {
+            return res.status(response.status).json({ error: await response.text() });
+        }
+        const data = await response.json();
+        return res.json({ items: data.items || [] });
+    } catch (e) {
+        return res.status(500).json({ error: e.message });
+    }
+});
+
+app.post('/api/workflow-sessions', async (req, res) => {
+    try {
+        const { url: pbUrl, token } = await getPocketBaseAuth();
+        if (!pbUrl) {
+            return res.status(500).json({ error: 'PocketBase URL not configured' });
+        }
+        if (!token) {
+            return res.status(401).json({ error: 'PocketBase authentication failed' });
+        }
+
+        const response = await fetch(`${pbUrl}/api/collections/workflow_sessions/records`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Authorization: token },
+            body: JSON.stringify(req.body)
+        });
+        if (!response.ok) {
+            return res.status(response.status).json({ error: await response.text() });
+        }
+        const data = await response.json();
+        return res.json(data);
+    } catch (e) {
+        return res.status(500).json({ error: e.message });
+    }
+});
+
+app.patch('/api/workflow-sessions/:id', async (req, res) => {
+    try {
+        const { url: pbUrl, token } = await getPocketBaseAuth();
+        if (!pbUrl) {
+            return res.status(500).json({ error: 'PocketBase URL not configured' });
+        }
+        if (!token) {
+            return res.status(401).json({ error: 'PocketBase authentication failed' });
+        }
+
+        const response = await fetch(`${pbUrl}/api/collections/workflow_sessions/records/${req.params.id}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json', Authorization: token },
+            body: JSON.stringify(req.body)
+        });
+        if (!response.ok) {
+            return res.status(response.status).json({ error: await response.text() });
+        }
+        const data = await response.json();
+        return res.json(data);
+    } catch (e) {
+        return res.status(500).json({ error: e.message });
+    }
+});
+
+app.delete('/api/workflow-sessions/:id', async (req, res) => {
+    try {
+        const { url: pbUrl, token } = await getPocketBaseAuth();
+        if (!pbUrl) {
+            return res.status(500).json({ error: 'PocketBase URL not configured' });
+        }
+        if (!token) {
+            return res.status(401).json({ error: 'PocketBase authentication failed' });
+        }
+
+        const response = await fetch(`${pbUrl}/api/collections/workflow_sessions/records/${req.params.id}`, {
+            method: 'DELETE',
+            headers: { Authorization: token }
+        });
+        if (!response.ok) {
+            return res.status(response.status).json({ error: await response.text() });
+        }
+        return res.status(204).send();
+    } catch (e) {
+        return res.status(500).json({ error: e.message });
+    }
+});
+
 // ================= START SERVER =================
 app.listen(PORT, () => {
     console.log(`Backend server running on http://localhost:${PORT}`);
