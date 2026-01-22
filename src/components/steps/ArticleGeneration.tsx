@@ -522,11 +522,11 @@ export const ArticleGeneration: React.FC = () => {
         try {
             const json = JSON.parse(finalJsonStr);
             updateSession(session.id, {
-                currentStepId: 'vocabulary',
+                currentStepId: 'article-rewrite',
                 context: { ...session.context, articleJson: json },
                 steps: session.steps.map(s =>
                     s.id === 'article-generation' ? { ...s, status: 'completed' } :
-                        s.id === 'vocabulary' ? { ...s, status: 'running' } : s
+                        s.id === 'article-rewrite' ? { ...s, status: 'running' } : s
                 )
             });
         } catch (e) {

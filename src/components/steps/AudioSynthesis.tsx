@@ -1,157 +1,186 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useWorkflow } from '../../context/WorkflowContext';
-import { Volume2, RefreshCw, ChevronRight, Play, Pause, Download, Settings2, UploadCloud } from 'lucide-react';
+import { Volume2, RefreshCw, ChevronRight, Play, Pause, Download, Settings2, UploadCloud, Check } from 'lucide-react';
+import { cn } from '../../lib/utils';
+
+interface AudioState {
+    status: 'idle' | 'synthesizing' | 'success' | 'error';
+    url: string;
+    error: string;
+    progress: number;
+    uploadStatus: 'idle' | 'uploading' | 'success' | 'error';
+    isPlaying: boolean;
+    playbackSpeed: number;
+}
 
 export const AudioSynthesis: React.FC = () => {
     const { getActiveSession, updateSession } = useWorkflow();
     const session = getActiveSession();
-    const [status, setStatus] = useState<'idle' | 'synthesizing' | 'success' | 'error'>('idle');
-    const [audioUrl, setAudioUrl] = useState('');
-    const [error, setError] = useState('');
-    const [progress, setProgress] = useState(0);
-    const [isPlaying, setIsPlaying] = useState(false);
-    const [playbackSpeed, setPlaybackSpeed] = useState(1);
-    const [showSettings, setShowSettings] = useState(false);
-    const [uploadStatus, setUploadStatus] = useState<'idle' | 'uploading' | 'success' | 'error'>('idle');
-    const audioRef = useRef<HTMLAudioElement>(null);
-    const isUploaded = Boolean(audioUrl) && !audioUrl.includes('/temp/');
 
-    // Initialize from session context if available
+    // Separate states
+    const [audio10, setAudio10] = useState<AudioState>({
+        status: session?.context.podcastUrl ? 'success' : 'idle',
+        url: session?.context.podcastUrl || '',
+        error: '',
+        progress: 0,
+        uploadStatus: 'idle',
+        isPlaying: false,
+        playbackSpeed: 1
+    });
+
+    const [audio7, setAudio7] = useState<AudioState>({
+        status: session?.context.podcastUrl7 ? 'success' : 'idle',
+        url: session?.context.podcastUrl7 || '',
+        error: '',
+        progress: 0,
+        uploadStatus: 'idle',
+        isPlaying: false,
+        playbackSpeed: 1
+    });
+
+    const audioRef10 = useRef<HTMLAudioElement>(null);
+    const audioRef7 = useRef<HTMLAudioElement>(null);
+
+    // Sync speed to refs
     useEffect(() => {
-        if (session?.context.podcastUrl) {
-            setAudioUrl(session.context.podcastUrl);
-            setStatus('success');
-        }
-    }, [session?.context.podcastUrl]);
+        if (audioRef10.current) audioRef10.current.playbackRate = audio10.playbackSpeed;
+    }, [audio10.playbackSpeed]);
 
-    // Update playback speed
     useEffect(() => {
-        if (audioRef.current) {
-            audioRef.current.playbackRate = playbackSpeed;
-        }
-    }, [playbackSpeed]);
+        if (audioRef7.current) audioRef7.current.playbackRate = audio7.playbackSpeed;
+    }, [audio7.playbackSpeed]);
 
-    const handleSynthesize = async () => {
-        if (!session?.context.podcastScript) {
-            setError('没有可用的播客脚本，请先完成 Step 4。');
+    const handleSynthesize = async (level: '10' | '7') => {
+        const script = level === '10' ? session?.context.podcastScript : session?.context.podcastScript7;
+        const set = level === '10' ? setAudio10 : setAudio7;
+
+        if (!script) {
+            set(prev => ({ ...prev, status: 'error', error: '没有对应的播客脚本' }));
             return;
         }
 
-        setStatus('synthesizing');
-        setError('');
-        setProgress(0);
-        setUploadStatus('idle');
+        set(prev => ({ ...prev, status: 'synthesizing', error: '', progress: 0, uploadStatus: 'idle' }));
 
-        // Simulate progress for synthesis
         const progressInterval = setInterval(() => {
-            setProgress(prev => {
-                if (prev >= 90) return 90;
-                return prev + 10;
+            set(prev => {
+                if (prev.progress >= 90) return prev;
+                return { ...prev, progress: prev.progress + 10 };
             });
         }, 500);
 
         try {
-            // 1. Synthesize audio (Server generates temp file)
             const res = await fetch('/api/synthesize', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    script: session.context.podcastScript
-                })
+                body: JSON.stringify({ script })
             });
 
             const data = await res.json();
 
-            if (data.error) {
-                clearInterval(progressInterval);
-                setStatus('error');
-                setError(data.error);
-                return;
-            }
-
-            const tempUrl = data.audioUrl || data.url;
-
             clearInterval(progressInterval);
-            setStatus('success');
-            setProgress(100);
-            setAudioUrl(tempUrl);
 
-            // Update Session
-            updateSession(session.id, {
-                context: {
-                    ...session.context,
-                    podcastUrl: tempUrl
+            if (data.error) {
+                set(prev => ({ ...prev, status: 'error', error: data.error, progress: 0 }));
+            } else {
+                const tempUrl = data.audioUrl || data.url;
+                set(prev => ({ ...prev, status: 'success', url: tempUrl, progress: 100 }));
+
+                // Update Session immediately for temp persistence
+                if (session) {
+                    const updateKey = level === '10' ? 'podcastUrl' : 'podcastUrl7';
+                    updateSession(session.id, {
+                        context: { ...session.context, [updateKey]: tempUrl }
+                    });
                 }
-            });
-
+            }
         } catch (e) {
             clearInterval(progressInterval);
-            setStatus('error');
-            setError(String(e));
-            setProgress(0);
+            set(prev => ({ ...prev, status: 'error', error: String(e), progress: 0 }));
         }
     };
 
-    const handleUpload = async () => {
-        if (!session?.context.articleId) return;
-        if (!audioUrl) {
-            setError('没有可用的音频文件，请先完成合成。');
-            return;
-        }
+    const handleUpload = async (level: '10' | '7') => {
+        if (!session) return;
 
-        setUploadStatus('uploading');
-        setError('');
+        const set = level === '10' ? setAudio10 : setAudio7;
+        const state = level === '10' ? audio10 : audio7;
+
+        // Critical: Determine target article ID. 
+        // L10 users existing articleId. 
+        // L7 needs a new one if not exists.
+        let targetArticleId = level === '10' ? session.context.articleId : session.context.articleId7;
+
+        if (!state.url) return;
+
+        set(prev => ({ ...prev, uploadStatus: 'uploading', error: '' }));
 
         try {
+            // If Level 7 and no ID, we need to inform backend to create a new article record
+            // OR the upload endpoint handles creation if we pass metadata.
+            // Let's assume /api/podcast-upload is smart enough or we pass extra data.
+            // Actually, we should probably ensure the article record exists first?
+            // "Podcast Upload" usually attaches a file to an EXISTING record in PocketBase.
+
+            // Strategy: Pass 'level' and 'topic'/'date' to upload endpoint.
+            // If it's a new L7 record, backend finds or creates it.
+
+            const payload = {
+                articleId: targetArticleId, // Might be undefined for L7
+                audioUrl: state.url,
+                podcast_script: level === '10' ? session.context.podcastScript : session.context.podcastScript7,
+                // Extra metadata to help backend find/create the record if articleId is missing
+                level: level,
+                topic: session.context.topic, // topic from context
+                date: session.context.targetDate, // date from context
+                title_en: level === '10' ? session.context.articleJson?.title?.en : session.context.articleJson7?.title?.en,
+                title_zh: level === '10' ? (session.context.articleJson?.title?.zh || session.context.articleJson?.title?.cn) : (session.context.articleJson7?.title?.zh || session.context.articleJson7?.title?.cn),
+                // Pass full content if needed for creation
+                articleJson: level === '10' ? session.context.articleJson : session.context.articleJson7
+            };
+
             const res = await fetch('/api/podcast-upload', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    articleId: session.context.articleId,
-                    audioUrl: audioUrl,
-                    podcast_script: session.context.podcastScript
-                })
+                body: JSON.stringify(payload)
             });
 
-            if (!res.ok) {
-                throw new Error(await res.text());
-            }
+            if (!res.ok) throw new Error(await res.text());
 
             const data = await res.json();
+
+            // Update URL to permanent one
             if (data?.podcastUrl) {
-                setAudioUrl(data.podcastUrl);
+                set(prev => ({ ...prev, url: data.podcastUrl }));
+
+                // Update Session
+                const urlKey = level === '10' ? 'podcastUrl' : 'podcastUrl7';
                 updateSession(session.id, {
-                    context: { ...session.context, podcastUrl: data.podcastUrl }
+                    context: { ...session.context, [urlKey]: data.podcastUrl }
                 });
             }
-            setUploadStatus('success');
-        } catch (e) {
-            setUploadStatus('error');
-            setError(`上传失败: ${String(e)}`);
-        }
-    };
 
-    // 播放/暂停
-    const togglePlay = () => {
-        if (audioRef.current) {
-            if (isPlaying) {
-                audioRef.current.pause();
-            } else {
-                audioRef.current.play();
+            // If we got a new article ID (e.g. for L7), save it!
+            if (data?.articleId && level === '7') {
+                updateSession(session.id, {
+                    context: { ...session.context, articleId7: data.articleId }
+                });
             }
-            setIsPlaying(!isPlaying);
+
+            set(prev => ({ ...prev, uploadStatus: 'success' }));
+        } catch (e) {
+            set(prev => ({ ...prev, uploadStatus: 'error', error: `上传失败: ${String(e)}` }));
         }
     };
 
-    // 下载音频
-    const handleDownload = () => {
-        if (audioUrl) {
-            const a = document.createElement('a');
-            a.href = audioUrl;
-            a.download = `podcast_${Date.now()}.mp3`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
+    const togglePlay = (level: '10' | '7') => {
+        const ref = level === '10' ? audioRef10 : audioRef7;
+        const set = level === '10' ? setAudio10 : setAudio7;
+        const state = level === '10' ? audio10 : audio7;
+
+        if (ref.current) {
+            if (state.isPlaying) ref.current.pause();
+            else ref.current.play();
+            set(prev => ({ ...prev, isPlaying: !state.isPlaying }));
         }
     };
 
@@ -159,7 +188,11 @@ export const AudioSynthesis: React.FC = () => {
         if (!session) return;
         updateSession(session.id, {
             currentStepId: 'publish-preview',
-            context: { ...session.context, podcastUrl: audioUrl },
+            context: {
+                ...session.context,
+                podcastUrl: audio10.url,
+                podcastUrl7: audio7.url,
+            },
             steps: session.steps.map(s =>
                 s.id === 'audio-synthesis' ? { ...s, status: 'completed' } :
                     s.id === 'publish-preview' ? { ...s, status: 'running' } : s
@@ -167,44 +200,104 @@ export const AudioSynthesis: React.FC = () => {
         });
     };
 
+    const AudioCard = ({ level, state, set, title, color }: { level: '10' | '7', state: AudioState, set: React.Dispatch<React.SetStateAction<AudioState>>, title: string, color: string }) => {
+        const ref = level === '10' ? audioRef10 : audioRef7;
+        const isUploaded = state.url && !state.url.includes('/temp/');
+
+        return (
+            <div className="flex-1 flex flex-col border border-white/10 rounded-xl overflow-hidden bg-black/20">
+                <div className="p-3 border-b border-white/5 bg-black/20 flex justify-between items-center">
+                    <div className="flex items-center gap-2">
+                        <div className={cn("w-2 h-2 rounded-full", color)} />
+                        <span className="font-bold text-sm text-slate-300">{title}</span>
+                    </div>
+                </div>
+
+                <div className="flex-1 p-4 flex flex-col justify-center space-y-4">
+                    {state.status === 'synthesizing' && (
+                        <div className="space-y-2">
+                            <div className="flex justify-between text-xs text-muted-foreground">
+                                <span>Generating...</span>
+                                <span>{state.progress}%</span>
+                            </div>
+                            <div className="h-1.5 bg-card/50 rounded-full overflow-hidden">
+                                <div className={cn("h-full transition-all duration-300", color.replace('bg-', 'bg-'))} style={{ width: `${state.progress}%` }} />
+                            </div>
+                        </div>
+                    )}
+
+                    {state.error && <p className="text-red-400 text-xs">{state.error}</p>}
+
+                    {state.url && (
+                        <div className="space-y-4">
+                            {/* Controls */}
+                            <div className="flex items-center justify-between">
+                                <button
+                                    onClick={() => togglePlay(level)}
+                                    className={cn("w-12 h-12 rounded-full flex items-center justify-center text-white transition-all shadow-lg", color)}
+                                >
+                                    {state.isPlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5 ml-1" />}
+                                </button>
+
+                                <div className="flex gap-2">
+                                    <button
+                                        onClick={() => handleUpload(level)}
+                                        disabled={state.uploadStatus === 'uploading' || isUploaded}
+                                        className={cn(
+                                            "flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors border",
+                                            isUploaded
+                                                ? "bg-green-500/20 text-green-400 border-green-500/20"
+                                                : "bg-white/5 hover:bg-white/10 text-slate-300 border-white/10"
+                                        )}
+                                    >
+                                        {state.uploadStatus === 'uploading' ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : isUploaded ? <Check className="w-3.5 h-3.5" /> : <UploadCloud className="w-3.5 h-3.5" />}
+                                        {isUploaded ? '已上传' : '上传到云端'}
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* Audio Element */}
+                            <audio
+                                ref={ref}
+                                src={state.url}
+                                onEnded={() => set(prev => ({ ...prev, isPlaying: false }))}
+                                onPlay={() => set(prev => ({ ...prev, isPlaying: true }))}
+                                onPause={() => set(prev => ({ ...prev, isPlaying: false }))}
+                            />
+                        </div>
+                    )}
+
+                    {!state.url && state.status !== 'synthesizing' && (
+                        <div className="flex justify-center py-8">
+                            <button
+                                onClick={() => handleSynthesize(level)}
+                                className="flex items-center gap-2 bg-secondary hover:bg-secondary/80 text-secondary-foreground px-4 py-2 rounded-lg text-sm font-medium transition-all"
+                            >
+                                <RefreshCw className="w-4 h-4" />
+                                开始合成
+                            </button>
+                        </div>
+                    )}
+                </div>
+            </div>
+        );
+    };
+
     return (
-        <div className="space-y-4 h-full flex flex-col p-4">
-            {/* Header */}
+        <div className="space-y-4 h-full flex flex-col">
             <div className="flex items-center justify-between shrink-0">
                 <div>
                     <h3 className="text-2xl font-bold bg-gradient-to-r from-green-400 to-teal-500 bg-clip-text text-transparent flex items-center gap-2">
                         <Volume2 className="w-6 h-6 text-green-400" />
                         音频合成 (Audio Synthesis)
                     </h3>
-                    <p className="text-muted-foreground text-sm mt-1">
-                        使用 TTS 引擎将播客脚本转换为音频文件并上传。
-                    </p>
                 </div>
-
                 <div className="flex gap-2">
                     <button
-                        onClick={handleSynthesize}
-                        disabled={status === 'synthesizing'}
-                        className="flex items-center gap-2 bg-secondary hover:bg-secondary/80 text-secondary-foreground px-4 py-2 rounded-lg font-medium transition-all"
-                    >
-                        {status === 'synthesizing' ? <RefreshCw className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
-                        {audioUrl ? '重新合成' : '开始合成'}
-                    </button>
-
-                    <button
-                        onClick={handleUpload}
-                        disabled={!session?.context.articleId || uploadStatus === 'uploading' || !audioUrl}
-                        className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-medium transition-all disabled:opacity-50"
-                        title={session?.context.articleId ? '上传音频到已有文章记录' : '未检测到 articles 记录'}
-                    >
-                        <UploadCloud className="w-4 h-4" />
-                        {session?.context.articleId ? '上传' : '未检测到记录'}
-                    </button>
-
-                    <button
                         onClick={handleNext}
-                        disabled={!audioUrl}
-                        className="flex items-center gap-2 bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2 rounded-lg font-medium transition-all disabled:opacity-50"
+                        // Only require one audio to proceed? Or both? Let's say at least one.
+                        disabled={!audio10.url && !audio7.url}
+                        className="flex items-center gap-2 bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2 rounded-lg font-medium transition-all"
                     >
                         下一步
                         <ChevronRight className="w-4 h-4" />
@@ -212,128 +305,9 @@ export const AudioSynthesis: React.FC = () => {
                 </div>
             </div>
 
-            {/* Error Message */}
-            {error && (
-                <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-3 rounded-lg text-sm">
-                    {error}
-                </div>
-            )}
-
-            {/* Progress Bar */}
-            {status === 'synthesizing' && (
-                <div className="space-y-2">
-                    <div className="flex justify-between text-sm text-muted-foreground">
-                        <span>正在合成音频...</span>
-                        <span>{progress}%</span>
-                    </div>
-                    <div className="h-2 bg-card/50 rounded-full overflow-hidden">
-                        <div
-                            className="h-full bg-gradient-to-r from-green-500 to-teal-500 transition-all duration-300"
-                            style={{ width: `${progress}%` }}
-                        />
-                    </div>
-                </div>
-            )}
-
-            {/* Main Content */}
-            <div className="flex-1 min-h-0 flex flex-col">
-                {status !== 'synthesizing' && !audioUrl && (
-                    <div className="h-full flex items-center justify-center text-muted-foreground">
-                        <div className="text-center">
-                            <Volume2 className="w-16 h-16 mx-auto mb-4 opacity-30" />
-                            <p>点击 "开始合成" 生成音频</p>
-                        </div>
-                    </div>
-                )}
-
-                {audioUrl && (
-                    <div className="flex-1 flex flex-col">
-                        {/* Audio Player Card */}
-                        <div className="bg-card/30 border border-white/5 rounded-xl p-6 space-y-4">
-                            {/* Waveform Placeholder */}
-                            <div className="h-24 bg-gradient-to-r from-green-500/10 via-teal-500/10 to-green-500/10 rounded-lg flex items-center justify-center relative overflow-hidden">
-                                {isUploaded && (
-                                    <div className="absolute top-2 right-2 flex items-center gap-1 text-xs text-green-400/80 bg-green-900/20 px-2 py-0.5 rounded-full">
-                                        <UploadCloud className="w-3 h-3" />
-                                        已云端存储
-                                    </div>
-                                )}
-                                <div className="flex items-end gap-1 h-16">
-                                    {[...Array(40)].map((_, i) => (
-                                        <div
-                                            key={i}
-                                            className="w-1.5 bg-green-500/50 rounded-full animate-pulse"
-                                            style={{
-                                                height: `${Math.random() * 100}%`,
-                                                animationDelay: `${i * 50}ms`
-                                            }}
-                                        />
-                                    ))}
-                                </div>
-                            </div>
-
-                            {/* Controls */}
-                            <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-4">
-                                    {/* Play/Pause */}
-                                    <button
-                                        onClick={togglePlay}
-                                        className="w-14 h-14 rounded-full bg-green-500 hover:bg-green-400 flex items-center justify-center text-white transition-all"
-                                    >
-                                        {isPlaying ? <Pause className="w-6 h-6" /> : <Play className="w-6 h-6 ml-1" />}
-                                    </button>
-
-                                    {/* Speed Control */}
-                                    <div className="flex items-center gap-2">
-                                        <button
-                                            onClick={() => setShowSettings(!showSettings)}
-                                            className="p-2 hover:bg-white/5 rounded-lg transition-colors"
-                                        >
-                                            <Settings2 className="w-5 h-5 text-muted-foreground" />
-                                        </button>
-                                        {showSettings && (
-                                            <div className="flex items-center gap-2 bg-card/50 rounded-lg px-3 py-1">
-                                                <span className="text-xs text-muted-foreground">速度:</span>
-                                                {[0.5, 0.75, 1, 1.25, 1.5, 2].map(speed => (
-                                                    <button
-                                                        key={speed}
-                                                        onClick={() => setPlaybackSpeed(speed)}
-                                                        className={`px-2 py-1 text-xs rounded ${playbackSpeed === speed ? 'bg-green-500 text-white' : 'hover:bg-white/10'}`}
-                                                    >
-                                                        {speed}x
-                                                    </button>
-                                                ))}
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-
-                                {/* Download */}
-                                <button
-                                    onClick={handleDownload}
-                                    className="flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 rounded-lg transition-colors"
-                                >
-                                    <Download className="w-4 h-4" />
-                                    下载音频
-                                </button>
-                            </div>
-
-                            {/* Hidden Audio Element */}
-                            <audio
-                                ref={audioRef}
-                                src={audioUrl}
-                                onEnded={() => setIsPlaying(false)}
-                                onPlay={() => setIsPlaying(true)}
-                                onPause={() => setIsPlaying(false)}
-                            />
-                        </div>
-
-                        {/* Info */}
-                        <div className="mt-4 text-sm text-muted-foreground">
-                            <p>音频 URL: <code className="bg-card/50 px-2 py-0.5 rounded text-xs">{audioUrl}</code></p>
-                        </div>
-                    </div>
-                )}
+            <div className="flex-1 flex gap-4 min-h-0">
+                <AudioCard level="10" state={audio10} set={setAudio10} title="Level 10 Audio" color="bg-purple-500" />
+                <AudioCard level="7" state={audio7} set={setAudio7} title="Level 7 Audio" color="bg-green-500" />
             </div>
         </div>
     );

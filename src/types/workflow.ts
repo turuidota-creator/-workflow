@@ -4,6 +4,7 @@ export type WorkflowStatus = 'idle' | 'running' | 'waiting' | 'completed' | 'fai
 export type StepId =
     | 'topic-discovery'
     | 'article-generation'
+    | 'article-rewrite'
     | 'vocabulary'
     | 'podcast-script'
     | 'audio-synthesis'
@@ -44,6 +45,14 @@ export interface WorkflowSession {
         glossary?: any;
         podcastScript?: string;
         podcastUrl?: string;
+
+        // Level 7 / Dual Stream Fields
+        articleId7?: string;
+        articleJson7?: any;
+        glossary7?: any;
+        podcastScript7?: string;
+        podcastUrl7?: string;
+
         finalPayload?: any; // Edited payload before publishing
         researchResult?: {  // 深度研究结果
             summary: string;
@@ -67,6 +76,7 @@ export interface WorkflowSession {
 export const INITIAL_STEPS: WorkflowStep[] = [
     { id: 'topic-discovery', label: '选题搜索', status: 'pending' },
     { id: 'article-generation', label: '文章生成', status: 'pending' },
+    { id: 'article-rewrite', label: '文章改写', status: 'pending' },
     { id: 'vocabulary', label: '词汇补全', status: 'pending' },
     { id: 'podcast-script', label: '播客脚本', status: 'pending' },
     { id: 'audio-synthesis', label: '音频合成', status: 'pending' },

@@ -56,6 +56,26 @@ export const VocabularyCompletion: React.FC = () => {
             return;
         }
 
+        const article10 = session.context.articleJson;
+        const article7 = session.context.articleJson7;
+
+        // Merge content for vocabulary extraction
+        let combinedArticle = article10;
+        if (article7) {
+            // Deep clone to avoid mutating state
+            combinedArticle = JSON.parse(JSON.stringify(article10));
+
+            const paragraphs10 = combinedArticle.article?.paragraphs || combinedArticle.paragraphs || [];
+            const paragraphs7 = article7.article?.paragraphs || article7.paragraphs || [];
+
+            // Allow for flat or nested structure
+            if (combinedArticle.article) {
+                combinedArticle.article.paragraphs = [...paragraphs10, ...paragraphs7];
+            } else {
+                combinedArticle.paragraphs = [...paragraphs10, ...paragraphs7];
+            }
+        }
+
         setStatus('generating');
         setError('');
 
@@ -63,7 +83,7 @@ export const VocabularyCompletion: React.FC = () => {
             const res = await fetch('/api/vocabulary', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ articleJson: session.context.articleJson })
+                body: JSON.stringify({ articleJson: combinedArticle })
             });
 
             const data = await res.json();
@@ -92,6 +112,22 @@ export const VocabularyCompletion: React.FC = () => {
             return;
         }
 
+        const article10 = session.context.articleJson;
+        const article7 = session.context.articleJson7;
+
+        // Merge content for scanning
+        let combinedArticle = article10;
+        if (article7) {
+            combinedArticle = JSON.parse(JSON.stringify(article10));
+            const paragraphs10 = combinedArticle.article?.paragraphs || combinedArticle.paragraphs || [];
+            const paragraphs7 = article7.article?.paragraphs || article7.paragraphs || [];
+            if (combinedArticle.article) {
+                combinedArticle.article.paragraphs = [...paragraphs10, ...paragraphs7];
+            } else {
+                combinedArticle.paragraphs = [...paragraphs10, ...paragraphs7];
+            }
+        }
+
         setScanStatus('scanning');
         setError('');
 
@@ -99,7 +135,7 @@ export const VocabularyCompletion: React.FC = () => {
             const res = await fetch('/api/dictionary/scan', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ articleJson: session.context.articleJson })
+                body: JSON.stringify({ articleJson: combinedArticle })
             });
 
             const data = await res.json();

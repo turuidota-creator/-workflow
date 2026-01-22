@@ -5,6 +5,7 @@ import { StepId } from '../../types/workflow';
 
 import { TopicDiscovery } from '../steps/TopicDiscovery';
 import { ArticleGeneration } from '../steps/ArticleGeneration';
+import { ArticleRewrite } from '../steps/ArticleRewrite';
 import { VocabularyCompletion } from '../steps/VocabularyCompletion';
 import { PodcastScript } from '../steps/PodcastScript';
 import { AudioSynthesis } from '../steps/AudioSynthesis';
@@ -14,6 +15,7 @@ import { Publishing } from '../steps/Publishing';
 const STEP_COMPONENTS: Record<StepId, React.FC> = {
     'topic-discovery': TopicDiscovery,
     'article-generation': ArticleGeneration,
+    'article-rewrite': ArticleRewrite,
     'vocabulary': VocabularyCompletion,
     'podcast-script': PodcastScript,
     'audio-synthesis': AudioSynthesis,
@@ -54,17 +56,17 @@ export const StepViewer: React.FC = () => {
                 </div>
 
                 {/* Stepper Visualization */}
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-3">
                     {session.steps.map((step) => {
                         const isClickable = step.status !== 'pending' || step.id === session.currentStepId;
                         return (
                             <div
                                 key={step.id}
                                 onClick={() => handleStepClick(step.id, step.status)}
-                                className={`h-3 w-3 rounded-full transition-all ${step.id === session.currentStepId
-                                    ? 'bg-primary ring-2 ring-primary/30 scale-125'
-                                    : (step.status === 'completed' ? 'bg-green-500 hover:bg-green-400' : 'bg-slate-700')
-                                    } ${isClickable ? 'cursor-pointer' : 'cursor-not-allowed opacity-50'}`}
+                                className={`h-4 w-4 rounded-full transition-all ${step.id === session.currentStepId
+                                    ? 'bg-primary ring-4 ring-primary/20 scale-125'
+                                    : (step.status === 'completed' ? 'bg-green-500 hover:bg-green-400' : 'bg-slate-700/50')
+                                    } ${isClickable ? 'cursor-pointer hover:scale-110' : 'cursor-not-allowed opacity-30'}`}
                                 title={`${step.label} (${step.status})`}
                             />
                         );
