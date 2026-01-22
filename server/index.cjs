@@ -304,7 +304,7 @@ app.post('/api/test-gemini', async (req, res) => {
  */
 app.post('/api/generate', async (req, res) => {
     try {
-        const { topic, level = "10", researchContext, targetDate, briefingTarget, briefingLabel } = req.body;
+        const { topic, level = "10", researchContext, targetDate, briefingTarget, briefingLabel, analysisTarget } = req.body;
 
         // 1. Get API Key and Model from config
         const envPath = path.join(PROJECT_ROOT, '.env');
@@ -403,6 +403,22 @@ app.post('/api/generate', async (req, res) => {
             - Return full JSON in the exact schema.
             - briefings are in meta.briefing.
             - briefing.grammar_analysis MUST start with Chinese characters.
+            - Output ONLY valid JSON, no markdown.
+            `;
+        } else if (analysisTarget && previousDraft) {
+            userPrompt += `
+
+            [Sentence Analysis Partial Update - CRITICAL]
+            You must regenerate ONLY sentence-level analysis fields (analysis.grammar and analysis.explanation) in paragraph.tokenizedSentences.
+            Keep every other field EXACTLY the same as the previous draft (title, intro, paragraphs, tokens, meta, etc.).
+            DO NOT alter any other content or structure.
+
+            Previous Draft (JSON):
+            ${JSON.stringify(previousDraft).substring(0, 15000)} ... (truncated if too long) ...
+
+            Requirements:
+            - Return full JSON in the exact schema.
+            - All analysis.grammar and analysis.explanation entries MUST start with Chinese characters.
             - Output ONLY valid JSON, no markdown.
             `;
         } else if (previousDraft && feedback) {

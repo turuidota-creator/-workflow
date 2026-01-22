@@ -34,6 +34,7 @@ export const ArticleGeneration: React.FC = () => {
     const [selectedSide, setSelectedSide] = useState<'A' | 'B' | null>(null);
 
     type BriefingFieldKey = 'what' | 'when' | 'who' | 'scope' | 'market_implications' | 'grammar_analysis';
+    type AnalysisTarget = 'sentence_analysis';
     const briefingFieldLabels: Record<BriefingFieldKey, string> = {
         what: '事件内容',
         when: '时间',
@@ -142,11 +143,13 @@ export const ArticleGeneration: React.FC = () => {
     const AuditStatus = ({
         json,
         side,
-        onRegenerateBriefingField
+        onRegenerateBriefingField,
+        onRegenerateSentenceAnalysis
     }: {
         json: string;
         side: 'A' | 'B';
         onRegenerateBriefingField: (side: 'A' | 'B', field: BriefingFieldKey) => void;
+        onRegenerateSentenceAnalysis: (side: 'A' | 'B') => void;
     }) => {
         if (!json) return null;
         const result = runAudit(json);
@@ -184,12 +187,20 @@ export const ArticleGeneration: React.FC = () => {
                             {result.hasGlossary ? "✅" : "⚪"}
                         </span>
                     </div>
-                    <div className="flex items-center justify-between">
+                    <button
+                        type="button"
+                        onClick={(event) => {
+                            event.stopPropagation();
+                            onRegenerateSentenceAnalysis(side);
+                        }}
+                        className="flex items-center justify-between text-left hover:text-white transition-colors"
+                        title="点击重新生成语法分析(中文)"
+                    >
                         <span className="text-slate-500">语法分析(中文)</span>
                         <span className={result.isSentenceAnalysisChineseStart ? "text-green-400" : "text-red-400"}>
                             {result.isSentenceAnalysisChineseStart ? "✅" : "❌"}
                         </span>
-                    </div>
+                    </button>
                 </div>
 
                 {/* Briefing Fields Audit */}
@@ -298,6 +309,7 @@ export const ArticleGeneration: React.FC = () => {
             isRewrite?: boolean;
             shouldPersist?: boolean;
             briefingTarget?: BriefingFieldKey;
+            analysisTarget?: AnalysisTarget;
         } = {}
     ) => {
         if (!session?.context.topic) return null;
@@ -309,6 +321,7 @@ export const ArticleGeneration: React.FC = () => {
         const isRewrite = options.isRewrite ?? false;
         const shouldPersist = options.shouldPersist ?? true;
         const briefingTarget = options.briefingTarget;
+        const analysisTarget = options.analysisTarget;
 
         let previousDraft = null;
         let feedback = null;
@@ -317,6 +330,15 @@ export const ArticleGeneration: React.FC = () => {
             try {
                 previousDraft = JSON.parse(currentJson);
                 feedback = `Regenerate ONLY meta.briefing.${briefingTarget} (${briefingFieldLabels[briefingTarget]}). Keep every other field identical.`;
+            } catch (e) {
+                const errString = String(e);
+                setError(`无法解析当前 JSON，无法局部重写：${errString}`);
+                return { status: 'error', json: currentJson, error: errString };
+            }
+        } else if (analysisTarget) {
+            try {
+                previousDraft = JSON.parse(currentJson);
+                feedback = 'Regenerate ONLY sentence-level analysis (analysis.grammar and analysis.explanation) in paragraph.tokenizedSentences. Keep every other field identical.';
             } catch (e) {
                 const errString = String(e);
                 setError(`无法解析当前 JSON，无法局部重写：${errString}`);
@@ -349,7 +371,8 @@ export const ArticleGeneration: React.FC = () => {
                     previousDraft,
                     feedback,
                     briefingTarget,
-                    briefingLabel: briefingTarget ? briefingFieldLabels[briefingTarget] : undefined
+                    briefingLabel: briefingTarget ? briefingFieldLabels[briefingTarget] : undefined,
+                    analysisTarget
                 })
             });
 
@@ -398,6 +421,31 @@ export const ArticleGeneration: React.FC = () => {
                         } else {
                             newJson = JSON.stringify(data, null, 2);
                         }
+                    } catch (e) {
+                        newJson = JSON.stringify(data, null, 2);
+                    }
+                } else if (analysisTarget && previousDraft) {
+                    try {
+                        const originalRoot = JSON.parse(currentJson);
+                        const updatedRoot = JSON.parse(JSON.stringify(originalRoot));
+                        const originalData = updatedRoot.article || updatedRoot;
+                        const updatedData = data.article || data;
+                        const originalParagraphs = originalData?.paragraphs || [];
+                        const updatedParagraphs = updatedData?.paragraphs || [];
+
+                        originalParagraphs.forEach((para: any, paraIndex: number) => {
+                            const originalSentences = para?.paragraph?.tokenizedSentences || (Array.isArray(para) ? para : []);
+                            const updatedPara = updatedParagraphs[paraIndex];
+                            const updatedSentences = updatedPara?.paragraph?.tokenizedSentences || (Array.isArray(updatedPara) ? updatedPara : []);
+                            originalSentences.forEach((sentence: any, sentenceIndex: number) => {
+                                const updatedSentence = updatedSentences[sentenceIndex];
+                                if (updatedSentence?.analysis) {
+                                    sentence.analysis = updatedSentence.analysis;
+                                }
+                            });
+                        });
+
+                        newJson = JSON.stringify(updatedRoot, null, 2);
                     } catch (e) {
                         newJson = JSON.stringify(data, null, 2);
                     }
@@ -492,6 +540,10 @@ export const ArticleGeneration: React.FC = () => {
 
     const handleRegenerateBriefingField = async (side: 'A' | 'B', field: BriefingFieldKey) => {
         await generateSide(side, { briefingTarget: field });
+    };
+
+    const handleRegenerateSentenceAnalysis = async (side: 'A' | 'B') => {
+        await generateSide(side, { analysisTarget: 'sentence_analysis' });
     };
 
     // ... (existing code)
@@ -700,6 +752,7 @@ export const ArticleGeneration: React.FC = () => {
                                     json={json}
                                     side={side}
                                     onRegenerateBriefingField={handleRegenerateBriefingField}
+                                    onRegenerateSentenceAnalysis={handleRegenerateSentenceAnalysis}
                                 />
                             </div>
                         )}
