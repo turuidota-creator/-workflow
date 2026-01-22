@@ -127,6 +127,7 @@ export const WorkflowProvider: React.FC<{ children: React.ReactNode }> = ({ chil
                 setActiveSessionId(savedSession.id);
             } catch (error) {
                 console.error('Failed to create workflow session', error);
+                alert('Failed to create workflow session. Make sure "workflow_sessions" collection exists in PocketBase.\n' + (error instanceof Error ? error.message : String(error)));
             }
         })();
     }, [deserializeSession, serializeSession]);

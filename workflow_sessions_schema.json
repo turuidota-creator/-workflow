@@ -1,0 +1,57 @@
+[
+    {
+        "id": "workflow_sessions_001",
+        "name": "workflow_sessions",
+        "type": "base",
+        "system": false,
+        "listRule": "@request.auth.id != '' && user = @request.auth.id",
+        "viewRule": "@request.auth.id != '' && user = @request.auth.id",
+        "createRule": "@request.auth.id != '' && user = @request.auth.id",
+        "updateRule": "@request.auth.id != '' && user = @request.auth.id",
+        "deleteRule": "@request.auth.id != '' && user = @request.auth.id",
+        "fields": [
+            {
+                "name": "title",
+                "type": "text",
+                "required": true,
+                "unique": false
+            },
+            {
+                "name": "status",
+                "type": "select",
+                "required": true,
+                "values": [
+                    "idle",
+                    "running",
+                    "waiting",
+                    "completed",
+                    "failed"
+                ],
+                "maxSelect": 1
+            },
+            {
+                "name": "currentStepId",
+                "type": "text",
+                "required": true
+            },
+            {
+                "name": "steps",
+                "type": "json",
+                "required": true
+            },
+            {
+                "name": "context",
+                "type": "json",
+                "required": false
+            },
+            {
+                "name": "user",
+                "type": "relation",
+                "required": false,
+                "collectionId": "_pb_users_auth_",
+                "cascadeDelete": true,
+                "maxSelect": 1
+            }
+        ]
+    }
+]

@@ -65,18 +65,28 @@ const createCollectionClient = (baseUrl: string, collection: string) => {
             const data = await request(url.toString(), { method: 'GET', headers: buildHeaders() });
             return data?.items ?? [];
         },
-        async create(payload: Record<string, unknown>) {
+        async create(payload: Record<string, unknown> | FormData) {
+            const isFormData = payload instanceof FormData;
+            const headers = buildHeaders();
+            if (isFormData) {
+                delete headers['Content-Type']; // Let browser set boundary
+            }
             return request(baseEndpoint, {
                 method: 'POST',
-                headers: buildHeaders(),
-                body: JSON.stringify(payload)
+                headers,
+                body: isFormData ? payload : JSON.stringify(payload)
             });
         },
-        async update(id: string, payload: Record<string, unknown>) {
+        async update(id: string, payload: Record<string, unknown> | FormData) {
+            const isFormData = payload instanceof FormData;
+            const headers = buildHeaders();
+            if (isFormData) {
+                delete headers['Content-Type']; // Let browser set boundary
+            }
             return request(`${baseEndpoint}/${id}`, {
                 method: 'PATCH',
-                headers: buildHeaders(),
-                body: JSON.stringify(payload)
+                headers,
+                body: isFormData ? payload : JSON.stringify(payload)
             });
         },
         async delete(id: string) {

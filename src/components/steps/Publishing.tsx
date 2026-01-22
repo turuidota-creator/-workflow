@@ -23,7 +23,7 @@ export const Publishing: React.FC = () => {
     const handlePublish = async () => {
         if (!session) return;
 
-        const payload = session.context.finalPayload || {
+        const payload = {
             article: session.context.articleJson,
             glossary: session.context.glossary,
             podcast_script: session.context.podcastScript,

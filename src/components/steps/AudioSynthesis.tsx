@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useWorkflow } from '../../context/WorkflowContext';
-import { Volume2, RefreshCw, ChevronRight, Play, Pause, Download, Settings2 } from 'lucide-react';
+import { Volume2, RefreshCw, ChevronRight, Play, Pause, Download, Settings2, UploadCloud } from 'lucide-react';
+import pb from '../../services/pocketbase';
 
 export const AudioSynthesis: React.FC = () => {
     const { getActiveSession, updateSession } = useWorkflow();
     const session = getActiveSession();
-    const [status, setStatus] = useState<'idle' | 'synthesizing' | 'success' | 'error'>('idle');
+    const [status, setStatus] = useState<'idle' | 'synthesizing' | 'uploading' | 'success' | 'error'>('idle');
     const [audioUrl, setAudioUrl] = useState('');
     const [error, setError] = useState('');
     const [progress, setProgress] = useState(0);
@@ -39,18 +40,17 @@ export const AudioSynthesis: React.FC = () => {
         setError('');
         setProgress(0);
 
-        // Simulate progress
+        // Simulate progress for synthesis
         const progressInterval = setInterval(() => {
             setProgress(prev => {
-                if (prev >= 90) {
-                    clearInterval(progressInterval);
-                    return 90;
-                }
+                if (status === 'uploading') return prev;
+                if (prev >= 90) return 90;
                 return prev + 10;
             });
         }, 500);
 
         try {
+            // 1. Synthesize audio (Server generates temp file)
             const res = await fetch('/api/synthesize', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -59,22 +59,74 @@ export const AudioSynthesis: React.FC = () => {
                 })
             });
 
-            clearInterval(progressInterval);
             const data = await res.json();
 
             if (data.error) {
+                clearInterval(progressInterval);
                 setStatus('error');
                 setError(data.error);
-                setProgress(0);
-            } else {
-                setStatus('success');
-                setProgress(100);
-                const url = data.audioUrl || data.url;
-                setAudioUrl(url);
-                updateSession(session.id, {
-                    context: { ...session.context, podcastUrl: url }
-                });
+                return;
             }
+
+            const tempUrl = data.audioUrl || data.url;
+
+            // 2. Upload to PocketBase
+            setStatus('uploading');
+            setProgress(90);
+
+            // Fetch the blob from temp URL
+            const audioBlob = await fetch(tempUrl).then(r => r.blob());
+            const formData = new FormData();
+            formData.append('podcast_file', audioBlob, `podcast_${Date.now()}.mp3`);
+
+            // Prepare article data if creating new
+            let articleId = session.context.articleId;
+            let record;
+
+            if (articleId) {
+                // Update existing article
+                record = await pb.collection('articles').update(articleId, formData);
+            } else {
+                // Ensure we have necessary fields for creation
+                const meta = session.context.articleJson?.meta || {};
+                const articlePayload = {
+                    date: new Date().toISOString(),
+                    level: session.context.level || '10',
+                    topic: session.context.topic || '科技',
+                    title_zh: meta.title_zh || session.context.topic || 'Untitled',
+                    title_en: meta.title_en || 'Untitled',
+                    // Optional fields that we have
+                    intro: meta.briefing ? { briefing: meta.briefing } : {},
+                    content: session.context.articleJson || {},
+                };
+
+                // Append text fields to FormData
+                Object.entries(articlePayload).forEach(([key, value]) => {
+                    formData.append(key, typeof value === 'object' ? JSON.stringify(value) : String(value));
+                });
+
+                record = await pb.collection('articles').create(formData);
+                articleId = record.id;
+            }
+
+            // Construct permanent URL
+            // Format: /api/files/COLLECTION_ID_OR_NAME/RECORD_ID/FILENAME
+            const permanentUrl = `${pb.baseUrl}/api/files/articles/${record.id}/${record.podcast_file}`;
+
+            clearInterval(progressInterval);
+            setStatus('success');
+            setProgress(100);
+            setAudioUrl(permanentUrl);
+
+            // Update Session
+            updateSession(session.id, {
+                context: {
+                    ...session.context,
+                    podcastUrl: permanentUrl,
+                    articleId: articleId // Save the ID so future steps use it
+                }
+            });
+
         } catch (e) {
             clearInterval(progressInterval);
             setStatus('error');
@@ -129,17 +181,17 @@ export const AudioSynthesis: React.FC = () => {
                         音频合成 (Audio Synthesis)
                     </h3>
                     <p className="text-muted-foreground text-sm mt-1">
-                        使用 TTS 引擎将播客脚本转换为音频文件。
+                        使用 TTS 引擎将播客脚本转换为音频文件并上传。
                     </p>
                 </div>
 
                 <div className="flex gap-2">
                     <button
                         onClick={handleSynthesize}
-                        disabled={status === 'synthesizing'}
+                        disabled={status === 'synthesizing' || status === 'uploading'}
                         className="flex items-center gap-2 bg-secondary hover:bg-secondary/80 text-secondary-foreground px-4 py-2 rounded-lg font-medium transition-all"
                     >
-                        {status === 'synthesizing' ? <RefreshCw className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
+                        {(status === 'synthesizing' || status === 'uploading') ? <RefreshCw className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
                         {audioUrl ? '重新合成' : '开始合成'}
                     </button>
 
@@ -162,10 +214,10 @@ export const AudioSynthesis: React.FC = () => {
             )}
 
             {/* Progress Bar */}
-            {status === 'synthesizing' && (
+            {(status === 'synthesizing' || status === 'uploading') && (
                 <div className="space-y-2">
                     <div className="flex justify-between text-sm text-muted-foreground">
-                        <span>正在合成音频...</span>
+                        <span>{status === 'uploading' ? '正在上传至云端...' : '正在合成音频...'}</span>
                         <span>{progress}%</span>
                     </div>
                     <div className="h-2 bg-card/50 rounded-full overflow-hidden">
@@ -179,7 +231,7 @@ export const AudioSynthesis: React.FC = () => {
 
             {/* Main Content */}
             <div className="flex-1 min-h-0 flex flex-col">
-                {status !== 'synthesizing' && !audioUrl && (
+                {status !== 'synthesizing' && status !== 'uploading' && !audioUrl && (
                     <div className="h-full flex items-center justify-center text-muted-foreground">
                         <div className="text-center">
                             <Volume2 className="w-16 h-16 mx-auto mb-4 opacity-30" />
@@ -193,7 +245,13 @@ export const AudioSynthesis: React.FC = () => {
                         {/* Audio Player Card */}
                         <div className="bg-card/30 border border-white/5 rounded-xl p-6 space-y-4">
                             {/* Waveform Placeholder */}
-                            <div className="h-24 bg-gradient-to-r from-green-500/10 via-teal-500/10 to-green-500/10 rounded-lg flex items-center justify-center">
+                            <div className="h-24 bg-gradient-to-r from-green-500/10 via-teal-500/10 to-green-500/10 rounded-lg flex items-center justify-center relative overflow-hidden">
+                                {status === 'success' && (
+                                    <div className="absolute top-2 right-2 flex items-center gap-1 text-xs text-green-400/80 bg-green-900/20 px-2 py-0.5 rounded-full">
+                                        <UploadCloud className="w-3 h-3" />
+                                        已云端存储
+                                    </div>
+                                )}
                                 <div className="flex items-end gap-1 h-16">
                                     {[...Array(40)].map((_, i) => (
                                         <div
