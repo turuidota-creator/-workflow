@@ -757,44 +757,78 @@ app.post('/api/podcast-script', async (req, res) => {
 app.get('/api/news/scan', async (req, res) => {
     try {
         console.log('Scanning news from RSS...');
-        // Fetch from Hacker News RSS (reliable, simple)
-        // Using built-in fetch with the configured proxy dispatcher
-        const response = await fetch('https://news.ycombinator.com/rss', {
-            dispatcher: proxyDispatcher
+        const feeds = [
+            {
+                name: 'Hacker News',
+                category: '科技',
+                url: 'https://news.ycombinator.com/rss',
+                maxItems: 6
+            },
+            {
+                name: 'NYTimes Politics',
+                category: '政治',
+                url: 'https://rss.nytimes.com/services/xml/rss/nyt/Politics.xml',
+                maxItems: 4
+            },
+            {
+                name: 'BBC Politics',
+                category: '政治',
+                url: 'https://feeds.bbci.co.uk/news/politics/rss.xml',
+                maxItems: 4
+            },
+            {
+                name: 'NYTimes Business',
+                category: '财经',
+                url: 'https://rss.nytimes.com/services/xml/rss/nyt/Business.xml',
+                maxItems: 4
+            },
+            {
+                name: 'WSJ Markets',
+                category: '财经',
+                url: 'https://feeds.a.dj.com/rss/RSSMarketsMain.xml',
+                maxItems: 4
+            }
+        ];
+
+        const itemRegex = /<item>([\s\S]*?)<\/item>/g;
+        const titleRegex = /<title>([\s\S]*?)<\/title>/;
+
+        const fetchResults = await Promise.allSettled(
+            feeds.map(async (feed) => {
+                const response = await fetch(feed.url, { dispatcher: proxyDispatcher });
+                if (!response.ok) {
+                    throw new Error(`Failed to fetch RSS (${feed.name}): ${response.status}`);
+                }
+                const text = await response.text();
+                const items = [];
+                let match;
+                while ((match = itemRegex.exec(text)) !== null) {
+                    if (items.length >= feed.maxItems) break;
+                    const itemContent = match[1];
+                    const titleMatch = itemContent.match(titleRegex);
+                    if (titleMatch) {
+                        let title = titleMatch[1].trim();
+                        title = title.replace(/^<!\[CDATA\[|\]\]>$/g, '');
+                        items.push(`【${feed.category} | ${feed.name}】${title}`);
+                    }
+                }
+                return items;
+            })
+        );
+
+        const topics = fetchResults.flatMap((result) => {
+            if (result.status === 'fulfilled') return result.value;
+            console.warn('RSS fetch failed:', result.reason?.message || result.reason);
+            return [];
         });
 
-        if (!response.ok) {
-            throw new Error(`Failed to fetch RSS: ${response.status}`);
+        if (!topics.length) {
+            throw new Error('No RSS items fetched');
         }
 
-        const text = await response.text();
-
-        // Simple Regex Parse for Titles and Links
-        // XML parsing with regex is fragile but sufficient for this specific RSS structure
-        const items = [];
-
-        // Match <item> blocks to avoid capturing channel title
-        const itemRegex = /<item>([\s\S]*?)<\/item>/g;
-        let match;
-
-        while ((match = itemRegex.exec(text)) !== null) {
-            if (items.length >= 8) break;
-
-            const itemContent = match[1];
-            const titleMatch = itemContent.match(/<title>([\s\S]*?)<\/title>/);
-            // const linkMatch = itemContent.match(/<link>([\s\S]*?)<\/link>/);
-
-            if (titleMatch) {
-                let title = titleMatch[1].trim();
-                // Clean up CDATA if present
-                title = title.replace(/^<!\[CDATA\[|\]\]>$/g, '');
-                items.push(title);
-            }
-        }
-
-        console.log(`Found ${items.length} news items`);
-        res.json({ topics: items });
-
+        const trimmedTopics = topics.slice(0, 12);
+        console.log(`Found ${trimmedTopics.length} news items`);
+        res.json({ topics: trimmedTopics });
     } catch (e) {
         console.error("News Scan Error:", e);
         // Fallback to static topics if network fails
@@ -1377,4 +1411,3 @@ app.listen(PORT, () => {
     console.log(`Backend server running on http://localhost:${PORT}`);
     console.log(`Project Root: ${PROJECT_ROOT}`);
 });
-
