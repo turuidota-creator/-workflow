@@ -9,13 +9,26 @@ export const ArticleGeneration: React.FC = () => {
     const session = getActiveSession();
 
     // State for two separate generations
-    const [statusA, setStatusA] = useState<'idle' | 'generating' | 'success' | 'error'>('idle');
-    const [jsonA, setJsonA] = useState<string>('');
-    const [errorA, setErrorA] = useState('');
+    // State for two separate generations - initialize from session if available
+    const [statusA, setStatusA] = useState<'idle' | 'generating' | 'success' | 'error'>(
+        (session?.context.generationState?.A?.status as any) || 'idle'
+    );
+    const [jsonA, setJsonA] = useState<string>(
+        session?.context.generationState?.A?.json || ''
+    );
+    const [errorA, setErrorA] = useState(
+        session?.context.generationState?.A?.error || ''
+    );
 
-    const [statusB, setStatusB] = useState<'idle' | 'generating' | 'success' | 'error'>('idle');
-    const [jsonB, setJsonB] = useState<string>('');
-    const [errorB, setErrorB] = useState('');
+    const [statusB, setStatusB] = useState<'idle' | 'generating' | 'success' | 'error'>(
+        (session?.context.generationState?.B?.status as any) || 'idle'
+    );
+    const [jsonB, setJsonB] = useState<string>(
+        session?.context.generationState?.B?.json || ''
+    );
+    const [errorB, setErrorB] = useState(
+        session?.context.generationState?.B?.error || ''
+    );
 
     // Selection
     const [selectedSide, setSelectedSide] = useState<'A' | 'B' | null>(null);
@@ -37,20 +50,52 @@ export const ArticleGeneration: React.FC = () => {
                 body: JSON.stringify({
                     topic: session.context.topic,
                     level: "10",
-                    style: side
+                    style: side,
+                    // 传递深度研究结果作为上下文
+                    researchContext: session.context.researchResult || null
                 })
             });
 
             const data = await res.json();
 
+            let newStatus: any = 'success';
+            let newJson = '';
+            let newError = '';
+
             if (data.error) {
+                newStatus = 'error';
+                newError = data.error;
+                if (data.raw) newJson = data.raw;
+
                 setStatus('error');
                 setError(data.error);
                 if (data.raw) setJson(data.raw);
             } else {
+                newStatus = 'success';
+                newJson = JSON.stringify(data, null, 2);
+
                 setStatus('success');
-                setJson(JSON.stringify(data, null, 2));
+                setJson(newJson);
             }
+
+            // Persist to session
+            if (session) {
+                const currentState = session.context.generationState || {};
+                updateSession(session.id, {
+                    context: {
+                        ...session.context,
+                        generationState: {
+                            ...currentState,
+                            [side]: {
+                                status: newStatus,
+                                json: newJson,
+                                error: newError
+                            }
+                        }
+                    }
+                });
+            }
+
         } catch (e) {
             setStatus('error');
             setError(String(e));
@@ -111,7 +156,7 @@ export const ArticleGeneration: React.FC = () => {
                 </div>
 
                 {/* Content Area */}
-                <div className="flex-1 relative min-h-0">
+                <div className="flex-1 relative min-h-[600px]">
                     {status === 'generating' && (
                         <div className="absolute inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm z-10">
                             <RefreshCw className="w-8 h-8 animate-spin text-muted-foreground" />

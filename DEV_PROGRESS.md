@@ -75,10 +75,33 @@
 
 ## 🔴 已知问题 (Issues)
 
+- [x] ~~新闻标签硬编码显示"科技"~~ (2026-01-22 已修复)
 - [ ] 部分组件存在未使用变量的 lint 警告 (不影响功能)
 - [ ] TTS 依赖 Python 环境配置
 
 ---
+
+### 新闻标签与分组排序修复 (2026-01-22)
+
+**问题**：扫描新闻后，标题显示"政治 | NYTimes Politics"，但标签固定显示"科技"。
+
+**原因**：`TopicDiscovery.tsx` 第99行硬编码 `<span>科技</span>`。
+
+**解决**：
+
+1. 新增 `parseNewsTopic()` 函数解析 `【类别 | 来源】标题` 格式
+2. 按类别分组显示（科技 > 政治 > 财经 > 其他）
+3. 动态渲染类别标签，每个类别有独特颜色
+
+### 新增"查看原文"功能 (2026-01-22)
+
+**需求**：用户希望能够点击进入新闻原文。
+
+**实现**：
+
+1. 后端 `/api/news/scan` 新增链接提取，返回结构化数据 `{ items: [...], topics: [...] }`
+2. 前端新增 `ExternalLink` 图标按钮，点击在新窗口打开原文
+3. 使用 `e.stopPropagation()` 阻止冒泡，避免误触选择
 
 ## 📚 踩坑记录 (Lessons Learned)
 
@@ -138,3 +161,33 @@ if (password.startsWith('"')) password = password.slice(1, -1);
 **问题**：Dictionary 有几千条记录，一次性返回导致超时/OOM。
 
 **解决**：添加分页支持 `?page=1&perPage=500`。
+
+---
+
+### 文章生成修复与优化 (2026-01-22)
+
+**需求**：
+
+1. **Bug修复**：切换 Workflow 时文章生成状态丢失。
+2. **体验优化**：生成结果框太小，难以阅读。
+3. **功能完善**：实现 Old Editor (Style A) 和 Show-off (Style B) 的实际提示词差异。
+
+**实现**：
+
+1. **状态持久化**：
+   - 扩展 `WorkflowSession.context` 类型，增加 `generationState` 字段。
+   - `ArticleGeneration` 组件现在从 Session Context 初始化状态，并在生成完成后自动保存。
+2. **样式提示词**：
+   - 创建 `.agent/prompts/style_old_editor.md` 和 `.agent/prompts/style_show_off.md`。
+   - 后端 `/api/generate` 接口根据 `style` 参数读取对应提示词文件并注入 Prompt。
+3. **UI 调整**：
+   - 文章生成结果框最小高度调整为 `600px`。
+
+### 提示词配置升级 (2026-01-22)
+
+**需求**：将文章生成风格 (Style A/B) 的提示词放入设置页面以便修改。
+
+**实现**：
+
+1. **后端 `/api/prompts` 扩展**：支持 `style-old-editor` 和 `style-show-off` 键值。
+2. **Settings 页面更新**：在提示词下拉菜单中新增对应选项。

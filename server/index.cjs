@@ -199,6 +199,76 @@ app.post('/api/config', (req, res) => {
 });
 
 /**
+ * GET /api/prompts
+ * Get prompt content by key
+ */
+app.get('/api/prompts', (req, res) => {
+    try {
+        const { key } = req.query;
+        let filePath = '';
+
+        if (key === 'article-system') {
+            filePath = path.join(SKILLS_DIR, 'article-generator', 'SKILL.md');
+        } else if (key === 'research-template') {
+            filePath = path.join(AGENT_DIR, 'prompts', 'research.md');
+        } else if (key === 'vocabulary-system') {
+            filePath = path.join(SKILLS_DIR, 'vocabulary-production-expert', 'SKILL.md');
+        } else if (key === 'style-old-editor') {
+            filePath = path.join(AGENT_DIR, 'prompts', 'style_old_editor.md');
+        } else if (key === 'style-show-off') {
+            filePath = path.join(AGENT_DIR, 'prompts', 'style_show_off.md');
+        } else {
+            return res.status(400).json({ error: "Invalid key" });
+        }
+
+        if (fs.existsSync(filePath)) {
+            const content = fs.readFileSync(filePath, 'utf-8');
+            res.json({ content });
+        } else {
+            res.json({ content: '' });
+        }
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+/**
+ * POST /api/prompts
+ * Save prompt content
+ */
+app.post('/api/prompts', (req, res) => {
+    try {
+        const { key, content } = req.body;
+        let filePath = '';
+
+        if (key === 'article-system') {
+            filePath = path.join(SKILLS_DIR, 'article-generator', 'SKILL.md');
+        } else if (key === 'research-template') {
+            filePath = path.join(AGENT_DIR, 'prompts', 'research.md');
+        } else if (key === 'vocabulary-system') {
+            filePath = path.join(SKILLS_DIR, 'vocabulary-production-expert', 'SKILL.md');
+        } else if (key === 'style-old-editor') {
+            filePath = path.join(AGENT_DIR, 'prompts', 'style_old_editor.md');
+        } else if (key === 'style-show-off') {
+            filePath = path.join(AGENT_DIR, 'prompts', 'style_show_off.md');
+        } else {
+            return res.status(400).json({ error: "Invalid key" });
+        }
+
+        // Ensure directory exists
+        const dir = path.dirname(filePath);
+        if (!fs.existsSync(dir)) {
+            fs.mkdirSync(dir, { recursive: true });
+        }
+
+        fs.writeFileSync(filePath, content, 'utf-8');
+        res.json({ success: true });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+/**
  * POST /api/test-gemini
  * Simple test call to Gemini (using fetch in Node 18+)
  */
@@ -234,15 +304,19 @@ app.post('/api/test-gemini', async (req, res) => {
  */
 app.post('/api/generate', async (req, res) => {
     try {
-        const { topic, level = "10" } = req.body;
+        const { topic, level = "10", researchContext } = req.body;
 
-        // 1. Get API Key
+        // 1. Get API Key and Model from config
         const envPath = path.join(PROJECT_ROOT, '.env');
         const content = fs.existsSync(envPath) ? fs.readFileSync(envPath, 'utf-8') : '';
-        const match = content.match(/GEMINI_API_KEY=(.+)/);
-        const apiKey = match ? match[1].trim() : null;
+        const apiKeyMatch = content.match(/GEMINI_API_KEY=(.+)/);
+        const modelMatch = content.match(/ARTICLE_MODEL=(.+)/);
+        const apiKey = apiKeyMatch ? apiKeyMatch[1].trim() : null;
+        const modelName = modelMatch ? modelMatch[1].trim() : 'gemini-3-pro-preview';
 
         if (!apiKey) return res.status(400).json({ error: "Missing GEMINI_API_KEY" });
+
+        console.log(`[Generate] Using model: ${modelName}`);
 
         // 2. Read System Prompt (SKILL.md)
         const skillPath = path.join(SKILLS_DIR, 'article-generator', 'SKILL.md');
@@ -251,25 +325,71 @@ app.post('/api/generate', async (req, res) => {
         }
         const systemPrompt = fs.readFileSync(skillPath, 'utf-8');
 
-        // 3. Construct User Prompt (Simulating Research Input for MVP)
-        // In a real flow, this would come from Step 1's output file
-        const userPrompt = `
+        // 3. Construct User Prompt with optional research context
+        let userPrompt = `
         Target Topic: ${topic}
         Target Level: ${level}
+        Time: ${new Date().toISOString().split('T')[0]}.
+        `;
+
+        // If we have research context, include it for richer content generation
+        if (researchContext && typeof researchContext === 'object') {
+            userPrompt += `
         
-        [Simulated Research Data]
+        [Deep Research Results - Use this to enrich the article]
+        
+        Summary: ${researchContext.summary || 'N/A'}
+        
+        Background Context: ${researchContext.background || 'N/A'}
+        
+        Key Points:
+        ${(researchContext.keyPoints || []).map((p, i) => `${i + 1}. ${p}`).join('\n        ')}
+        
+        Different Perspectives:
+        - Supporters' View: ${researchContext.perspectives?.supporters || 'N/A'}
+        - Critics' View: ${researchContext.perspectives?.critics || 'N/A'}
+        
+        Related Topics: ${(researchContext.relatedTopics || []).join(', ') || 'N/A'}
+        
+        IMPORTANT: Use the above research to create a balanced, informative article that:
+        1. Includes relevant background context
+        2. Presents multiple perspectives (both supporting and critical views)
+        3. References the key points discovered
+        `;
+        } else {
+            // Fallback to simulated research for basic generation
+            userPrompt += `
+        [Basic Research Data]
         Latest news indicates that "${topic}" is a trending issue. 
         Key entities involved: Global Tech Giants, Governments.
-        Time: ${new Date().toISOString().split('T')[0]}.
         Context: Significant developments have occurred in this field recently.
+        `;
+        }
+
+        // Read Style Prompts
+        const promptsDir = path.join(AGENT_DIR, 'prompts');
+        const style = req.body.style; // 'A' or 'B'
+        let stylePrompt = '';
+
+        if (style === 'A') {
+            const stylePath = path.join(promptsDir, 'style_old_editor.md');
+            if (fs.existsSync(stylePath)) stylePrompt = fs.readFileSync(stylePath, 'utf-8');
+        } else if (style === 'B') {
+            const stylePath = path.join(promptsDir, 'style_show_off.md');
+            if (fs.existsSync(stylePath)) stylePrompt = fs.readFileSync(stylePath, 'utf-8');
+        }
+
+        userPrompt += `
+        Task: Transform this research into the JSON format defined in the System Prompt.
         
-        Task: transform this research into the JSON format defined in the System Prompt.
+        ${stylePrompt}
+
         IMPORTANT: Return ONLY valid JSON, no markdown code blocks.
         `;
 
         // 4. Call Gemini
         console.log(`Generating article for topic: ${topic}...`);
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3-pro-preview:generateContent?key=${apiKey}`, {
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -319,6 +439,145 @@ app.post('/api/generate', async (req, res) => {
  */
 app.get('/api/health', (req, res) => {
     res.json({ status: 'ok', time: new Date().toISOString() });
+});
+
+/**
+ * POST /api/research
+ * Deep research on a topic - fetch additional background info, perspectives, etc.
+ * Uses Gemini with grounding to search for related information
+ */
+app.post('/api/research', async (req, res) => {
+    try {
+        const { topic, newsTitle, newsSource } = req.body;
+
+        if (!topic && !newsTitle) {
+            return res.status(400).json({ error: "Missing topic or newsTitle" });
+        }
+
+        // 1. Get API Key and Model from config
+        const envPath = path.join(PROJECT_ROOT, '.env');
+        const content = fs.existsSync(envPath) ? fs.readFileSync(envPath, 'utf-8') : '';
+        const apiKeyMatch = content.match(/GEMINI_API_KEY=(.+)/);
+        const modelMatch = content.match(/RESEARCH_MODEL=(.+)/);
+        const apiKey = apiKeyMatch ? apiKeyMatch[1].trim() : null;
+        const researchModel = modelMatch ? modelMatch[1].trim() : 'gemini-3-flash-preview';
+
+        if (!apiKey) return res.status(400).json({ error: "Missing GEMINI_API_KEY" });
+
+        const searchTopic = newsTitle || topic;
+        console.log(`[Research] Starting deep research on: ${searchTopic} using model: ${researchModel}`);
+
+        // 2. Construct research prompt
+        const promptsDir = path.join(AGENT_DIR, 'prompts');
+        const researchPromptPath = path.join(promptsDir, 'research.md');
+        let researchPrompt = '';
+
+        if (fs.existsSync(researchPromptPath)) {
+            researchPrompt = fs.readFileSync(researchPromptPath, 'utf-8');
+        } else {
+            // Fallback if file missing
+            researchPrompt = `
+You are a news research assistant. I need you to analyze and provide comprehensive background information on the following news topic.
+
+**News Topic**: {{topic}}
+{{source_line}}
+
+Please provide:
+1. **Summary** (综合摘要): A 2-3 sentence overview of the core issue
+2. **Background** (背景信息): What context is needed to understand this topic? (1-2 paragraphs)
+3. **Key Points** (关键要点): 3-5 bullet points of the most important facts
+4. **Perspectives** (多方观点):
+   - Supporters' view (支持方): What arguments do supporters make?
+   - Critics' view (反对方): What concerns or criticisms exist?
+5. **Related Topics** (相关话题): 2-3 related topics for further reading
+
+Return your response in the following JSON format:
+{
+    "summary": "...",
+    "background": "...",
+    "keyPoints": ["point1", "point2", "point3"],
+    "perspectives": {
+        "supporters": "...",
+        "critics": "..."
+    },
+    "relatedTopics": ["topic1", "topic2"]
+}
+
+IMPORTANT: Return ONLY valid JSON, no markdown formatting.
+`;
+        }
+
+        // Replace placeholders
+        researchPrompt = researchPrompt.replace('{{topic}}', searchTopic);
+        const sourceLine = newsSource ? `**Original Source**: ${newsSource}` : '';
+        researchPrompt = researchPrompt.replace('{{source_line}}', sourceLine);
+
+
+        // 3. Call Gemini with grounding
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${researchModel}:generateContent?key=${apiKey}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                contents: [
+                    { role: "user", parts: [{ text: researchPrompt }] }
+                ],
+                tools: [{
+                    googleSearch: {}
+                }],
+                generationConfig: {
+                    temperature: 0.3,
+                    responseMimeType: "application/json"
+                }
+            }),
+            dispatcher: proxyDispatcher
+        });
+
+        const data = await response.json();
+
+        if (data.error) {
+            console.error("[Research] Gemini Error:", data.error);
+            return res.status(500).json({ error: data.error.message });
+        }
+
+        const generatedText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+
+        // Extract grounding metadata if available
+        const groundingMetadata = data.candidates?.[0]?.groundingMetadata;
+        const searchSuggestions = groundingMetadata?.webSearchQueries || [];
+        const groundingChunks = groundingMetadata?.groundingChunks || [];
+
+        if (!generatedText) {
+            return res.status(500).json({ error: "No research content generated" });
+        }
+
+        // 4. Parse and return results
+        try {
+            const researchResult = JSON.parse(generatedText.replace(/```json/g, '').replace(/```/g, ''));
+
+            // Add source information from grounding
+            researchResult.sources = groundingChunks.map(chunk => ({
+                title: chunk.web?.title || 'Unknown',
+                url: chunk.web?.uri || ''
+            })).filter(s => s.url);
+
+            researchResult.searchQueries = searchSuggestions;
+            researchResult.topic = searchTopic;
+
+            console.log(`[Research] Completed research with ${researchResult.sources?.length || 0} sources`);
+            res.json(researchResult);
+        } catch (e) {
+            console.error("[Research] JSON Parse Error:", e);
+            res.json({
+                error: "Invalid JSON format",
+                raw: generatedText,
+                topic: searchTopic
+            });
+        }
+
+    } catch (e) {
+        console.error("[Research] Server Error:", e);
+        res.status(500).json({ error: e.message });
+    }
 });
 
 /**
@@ -792,6 +1051,9 @@ app.get('/api/news/scan', async (req, res) => {
 
         const itemRegex = /<item>([\s\S]*?)<\/item>/g;
         const titleRegex = /<title>([\s\S]*?)<\/title>/;
+        const linkRegex = /<link>([\s\S]*?)<\/link>/;
+        // Hacker News uses <comments> for the discussion link, actual article is often in <link>
+        const commentsRegex = /<comments>([\s\S]*?)<\/comments>/;
 
         const fetchResults = await Promise.allSettled(
             feeds.map(async (feed) => {
@@ -806,40 +1068,62 @@ app.get('/api/news/scan', async (req, res) => {
                     if (items.length >= feed.maxItems) break;
                     const itemContent = match[1];
                     const titleMatch = itemContent.match(titleRegex);
+                    const linkMatch = itemContent.match(linkRegex);
+
                     if (titleMatch) {
                         let title = titleMatch[1].trim();
                         title = title.replace(/^<!\[CDATA\[|\]\]>$/g, '');
-                        items.push(`【${feed.category} | ${feed.name}】${title}`);
+
+                        let link = '';
+                        if (linkMatch) {
+                            link = linkMatch[1].trim();
+                            link = link.replace(/^<!\[CDATA\[|\]\]>$/g, '');
+                        }
+
+                        items.push({
+                            category: feed.category,
+                            source: feed.name,
+                            title: title,
+                            link: link,
+                            raw: `【${feed.category} | ${feed.name}】${title}`
+                        });
                     }
                 }
                 return items;
             })
         );
 
-        const topics = fetchResults.flatMap((result) => {
+        const newsItems = fetchResults.flatMap((result) => {
             if (result.status === 'fulfilled') return result.value;
             console.warn('RSS fetch failed:', result.reason?.message || result.reason);
             return [];
         });
 
-        if (!topics.length) {
+        if (!newsItems.length) {
             throw new Error('No RSS items fetched');
         }
 
-        const trimmedTopics = topics.slice(0, 12);
-        console.log(`Found ${trimmedTopics.length} news items`);
-        res.json({ topics: trimmedTopics });
+        const trimmedItems = newsItems.slice(0, 22);
+        console.log(`Found ${trimmedItems.length} news items`);
+
+        // 返回结构化数据，同时保留 topics 字段以兼容旧版前端
+        res.json({
+            items: trimmedItems,
+            topics: trimmedItems.map(item => item.raw)
+        });
     } catch (e) {
         console.error("News Scan Error:", e);
-        // Fallback to static topics if network fails
+        // Fallback to static items if network fails
+        const fallbackItems = [
+            { category: '科技', source: 'Tech News', title: 'SpaceX Starship Latest Updates', link: '', raw: '【科技 | Tech News】SpaceX Starship Latest Updates' },
+            { category: '科技', source: 'AI News', title: 'New AI Models Released This Week', link: '', raw: '【科技 | AI News】New AI Models Released This Week' },
+            { category: '财经', source: 'Finance', title: 'Global Economic Trends 2026', link: '', raw: '【财经 | Finance】Global Economic Trends 2026' },
+            { category: '科技', source: 'Tech News', title: 'Quantum Computing Breakthroughs', link: '', raw: '【科技 | Tech News】Quantum Computing Breakthroughs' },
+            { category: '科技', source: 'Auto News', title: 'Electric Vehicle Market Analysis', link: '', raw: '【科技 | Auto News】Electric Vehicle Market Analysis' }
+        ];
         res.json({
-            topics: [
-                "SpaceX Starship Latest Updates",
-                "New AI Models Released This Week",
-                "Global Economic Trends 2026",
-                "Quantum Computing Breakthroughs",
-                "Electric Vehicle Market Analysis"
-            ],
+            items: fallbackItems,
+            topics: fallbackItems.map(item => item.raw),
             error: e.message
         });
     }

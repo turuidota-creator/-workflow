@@ -34,6 +34,22 @@ export interface WorkflowSession {
         podcastScript?: string;
         podcastUrl?: string;
         finalPayload?: any; // Edited payload before publishing
+        researchResult?: {  // 深度研究结果
+            summary: string;
+            background: string;
+            keyPoints: string[];
+            perspectives: {
+                supporters: string;
+                critics: string;
+            };
+            relatedTopics: string[];
+            sources: { title: string; url: string }[];
+            topic: string;
+        };
+        generationState?: {
+            A?: { status: string; json: string; error: string; };
+            B?: { status: string; json: string; error: string; };
+        };
     };
 }
 
