@@ -748,6 +748,69 @@ app.post('/api/podcast-script', async (req, res) => {
     }
 });
 
+// ... (previous code)
+
+/**
+ * GET /api/news/scan
+ * Fetch latest news from RSS feeds
+ */
+app.get('/api/news/scan', async (req, res) => {
+    try {
+        console.log('Scanning news from RSS...');
+        // Fetch from Hacker News RSS (reliable, simple)
+        // Using built-in fetch with the configured proxy dispatcher
+        const response = await fetch('https://news.ycombinator.com/rss', {
+            dispatcher: proxyDispatcher
+        });
+
+        if (!response.ok) {
+            throw new Error(`Failed to fetch RSS: ${response.status}`);
+        }
+
+        const text = await response.text();
+
+        // Simple Regex Parse for Titles and Links
+        // XML parsing with regex is fragile but sufficient for this specific RSS structure
+        const items = [];
+
+        // Match <item> blocks to avoid capturing channel title
+        const itemRegex = /<item>([\s\S]*?)<\/item>/g;
+        let match;
+
+        while ((match = itemRegex.exec(text)) !== null) {
+            if (items.length >= 8) break;
+
+            const itemContent = match[1];
+            const titleMatch = itemContent.match(/<title>([\s\S]*?)<\/title>/);
+            // const linkMatch = itemContent.match(/<link>([\s\S]*?)<\/link>/);
+
+            if (titleMatch) {
+                let title = titleMatch[1].trim();
+                // Clean up CDATA if present
+                title = title.replace(/^<!\[CDATA\[|\]\]>$/g, '');
+                items.push(title);
+            }
+        }
+
+        console.log(`Found ${items.length} news items`);
+        res.json({ topics: items });
+
+    } catch (e) {
+        console.error("News Scan Error:", e);
+        // Fallback to static topics if network fails
+        res.json({
+            topics: [
+                "SpaceX Starship Latest Updates",
+                "New AI Models Released This Week",
+                "Global Economic Trends 2026",
+                "Quantum Computing Breakthroughs",
+                "Electric Vehicle Market Analysis"
+            ],
+            error: e.message
+        });
+    }
+});
+
 /**
  * POST /api/synthesize
  * Synthesize audio from podcast script using Volcengine TTS

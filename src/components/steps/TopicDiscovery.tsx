@@ -18,12 +18,19 @@ export const TopicDiscovery: React.FC = () => {
     const [selectedTopic, setSelectedTopic] = useState<string | null>(session?.context.topic || null);
     const [searchResults, setSearchResults] = useState(SUGGESTED_TOPICS);
 
-    const handleSearch = () => {
+    const handleSearch = async () => {
         setIsSearching(true);
-        // Simulate API call to 'news-researcher'
-        setTimeout(() => {
+        try {
+            const res = await fetch('/api/news/scan');
+            const data = await res.json();
+            if (data.topics && Array.isArray(data.topics)) {
+                setSearchResults(data.topics);
+            }
+        } catch (e) {
+            console.error("Failed to scan news:", e);
+        } finally {
             setIsSearching(false);
-        }, 1500);
+        }
     };
 
     const handleConfirm = () => {
