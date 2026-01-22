@@ -23,12 +23,14 @@ export const Publishing: React.FC = () => {
     const handlePublish = async () => {
         if (!session) return;
 
-        const payload = {
-            article: session.context.articleJson,
-            glossary: session.context.glossary,
-            podcast_script: session.context.podcastScript,
-            podcast_url: session.context.podcastUrl,
-        };
+        const payload = session.context.finalPayload
+            ? { ...session.context.finalPayload }
+            : {
+                article: session.context.articleJson,
+                glossary: session.context.glossary,
+                podcast_script: session.context.podcastScript,
+                podcast_url: session.context.podcastUrl,
+            };
 
         setStatus('publishing');
         setResult(null);

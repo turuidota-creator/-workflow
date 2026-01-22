@@ -45,6 +45,11 @@
                 "required": false
             },
             {
+                "name": "podcast_script_wf",
+                "type": "text",
+                "required": false
+            },
+            {
                 "name": "user",
                 "type": "relation",
                 "required": false,
