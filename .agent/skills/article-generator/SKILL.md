@@ -66,6 +66,7 @@ interface BriefingCard {
   who: string;                 // 事件主体：涉及的组织/人物
   scope: string;               // 影响范围：涵盖的地域/人群/领域
   market_implications: string; // 市场影响：对市场/行业的具体影响
+  grammar_analysis: string;    // 语法分析：**中文开头**，简述文本语法重点
 }
 ```
 
@@ -77,7 +78,8 @@ interface BriefingCard {
   "when": "2026年1月20日",
   "who": "欧盟委员会；印度政府。",
   "scope": "涵盖20亿人口的经贸与投资。",
-  "market_implications": "供应链多元化加速；印度纺织与欧盟机械受益。"
+  "market_implications": "供应链多元化加速；印度纺织与欧盟机械受益。",
+  "grammar_analysis": "语法重点：首句包含时间状语，后续使用定语从句补充背景。"
 }
 ```
 
@@ -230,3 +232,4 @@ interface ArticleToken {
 - `briefing` 缺失: 检查是否在 `meta` 内部。
 - `intro.text` 抽象: 必须是具体事实。
 - `analysis` 语言: 必须是中文，`explanation` 必须以 `人话：` 开头。
+- `briefing.grammar_analysis` 非中文开头: 必须以中文字符开头。
