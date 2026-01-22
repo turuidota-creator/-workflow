@@ -33,6 +33,16 @@ export const ArticleGeneration: React.FC = () => {
     // Selection
     const [selectedSide, setSelectedSide] = useState<'A' | 'B' | null>(null);
 
+    type BriefingFieldKey = 'what' | 'when' | 'who' | 'scope' | 'market_implications' | 'grammar_analysis';
+    const briefingFieldLabels: Record<BriefingFieldKey, string> = {
+        what: '事件内容',
+        when: '时间',
+        who: '主体',
+        scope: '范围',
+        market_implications: '市场影响',
+        grammar_analysis: '语法分析'
+    };
+
     // Audit Helper
     const runAudit = (jsonStr: string) => {
         try {
@@ -72,7 +82,12 @@ export const ArticleGeneration: React.FC = () => {
             const hasWho = !!(briefing.who && briefing.who.trim());
             const hasScope = !!(briefing.scope && briefing.scope.trim());
             const hasMarketImplications = !!(briefing.market_implications && briefing.market_implications.trim());
-            const isBriefingComplete = hasWhat && hasWhen && hasWho && hasScope && hasMarketImplications;
+            const hasGrammarAnalysis = !!(briefing.grammar_analysis && briefing.grammar_analysis.trim());
+            const isGrammarAnalysisChineseStart = hasGrammarAnalysis
+                ? /^[\u4e00-\u9fa5]/.test(briefing.grammar_analysis.trim())
+                : false;
+            const isGrammarAnalysisValid = hasGrammarAnalysis && isGrammarAnalysisChineseStart;
+            const isBriefingComplete = hasWhat && hasWhen && hasWho && hasScope && hasMarketImplications && isGrammarAnalysisValid;
 
             return {
                 wordCount: totalWords,
@@ -86,6 +101,9 @@ export const ArticleGeneration: React.FC = () => {
                 hasWho,
                 hasScope,
                 hasMarketImplications,
+                hasGrammarAnalysis,
+                isGrammarAnalysisChineseStart,
+                isGrammarAnalysisValid,
                 isBriefingComplete,
                 isWordCountValid: totalWords >= 210 && totalWords <= 260,
                 isParaCountValid: paragraphs.length === 3,
@@ -96,7 +114,15 @@ export const ArticleGeneration: React.FC = () => {
         }
     };
 
-    const AuditStatus = ({ json }: { json: string }) => {
+    const AuditStatus = ({
+        json,
+        side,
+        onRegenerateBriefingField
+    }: {
+        json: string;
+        side: 'A' | 'B';
+        onRegenerateBriefingField: (side: 'A' | 'B', field: BriefingFieldKey) => void;
+    }) => {
         if (!json) return null;
         const result = runAudit(json);
         if (!result) return <div className="text-red-400 text-xs">JSON 解析错误</div>;
@@ -142,54 +168,130 @@ export const ArticleGeneration: React.FC = () => {
                         {result.isBriefingComplete ? <span className="text-green-400">✅ 完整</span> : <span className="text-yellow-400">⚠️ 缺失字段</span>}
                     </div>
                     <div className="grid grid-cols-3 gap-1 text-[10px]">
-                        <div className="flex items-center gap-1">
+                        <button
+                            type="button"
+                            onClick={(event) => {
+                                event.stopPropagation();
+                                onRegenerateBriefingField(side, 'what');
+                            }}
+                            className="flex items-center gap-1 text-left hover:text-white transition-colors"
+                            title="点击重新生成事件内容"
+                        >
                             <span className={result.hasWhat ? "text-green-400" : "text-red-400"}>
                                 {result.hasWhat ? "✓" : "✗"}
                             </span>
-                            <span className="text-slate-500">事件内容</span>
-                        </div>
-                        <div className="flex items-center gap-1">
+                            <span className="text-slate-500">{briefingFieldLabels.what}</span>
+                        </button>
+                        <button
+                            type="button"
+                            onClick={(event) => {
+                                event.stopPropagation();
+                                onRegenerateBriefingField(side, 'when');
+                            }}
+                            className="flex items-center gap-1 text-left hover:text-white transition-colors"
+                            title="点击重新生成时间"
+                        >
                             <span className={result.hasWhen ? "text-green-400" : "text-red-400"}>
                                 {result.hasWhen ? "✓" : "✗"}
                             </span>
-                            <span className="text-slate-500">时间</span>
-                        </div>
-                        <div className="flex items-center gap-1">
+                            <span className="text-slate-500">{briefingFieldLabels.when}</span>
+                        </button>
+                        <button
+                            type="button"
+                            onClick={(event) => {
+                                event.stopPropagation();
+                                onRegenerateBriefingField(side, 'who');
+                            }}
+                            className="flex items-center gap-1 text-left hover:text-white transition-colors"
+                            title="点击重新生成主体"
+                        >
                             <span className={result.hasWho ? "text-green-400" : "text-red-400"}>
                                 {result.hasWho ? "✓" : "✗"}
                             </span>
-                            <span className="text-slate-500">主体</span>
-                        </div>
-                        <div className="flex items-center gap-1">
+                            <span className="text-slate-500">{briefingFieldLabels.who}</span>
+                        </button>
+                        <button
+                            type="button"
+                            onClick={(event) => {
+                                event.stopPropagation();
+                                onRegenerateBriefingField(side, 'scope');
+                            }}
+                            className="flex items-center gap-1 text-left hover:text-white transition-colors"
+                            title="点击重新生成范围"
+                        >
                             <span className={result.hasScope ? "text-green-400" : "text-red-400"}>
                                 {result.hasScope ? "✓" : "✗"}
                             </span>
-                            <span className="text-slate-500">范围</span>
-                        </div>
-                        <div className="flex items-center gap-1">
+                            <span className="text-slate-500">{briefingFieldLabels.scope}</span>
+                        </button>
+                        <button
+                            type="button"
+                            onClick={(event) => {
+                                event.stopPropagation();
+                                onRegenerateBriefingField(side, 'market_implications');
+                            }}
+                            className="flex items-center gap-1 text-left hover:text-white transition-colors"
+                            title="点击重新生成市场影响"
+                        >
                             <span className={result.hasMarketImplications ? "text-green-400" : "text-red-400"}>
                                 {result.hasMarketImplications ? "✓" : "✗"}
                             </span>
-                            <span className="text-slate-500">市场影响</span>
-                        </div>
+                            <span className="text-slate-500">{briefingFieldLabels.market_implications}</span>
+                        </button>
+                        <button
+                            type="button"
+                            onClick={(event) => {
+                                event.stopPropagation();
+                                onRegenerateBriefingField(side, 'grammar_analysis');
+                            }}
+                            className="flex items-center gap-1 text-left hover:text-white transition-colors"
+                            title="点击重新生成语法分析"
+                        >
+                            <span className={result.isGrammarAnalysisValid ? "text-green-400" : "text-red-400"}>
+                                {result.isGrammarAnalysisValid ? "✓" : "✗"}
+                            </span>
+                            <span className="text-slate-500">
+                                {briefingFieldLabels.grammar_analysis}
+                                {result.hasGrammarAnalysis && !result.isGrammarAnalysisChineseStart ? " (需中文开头)" : ""}
+                            </span>
+                        </button>
                     </div>
                 </div>
             </div>
         );
     };
 
-    const generateSide = async (side: 'A' | 'B', isRewrite = false, shouldPersist = true) => {
+    const generateSide = async (
+        side: 'A' | 'B',
+        options: {
+            isRewrite?: boolean;
+            shouldPersist?: boolean;
+            briefingTarget?: BriefingFieldKey;
+        } = {}
+    ) => {
         if (!session?.context.topic) return null;
 
         const setStatus = side === 'A' ? setStatusA : setStatusB;
         const setJson = side === 'A' ? setJsonA : setJsonB;
         const setError = side === 'A' ? setErrorA : setErrorB;
+        const currentJson = side === 'A' ? jsonA : jsonB;
+        const isRewrite = options.isRewrite ?? false;
+        const shouldPersist = options.shouldPersist ?? true;
+        const briefingTarget = options.briefingTarget;
 
         let previousDraft = null;
         let feedback = null;
 
-        if (isRewrite) {
-            const currentJson = side === 'A' ? jsonA : jsonB;
+        if (briefingTarget) {
+            try {
+                previousDraft = JSON.parse(currentJson);
+                feedback = `Regenerate ONLY meta.briefing.${briefingTarget} (${briefingFieldLabels[briefingTarget]}). Keep every other field identical.`;
+            } catch (e) {
+                const errString = String(e);
+                setError(`无法解析当前 JSON，无法局部重写：${errString}`);
+                return { status: 'error', json: currentJson, error: errString };
+            }
+        } else if (isRewrite) {
             const audit = runAudit(currentJson);
             if (audit && !audit.valid) {
                 previousDraft = JSON.parse(currentJson);
@@ -214,7 +316,9 @@ export const ArticleGeneration: React.FC = () => {
                     researchContext: session.context.researchResult || null,
                     targetDate: session.context.targetDate, // Pass the target date
                     previousDraft,
-                    feedback
+                    feedback,
+                    briefingTarget,
+                    briefingLabel: briefingTarget ? briefingFieldLabels[briefingTarget] : undefined
                 })
             });
 
@@ -234,7 +338,41 @@ export const ArticleGeneration: React.FC = () => {
                 if (data.raw) setJson(data.raw);
             } else {
                 newStatus = 'success';
-                newJson = JSON.stringify(data, null, 2);
+                if (briefingTarget && previousDraft) {
+                    try {
+                        const originalRoot = JSON.parse(currentJson);
+                        const updatedRoot = JSON.parse(JSON.stringify(originalRoot));
+                        const updatedData = data.article || data;
+                        const updatedBriefing = updatedData?.meta?.briefing || {};
+                        const nextValue = updatedBriefing?.[briefingTarget];
+                        if (typeof nextValue === 'string' && nextValue.trim()) {
+                            if (updatedRoot.article) {
+                                updatedRoot.article.meta = {
+                                    ...(updatedRoot.article.meta || {}),
+                                    briefing: {
+                                        ...(updatedRoot.article.meta?.briefing || {}),
+                                        [briefingTarget]: nextValue
+                                    }
+                                };
+                            } else {
+                                updatedRoot.meta = {
+                                    ...(updatedRoot.meta || {}),
+                                    briefing: {
+                                        ...(updatedRoot.meta?.briefing || {}),
+                                        [briefingTarget]: nextValue
+                                    }
+                                };
+                            }
+                            newJson = JSON.stringify(updatedRoot, null, 2);
+                        } else {
+                            newJson = JSON.stringify(data, null, 2);
+                        }
+                    } catch (e) {
+                        newJson = JSON.stringify(data, null, 2);
+                    }
+                } else {
+                    newJson = JSON.stringify(data, null, 2);
+                }
                 setStatus('success');
                 setJson(newJson);
             }
@@ -276,8 +414,8 @@ export const ArticleGeneration: React.FC = () => {
 
         // Run both in parallel without individual persistence
         const [resA, resB] = await Promise.all([
-            generateSide('A', false, false),
-            generateSide('B', false, false)
+            generateSide('A', { shouldPersist: false }),
+            generateSide('B', { shouldPersist: false })
         ]);
 
         // Atomic update for both
@@ -320,6 +458,10 @@ export const ArticleGeneration: React.FC = () => {
     // View Mode State (independent for each side)
     const [viewModeA, setViewModeA] = useState<'json' | 'preview'>('preview');
     const [viewModeB, setViewModeB] = useState<'json' | 'preview'>('preview');
+
+    const handleRegenerateBriefingField = async (side: 'A' | 'B', field: BriefingFieldKey) => {
+        await generateSide(side, { briefingTarget: field });
+    };
 
     // ... (existing code)
 
@@ -448,7 +590,7 @@ export const ArticleGeneration: React.FC = () => {
                             <button
                                 onClick={(e) => {
                                     e.stopPropagation();
-                                    generateSide(side, true); // Trigger rewrite
+                                    generateSide(side, { isRewrite: true }); // Trigger rewrite
                                 }}
                                 className="px-2 py-1 text-xs bg-white/5 hover:bg-white/10 border border-white/10 rounded flex items-center gap-1 text-slate-300 transition-colors"
                                 title="基于当前审计结果重写"
@@ -523,7 +665,11 @@ export const ArticleGeneration: React.FC = () => {
                         {/* Audit Panel (only in preview mode and success status) */}
                         {status === 'success' && (
                             <div className="p-4 border-t border-white/5 bg-black/20">
-                                <AuditStatus json={json} />
+                                <AuditStatus
+                                    json={json}
+                                    side={side}
+                                    onRegenerateBriefingField={handleRegenerateBriefingField}
+                                />
                             </div>
                         )}
                     </div>
