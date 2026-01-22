@@ -1,51 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useWorkflow } from '../../context/WorkflowContext';
-import { Mic, RefreshCw, ChevronRight, TestTube2, Copy, Check, Play } from 'lucide-react';
-
-// 模拟播客脚本 - 用于测试
-const MOCK_PODCAST_SCRIPT = `Hello everyone, welcome to ReadRead Daily. I'm Leo.
-今天我们要解读一篇关于"数字主权"的深度文章。
-
-先给大家交代一下背景：在当今全球化与数字化交织的时代，越来越多的国家开始重视自己在信息技术领域的自主权。
-这不仅关乎经济发展，更涉及国家安全和战略自主。
-
-比如作者开篇想说：基础设施是一个国家数字经济的命脉。
-如果让你来写，你可能会说 "Infrastructure is important"。
-但作者为了强调其战略意义，用了一个更有分量的表达：the backbone of the digital economy。
-请听原文：
-
-Digital infrastructure serves as the backbone of the digital economy, enabling everything from cloud computing to e-commerce.
-
-这句话在语法上非常紧凑。
-注意这里的 serving as，这是一个现在分词短语作状语，表示"充当、起到...的作用"。
-这种写法比直接说 "is" 更加生动，强调了一种动态的功能性。
-
-这里的 backbone 用得很妙，字面意思是"脊柱"，引申为"支柱、核心"。
-用身体部位来比喻抽象概念，既形象又有力。
-
-带着这个理解，我们再来听一遍：
-
-Digital infrastructure serves as the backbone of the digital economy, enabling everything from cloud computing to e-commerce.
-
-接下来作者谈到了主权问题。
-他想表达：各国正在重新审视自己对关键技术的控制权。
-请听原文：
-
-Nations are increasingly reassessing their sovereignty over critical technologies, seeking greater autonomy in an interconnected world.
-
-这句话的亮点在于 reassessing 这个词。
-re- 前缀表示"重新"，assess 是"评估"，合在一起就是"重新评估"。
-这暗示了之前可能有所忽视，现在需要重新思考。
-
-另外注意 in an interconnected world 这个介词短语。
-interconnected 是"互联互通的"意思，用来描述当今世界各国经济、技术深度融合的状态。
-正是因为高度互联，自主权问题才显得更加重要。
-
-明白了这层逻辑，这句话听起来就顺多了：
-
-Nations are increasingly reassessing their sovereignty over critical technologies, seeking greater autonomy in an interconnected world.
-
-Thanks for listening. See you next time!`;
+import { Mic, RefreshCw, ChevronRight, Copy, Check, Play } from 'lucide-react';
 
 export const PodcastScript: React.FC = () => {
     const { getActiveSession, updateSession } = useWorkflow();
@@ -101,18 +56,6 @@ export const PodcastScript: React.FC = () => {
         }
     };
 
-    // 使用测试数据
-    const useTestData = () => {
-        setScript(MOCK_PODCAST_SCRIPT);
-        setStatus('success');
-        setError('');
-        if (session) {
-            updateSession(session.id, {
-                context: { ...session.context, podcastScript: MOCK_PODCAST_SCRIPT }
-            });
-        }
-    };
-
     // 复制到剪贴板
     const handleCopy = async () => {
         try {
@@ -154,15 +97,6 @@ export const PodcastScript: React.FC = () => {
                 </div>
 
                 <div className="flex gap-2">
-                    {/* 测试数据按钮 */}
-                    <button
-                        onClick={useTestData}
-                        className="flex items-center gap-2 bg-yellow-500/20 hover:bg-yellow-500/30 text-yellow-400 border border-yellow-500/30 px-4 py-2 rounded-lg font-medium transition-all"
-                    >
-                        <TestTube2 className="w-4 h-4" />
-                        使用测试数据
-                    </button>
-
                     <button
                         onClick={handleGenerate}
                         disabled={status === 'generating'}
@@ -218,7 +152,7 @@ export const PodcastScript: React.FC = () => {
 
                 {status !== 'generating' && !script && (
                     <div className="h-full flex items-center justify-center text-muted-foreground">
-                        点击 "生成脚本" 或 "使用测试数据" 开始
+                        点击 "生成脚本" 开始
                     </div>
                 )}
 

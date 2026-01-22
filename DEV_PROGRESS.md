@@ -36,11 +36,9 @@
   - [x] 后端实现 `/api/generate` 接口 (调用 Gemini)
   - [x] 前端实现 A/B 双风格对比
   - [x] 前端实现 JSON 预览与选择
-  - [x] 添加"使用测试数据"按钮
 - [x] **Step 3: 词汇补全 (Vocabulary)**
   - [x] 后端：构建 `/api/vocabulary` 接口 (提取候选词 + 生成释义)
   - [x] 前端：交互式词汇卡片 (展示、删除)
-  - [x] 添加"使用测试数据"按钮
   - [x] **词典同步功能** [NEW]
     - [x] 后端：`/api/dictionary/scan` (扫描文章单词)
     - [x] 后端：`/api/dictionary/generate` (生成释义)
@@ -51,23 +49,21 @@
   - [x] 后端：构建 `/api/podcast-script` 接口 (基于文章/词汇生成脚本)
   - [x] 前端：脚本编辑器 (可编辑 textarea)
   - [x] 前端：复制到剪贴板功能
-  - [x] 添加"使用测试数据"按钮
 - [x] **Step 5: 音频合成 (Audio Synthesis)**
-  - [x] 后端：`/api/synthesize` 接口 (调用 Python TTS 脚本或返回 Mock)
+  - [x] 后端：`/api/synthesize` 接口 (调用 Python TTS 脚本)
   - [x] 后端：临时文件存储与静态服务
   - [x] 前端：音频播放器 (试听 + 调速)
   - [x] 前端：进度条与下载按钮
-  - [x] 添加"使用测试数据"按钮
+  - [x] 音频合成仅保留真实 TTS 结果与错误处理
 - [x] **Step 6: 发布预览与编辑 (Publish Preview)**
   - [x] 数据聚合：汇总 Article, Glossary, Script, Audio URL
-  - [x] 服务器字段同步：`/api/schema` 接口 (PocketBase 或 Mock)
+  - [x] 服务器字段同步：`/api/schema` 接口 (PocketBase)
   - [x] 可视化编辑：左栏字段列表 + 右栏 JSON 预览
   - [x] 必填字段验证
 - [x] **Step 7: 发布与同步 (Publishing)** ✅ 完成!
   - [x] 后端：`/api/publish` 接口 (PocketBase 或本地存储)
   - [x] 前端：发布确认页面
   - [x] 前端：成功/失败状态显示
-  - [x] 模拟发布功能 (测试用)
 
 ## 🎉 项目核心功能已全部完成
 
@@ -75,7 +71,7 @@
 
 - 前端 UI 组件
 - 后端 API 接口
-- 测试数据按钮
+- 生产路径已移除测试数据入口
 
 ## 🔴 已知问题 (Issues)
 

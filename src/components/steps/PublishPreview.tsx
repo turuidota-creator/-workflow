@@ -2,19 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useWorkflow } from '../../context/WorkflowContext';
 import { Eye, RefreshCw, ChevronRight, Database, Edit3, Check, AlertCircle, Copy } from 'lucide-react';
 
-// 模拟服务器 Schema - PocketBase articles 集合字段
-const MOCK_SERVER_SCHEMA = [
-    { name: 'title', type: 'text', required: true, description: '文章标题' },
-    { name: 'slug', type: 'text', required: true, description: 'URL 友好的标识符' },
-    { name: 'content', type: 'json', required: true, description: '文章内容 (paragraphs)' },
-    { name: 'briefing', type: 'text', required: false, description: '文章简介' },
-    { name: 'level', type: 'number', required: true, description: '难度等级 (1-10)' },
-    { name: 'glossary', type: 'json', required: false, description: '词汇表' },
-    { name: 'podcast_script', type: 'text', required: false, description: '播客脚本' },
-    { name: 'podcast_url', type: 'text', required: false, description: '播客音频 URL' },
-    { name: 'published_at', type: 'date', required: false, description: '发布日期' },
-];
-
 interface SchemaField {
     name: string;
     type: string;
@@ -76,19 +63,18 @@ export const PublishPreview: React.FC = () => {
 
             const data = await res.json();
 
-            if (data.error) {
-                // Use mock schema as fallback
-                console.log('Using mock schema');
-                setSchema(MOCK_SERVER_SCHEMA);
-                setStatus('ready');
-            } else {
-                setSchema(data.schema || MOCK_SERVER_SCHEMA);
-                setStatus('ready');
+            if (!res.ok || data.error) {
+                const message = data?.error || '读取服务器字段失败，请检查后端连接。';
+                setError(message);
+                setStatus('error');
+                return;
             }
-        } catch (e) {
-            console.log('Schema fetch failed, using mock');
-            setSchema(MOCK_SERVER_SCHEMA);
+
+            setSchema(data.schema || []);
             setStatus('ready');
+        } catch (e) {
+            setError(`读取服务器字段失败：${String(e)}`);
+            setStatus('error');
         }
     };
 
@@ -152,14 +138,15 @@ export const PublishPreview: React.FC = () => {
         const isJson = field.type === 'json';
 
         if (!editMode) {
+            const preview = isJson ? JSON.stringify(value ?? null) ?? '' : String(value || '-');
             return (
                 <div className="text-sm text-foreground truncate">
                     {isJson ? (
                         <span className="text-muted-foreground font-mono text-xs">
-                            {JSON.stringify(value).slice(0, 100)}...
+                            {preview.slice(0, 100)}...
                         </span>
                     ) : (
-                        String(value || '-')
+                        preview
                     )}
                 </div>
             );
@@ -168,7 +155,7 @@ export const PublishPreview: React.FC = () => {
         if (isJson) {
             return (
                 <textarea
-                    value={typeof value === 'string' ? value : JSON.stringify(value, null, 2)}
+                    value={typeof value === 'string' ? value : JSON.stringify(value ?? null, null, 2) ?? ''}
                     onChange={(e) => {
                         try {
                             updateField(field.name, JSON.parse(e.target.value));
@@ -236,7 +223,7 @@ export const PublishPreview: React.FC = () => {
 
                     <button
                         onClick={handleNext}
-                        disabled={!validation.valid}
+                        disabled={!validation.valid || status !== 'ready'}
                         className="flex items-center gap-2 bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2 rounded-lg font-medium transition-all disabled:opacity-50"
                     >
                         发布
@@ -246,7 +233,16 @@ export const PublishPreview: React.FC = () => {
             </div>
 
             {/* Error/Validation Messages */}
-            {!validation.valid && (
+            {error && (
+                <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-3 rounded-lg text-sm flex items-start gap-2">
+                    <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
+                    <div>
+                        <strong>读取失败：</strong> {error}
+                    </div>
+                </div>
+            )}
+
+            {!validation.valid && !error && (
                 <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-3 rounded-lg text-sm flex items-start gap-2">
                     <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
                     <div>

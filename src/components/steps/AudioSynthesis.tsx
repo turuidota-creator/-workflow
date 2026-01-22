@@ -1,9 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useWorkflow } from '../../context/WorkflowContext';
-import { Volume2, RefreshCw, ChevronRight, TestTube2, Play, Pause, Download, Settings2 } from 'lucide-react';
-
-// 模拟音频 URL - 用于测试
-const MOCK_AUDIO_URL = 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3';
+import { Volume2, RefreshCw, ChevronRight, Play, Pause, Download, Settings2 } from 'lucide-react';
 
 export const AudioSynthesis: React.FC = () => {
     const { getActiveSession, updateSession } = useWorkflow();
@@ -86,19 +83,6 @@ export const AudioSynthesis: React.FC = () => {
         }
     };
 
-    // 使用测试数据
-    const useTestData = () => {
-        setAudioUrl(MOCK_AUDIO_URL);
-        setStatus('success');
-        setProgress(100);
-        setError('');
-        if (session) {
-            updateSession(session.id, {
-                context: { ...session.context, podcastUrl: MOCK_AUDIO_URL }
-            });
-        }
-    };
-
     // 播放/暂停
     const togglePlay = () => {
         if (audioRef.current) {
@@ -150,15 +134,6 @@ export const AudioSynthesis: React.FC = () => {
                 </div>
 
                 <div className="flex gap-2">
-                    {/* 测试数据按钮 */}
-                    <button
-                        onClick={useTestData}
-                        className="flex items-center gap-2 bg-yellow-500/20 hover:bg-yellow-500/30 text-yellow-400 border border-yellow-500/30 px-4 py-2 rounded-lg font-medium transition-all"
-                    >
-                        <TestTube2 className="w-4 h-4" />
-                        使用测试数据
-                    </button>
-
                     <button
                         onClick={handleSynthesize}
                         disabled={status === 'synthesizing'}
@@ -208,7 +183,7 @@ export const AudioSynthesis: React.FC = () => {
                     <div className="h-full flex items-center justify-center text-muted-foreground">
                         <div className="text-center">
                             <Volume2 className="w-16 h-16 mx-auto mb-4 opacity-30" />
-                            <p>点击 "开始合成" 或 "使用测试数据" 生成音频</p>
+                            <p>点击 "开始合成" 生成音频</p>
                         </div>
                     </div>
                 )}
