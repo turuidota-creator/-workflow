@@ -76,6 +76,26 @@ export const ArticleGeneration: React.FC = () => {
                 });
             });
 
+            let hasSentenceAnalysis = false;
+            let isSentenceAnalysisChineseStart = true;
+            paragraphs.forEach((p: any) => {
+                const sentences = p.paragraph?.tokenizedSentences || (Array.isArray(p) ? p : []);
+                sentences.forEach((s: any) => {
+                    const analysis = s.analysis;
+                    if (!analysis) return;
+                    const grammarText = analysis.grammar || '';
+                    const explanationText = analysis.explanation || '';
+                    if (grammarText || explanationText) {
+                        hasSentenceAnalysis = true;
+                    }
+                    const grammarOk = grammarText ? /^[\u4e00-\u9fa5]/.test(grammarText.trim()) : true;
+                    const explanationOk = explanationText ? /^[\u4e00-\u9fa5]/.test(explanationText.trim()) : true;
+                    if (!grammarOk || !explanationOk) {
+                        isSentenceAnalysisChineseStart = false;
+                    }
+                });
+            });
+
             // Briefing field validation (what, when, who, scope, market_implications)
             const hasWhat = !!(briefing.what && briefing.what.trim());
             const hasWhen = !!(briefing.when && briefing.when.trim());
@@ -95,6 +115,8 @@ export const ArticleGeneration: React.FC = () => {
                 hasTitle: !!(articleData.title?.zh || articleData.title?.cn),
                 hasBriefing: !!(articleData.intro?.text || Object.keys(briefing).length > 0),
                 hasGlossary: !!(data.glossary && Object.keys(data.glossary).length > 0),
+                hasSentenceAnalysis,
+                isSentenceAnalysisChineseStart,
                 // Briefing sub-fields
                 hasWhat,
                 hasWhen,
@@ -107,7 +129,10 @@ export const ArticleGeneration: React.FC = () => {
                 isBriefingComplete,
                 isWordCountValid: totalWords >= 210 && totalWords <= 260,
                 isParaCountValid: paragraphs.length === 3,
-                valid: (totalWords >= 210 && totalWords <= 260) && paragraphs.length === 3 && isBriefingComplete
+                valid: (totalWords >= 210 && totalWords <= 260)
+                    && paragraphs.length === 3
+                    && isBriefingComplete
+                    && isSentenceAnalysisChineseStart
             };
         } catch (e) {
             return null;
@@ -157,6 +182,12 @@ export const ArticleGeneration: React.FC = () => {
                         <span className="text-slate-500">Glossary</span>
                         <span className={result.hasGlossary ? "text-green-400" : "text-slate-500"}>
                             {result.hasGlossary ? "✅" : "⚪"}
+                        </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                        <span className="text-slate-500">语法分析(中文)</span>
+                        <span className={result.isSentenceAnalysisChineseStart ? "text-green-400" : "text-red-400"}>
+                            {result.isSentenceAnalysisChineseStart ? "✅" : "❌"}
                         </span>
                     </div>
                 </div>
