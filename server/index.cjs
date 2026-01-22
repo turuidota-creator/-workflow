@@ -1447,6 +1447,17 @@ app.post('/api/publish', async (req, res) => {
             return res.status(400).json({ error: "Missing payload" });
         }
 
+        const normalizeJsonField = (value) => {
+            if (typeof value === 'string') {
+                try {
+                    return JSON.parse(value);
+                } catch {
+                    return value;
+                }
+            }
+            return value;
+        };
+
         // Get PocketBase URL from env
         const envPath = path.join(PROJECT_ROOT, '.env');
         const content = fs.existsSync(envPath) ? fs.readFileSync(envPath, 'utf-8') : '';
@@ -1464,29 +1475,43 @@ app.post('/api/publish', async (req, res) => {
                 // Create article record
                 // Map frontend article JSON to PocketBase schema
                 // Handle both flat structure (legacy) and nested structure (article-generator skill)
+                const isDirectPayload = !payload.article && (payload.title_zh || payload.title_en || payload.content || payload.intro);
                 const articleRoot = payload.article || {};
                 const articleData = articleRoot.article || articleRoot;
 
-                const pbPayload = {
-                    // Required fields
-                    title_zh: articleData.title?.zh || articleData.title?.cn || '无标题',
-                    title_en: articleData.title?.en || 'Untitled',
-                    date: articleData.meta?.date || new Date().toISOString(),
-                    level: articleData.meta?.level || "10",
-                    topic: articleData.meta?.topic || "科技",
+                const pbPayload = isDirectPayload
+                    ? {
+                        title_zh: payload.title_zh || '无标题',
+                        title_en: payload.title_en || 'Untitled',
+                        date: payload.date || new Date().toISOString(),
+                        level: payload.level || '10',
+                        topic: payload.topic || '科技',
+                        intro: normalizeJsonField(payload.intro) || null,
+                        content: normalizeJsonField(payload.content) || {},
+                        glossary: normalizeJsonField(payload.glossary) || {},
+                        podcast_script: payload.podcast_script || '',
+                        podcast_url: payload.podcast_url || '',
+                    }
+                    : {
+                        // Required fields
+                        title_zh: articleData.title?.zh || articleData.title?.cn || '无标题',
+                        title_en: articleData.title?.en || 'Untitled',
+                        date: articleData.meta?.date || new Date().toISOString(),
+                        level: articleData.meta?.level || "10",
+                        topic: articleData.meta?.topic || "科技",
 
-                    // Content fields
-                    intro: articleData.intro || (articleData.briefing ? { text: articleData.briefing } : null),
-                    content: {
-                        meta: articleData.meta,
-                        paragraphs: articleData.paragraphs
-                    },
+                        // Content fields
+                        intro: articleData.intro || (articleData.briefing ? { text: articleData.briefing } : null),
+                        content: {
+                            meta: articleData.meta,
+                            paragraphs: articleData.paragraphs
+                        },
 
-                    // Other fields from payload
-                    glossary: payload.glossary || articleRoot.glossary,
-                    podcast_script: payload.podcast_script,
-                    podcast_url: payload.podcast_url || articleData.podcastUrl,
-                };
+                        // Other fields from payload
+                        glossary: payload.glossary || articleRoot.glossary,
+                        podcast_script: payload.podcast_script,
+                        podcast_url: payload.podcast_url || articleData.podcastUrl,
+                    };
 
                 // Try to map topic more accurately if possible
                 if (articleData.topic && ["国际", "财经", "科技"].includes(articleData.topic)) {
@@ -1959,83 +1984,6 @@ app.delete('/api/workflow-sessions/:id', async (req, res) => {
         return res.status(204).send();
     } catch (e) {
         return res.status(500).json({ error: e.message });
-    }
-});
-
-// ================= PUBLISH ARTICLE TO POCKETBASE =================
-/**
- * POST /api/publish
- * Publish article data (including podcast_script) to PocketBase articles collection
- */
-app.post('/api/publish', async (req, res) => {
-    try {
-        const { article, glossary, podcast_script, podcast_url } = req.body;
-
-        if (!article) {
-            return res.status(400).json({ error: 'Missing article data' });
-        }
-
-        const { url: pbUrl, token } = await getPocketBaseAuth();
-        if (!pbUrl) {
-            return res.status(500).json({ error: 'PocketBase URL not configured' });
-        }
-        if (!token) {
-            return res.status(401).json({ error: 'PocketBase authentication failed' });
-        }
-
-        // Extract article data
-        const articleData = article.article || article;
-        const meta = articleData.meta || {};
-
-        // Prepare data for PocketBase articles collection
-        const pbData = {
-            date: meta.date || new Date().toISOString().split('T')[0],
-            level: meta.level || '10',
-            topic: meta.topic || '国际',
-            title_zh: articleData.title?.zh || meta.title || '',
-            title_en: articleData.title?.en || meta.title || '',
-            intro: JSON.stringify(articleData.intro || {}),
-            content: JSON.stringify({ meta, paragraphs: articleData.paragraphs || [] }),
-            glossary: JSON.stringify(glossary || articleData.glossary || {}),
-            podcast_script: podcast_script || '',
-            podcast_url: podcast_url || ''
-        };
-
-        console.log('[Publish] Saving article to PocketBase:', {
-            title: pbData.title_zh,
-            date: pbData.date,
-            hasPodcastScript: !!pbData.podcast_script
-        });
-
-        // Create new article in PocketBase
-        const response = await fetch(`${pbUrl}/api/collections/articles/records`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': token
-            },
-            body: JSON.stringify(pbData)
-        });
-
-        if (!response.ok) {
-            const errorText = await response.text();
-            console.error('[Publish] PocketBase Error:', errorText);
-            return res.status(response.status).json({ error: errorText });
-        }
-
-        const result = await response.json();
-        console.log('[Publish] Article saved successfully:', result.id);
-
-        res.json({
-            success: true,
-            articleId: result.id,
-            glossaryCount: Object.keys(glossary || {}).length,
-            url: `${pbUrl}/api/collections/articles/records/${result.id}`
-        });
-
-    } catch (e) {
-        console.error('[Publish] Server Error:', e);
-        res.status(500).json({ error: e.message });
     }
 });
 

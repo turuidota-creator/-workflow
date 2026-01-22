@@ -35,7 +35,8 @@ export const WorkflowProvider: React.FC<{ children: React.ReactNode }> = ({ chil
             currentStepId: session.currentStepId,
             steps: session.steps,
             context: session.context,
-            createdAt: session.createdAt
+            createdAt: session.createdAt,
+            podcast_script_wf: session.context.podcastScript ?? undefined
         };
     }, []);
 
@@ -45,13 +46,17 @@ export const WorkflowProvider: React.FC<{ children: React.ReactNode }> = ({ chil
             : record.created
                 ? new Date(record.created).getTime()
                 : Date.now();
+        const context = record.context ?? {};
+        if (!context.podcastScript && record.podcast_script_wf) {
+            context.podcastScript = record.podcast_script_wf;
+        }
         return {
             id: record.id,
             title: record.title ?? 'New Workflow',
             status: record.status ?? 'idle',
             currentStepId: record.currentStepId ?? 'topic-discovery',
             steps: Array.isArray(record.steps) ? record.steps : JSON.parse(JSON.stringify(INITIAL_STEPS)),
-            context: record.context ?? {},
+            context,
             createdAt
         };
     }, []);

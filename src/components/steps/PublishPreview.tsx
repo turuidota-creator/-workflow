@@ -23,31 +23,26 @@ export const PublishPreview: React.FC = () => {
     useEffect(() => {
         if (session?.context) {
             const ctx = session.context;
+            const meta = ctx.articleJson?.meta || {};
             const aggregated: Record<string, any> = {
-                title: ctx.articleJson?.meta?.title || ctx.topic || '',
-                slug: generateSlug(ctx.articleJson?.meta?.title || ctx.topic || ''),
-                content: ctx.articleJson?.paragraphs || [],
-                briefing: ctx.articleJson?.meta?.briefing || '',
-                level: parseInt(ctx.level || '10'),
+                date: meta.date || new Date().toISOString().split('T')[0],
+                level: meta.level || ctx.level || '10',
+                topic: meta.topic || ctx.topic || '科技',
+                title_zh: ctx.articleJson?.title?.zh || meta.title_zh || meta.title || ctx.topic || '',
+                title_en: ctx.articleJson?.title?.en || meta.title_en || meta.title || '',
+                intro: ctx.articleJson?.intro || (meta.briefing ? { text: meta.briefing } : {}),
+                content: ctx.articleJson
+                    ? { meta, paragraphs: ctx.articleJson.paragraphs || [] }
+                    : {},
                 glossary: ctx.glossary || {},
                 podcast_script: ctx.podcastScript || '',
                 podcast_url: ctx.podcastUrl || '',
-                published_at: new Date().toISOString().split('T')[0],
             };
 
             // Use finalPayload if exists, otherwise use aggregated
             setPayload(ctx.finalPayload || aggregated);
         }
     }, [session?.context]);
-
-    // 生成 URL 友好的 slug
-    function generateSlug(title: string): string {
-        return title
-            .toLowerCase()
-            .replace(/[^a-z0-9\u4e00-\u9fa5]+/g, '-')
-            .replace(/^-+|-+$/g, '')
-            .slice(0, 50);
-    }
 
     // 获取服务器 Schema
     const fetchSchema = async () => {
