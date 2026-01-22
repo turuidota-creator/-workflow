@@ -1282,6 +1282,78 @@ app.post('/api/synthesize', async (req, res) => {
     }
 });
 
+/**
+ * POST /api/podcast-upload
+ * Upload synthesized audio to PocketBase for an existing article
+ */
+app.post('/api/podcast-upload', async (req, res) => {
+    try {
+        const { articleId, audioUrl, podcast_script } = req.body || {};
+
+        if (!articleId) {
+            return res.status(400).json({ error: 'Missing articleId' });
+        }
+        if (!audioUrl) {
+            return res.status(400).json({ error: 'Missing audioUrl' });
+        }
+
+        const { url: pbUrl, token } = await getPocketBaseAuth();
+        if (!pbUrl || !token) {
+            return res.status(403).json({ error: 'PocketBase authentication required' });
+        }
+
+        const audioPath = (() => {
+            if (audioUrl.startsWith('http')) {
+                try {
+                    return new URL(audioUrl).pathname;
+                } catch {
+                    return audioUrl;
+                }
+            }
+            return audioUrl;
+        })();
+
+        if (!audioPath.startsWith('/temp/')) {
+            return res.status(400).json({ error: 'Audio URL must reference a temp file.' });
+        }
+
+        const filePath = path.join(PROJECT_ROOT, audioPath);
+        if (!fs.existsSync(filePath)) {
+            return res.status(404).json({ error: 'Audio file not found.' });
+        }
+
+        const formData = new FormData();
+        formData.append('podcast_file', fs.createReadStream(filePath), path.basename(filePath));
+        if (podcast_script !== undefined) {
+            formData.append('podcast_script', podcast_script);
+        }
+
+        const headers = {};
+        if (token) headers['Authorization'] = token;
+
+        const uploadRes = await fetch(`${pbUrl}/api/collections/articles/records/${articleId}`, {
+            method: 'PATCH',
+            headers,
+            body: formData
+        });
+
+        if (!uploadRes.ok) {
+            const errorText = await uploadRes.text();
+            return res.status(uploadRes.status).json({ error: errorText });
+        }
+
+        const record = await uploadRes.json();
+        const podcastUrl = record?.podcast_file
+            ? `${pbUrl}/api/files/articles/${record.id}/${record.podcast_file}`
+            : null;
+
+        return res.json({ success: true, articleId: record.id, podcastUrl });
+    } catch (e) {
+        console.error('Podcast upload error:', e);
+        res.status(500).json({ error: e.message });
+    }
+});
+
 // Serve temp files as static
 app.use('/temp', express.static(path.join(PROJECT_ROOT, 'temp')));
 
@@ -1522,6 +1594,35 @@ app.post('/api/publish', async (req, res) => {
                 const { token } = await getPocketBaseAuth();
                 const headers = { 'Content-Type': 'application/json' };
                 if (token) headers['Authorization'] = token;
+
+                const updatePayload = {};
+                if (payload.podcast_script !== undefined) updatePayload.podcast_script = payload.podcast_script;
+                if (payload.podcast_url !== undefined) updatePayload.podcast_url = payload.podcast_url;
+                if (payload.glossary !== undefined) {
+                    updatePayload.glossary = normalizeJsonField(payload.glossary) || {};
+                }
+
+                if (payload.articleId && Object.keys(updatePayload).length > 0) {
+                    const updateRes = await fetch(`${pbUrl}/api/collections/articles/records/${payload.articleId}`, {
+                        method: 'PATCH',
+                        headers: headers,
+                        body: JSON.stringify(updatePayload)
+                    });
+
+                    if (updateRes.ok) {
+                        return res.json({
+                            success: true,
+                            articleId: payload.articleId,
+                            glossaryCount: Object.keys(payload.glossary || {}).length,
+                            url: `${pbUrl}/articles/${payload.articleId}`,
+                            source: 'pocketbase'
+                        });
+                    } else {
+                        const updateError = await updateRes.text();
+                        console.error('PocketBase update error:', updateError);
+                        // Fall through to create if update failed
+                    }
+                }
 
                 const articleRes = await fetch(`${pbUrl}/api/collections/articles/records`, {
                     method: 'POST',
