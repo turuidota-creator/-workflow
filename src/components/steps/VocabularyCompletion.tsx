@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useWorkflow } from '../../context/WorkflowContext';
-import { Book, RefreshCw, Trash2, ChevronRight, TestTube2, Database, Plus, Check, AlertCircle, Scan } from 'lucide-react';
+import { Book, RefreshCw, Trash2, ChevronRight, Database, Plus, Check, AlertCircle, Scan } from 'lucide-react';
 
 interface GlossaryEntry {
     word: string;
@@ -17,57 +17,6 @@ interface ScanResult {
     coveragePercent: number;
 }
 
-// 模拟词汇数据 - 用于测试
-const MOCK_GLOSSARY: Record<string, GlossaryEntry> = {
-    "infrastructure": {
-        word: "infrastructure",
-        phonetic: "ˈɪnfrəˌstrʌktʃər",
-        definitions: [
-            { pos: "n.", zh: "基础设施；基础建设", en: "the basic systems and services that a country or organization uses" }
-        ],
-        example: "The country needs to invest more in its digital infrastructure."
-    },
-    "sovereignty": {
-        word: "sovereignty",
-        phonetic: "ˈsɒvrənti",
-        definitions: [
-            { pos: "n.", zh: "主权；最高权力", en: "the power of a country to control its own government" }
-        ],
-        example: "Digital sovereignty has become a key concern for many nations."
-    },
-    "geopolitical": {
-        word: "geopolitical",
-        phonetic: "ˌdʒiːəʊpəˈlɪtɪkl",
-        definitions: [
-            { pos: "adj.", zh: "地缘政治的", en: "relating to politics, especially international relations, as influenced by geographical factors" }
-        ],
-        example: "The geopolitical landscape is shifting rapidly."
-    },
-    "resilience": {
-        word: "resilience",
-        phonetic: "rɪˈzɪliəns",
-        definitions: [
-            { pos: "n.", zh: "韧性；恢复力", en: "the ability to recover quickly from difficulties" }
-        ],
-        example: "Supply chain resilience has become a top priority for businesses."
-    },
-    "autonomous": {
-        word: "autonomous",
-        phonetic: "ɔːˈtɒnəməs",
-        definitions: [
-            { pos: "adj.", zh: "自主的；自治的", en: "having the freedom to govern itself or control its own affairs" }
-        ],
-        example: "The company aims to build autonomous AI systems."
-    },
-    "stakeholder": {
-        word: "stakeholder",
-        phonetic: "ˈsteɪkˌhəʊldər",
-        definitions: [
-            { pos: "n.", zh: "利益相关者", en: "a person or group with an interest or concern in something" }
-        ],
-        example: "All stakeholders were invited to the meeting."
-    }
-};
 
 export const VocabularyCompletion: React.FC = () => {
     const { getActiveSession, updateSession } = useWorkflow();
@@ -217,18 +166,6 @@ export const VocabularyCompletion: React.FC = () => {
         }
     };
 
-    // 使用测试数据
-    const useTestData = () => {
-        setGlossary(MOCK_GLOSSARY);
-        setStatus('success');
-        setError('');
-        if (session) {
-            updateSession(session.id, {
-                context: { ...session.context, glossary: MOCK_GLOSSARY }
-            });
-        }
-    };
-
     const handleRemoveWord = (key: string) => {
         const updated = { ...glossary };
         delete updated[key];
@@ -264,15 +201,6 @@ export const VocabularyCompletion: React.FC = () => {
                 </div>
 
                 <div className="flex gap-2">
-                    {/* 测试数据按钮 */}
-                    <button
-                        onClick={useTestData}
-                        className="flex items-center gap-2 bg-yellow-500/20 hover:bg-yellow-500/30 text-yellow-400 border border-yellow-500/30 px-4 py-2 rounded-lg font-medium transition-all"
-                    >
-                        <TestTube2 className="w-4 h-4" />
-                        使用测试数据
-                    </button>
-
                     <button
                         onClick={handleGenerate}
                         disabled={status === 'generating'}
@@ -400,7 +328,7 @@ export const VocabularyCompletion: React.FC = () => {
 
                 {status !== 'generating' && entries.length === 0 && (
                     <div className="h-full flex items-center justify-center text-muted-foreground">
-                        点击 "提取词汇" 或 "使用测试数据" 开始
+                        点击 "提取词汇" 开始
                     </div>
                 )}
 

@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { useWorkflow } from '../../context/WorkflowContext';
-import { Bot, FileJson, Play, CheckCircle2, AlertTriangle, RefreshCw, MousePointerClick } from 'lucide-react';
+import { Bot, Play, CheckCircle2, AlertTriangle, RefreshCw } from 'lucide-react';
 import { cn } from '../../lib/utils';
 
 export const ArticleGeneration: React.FC = () => {
@@ -19,81 +19,6 @@ export const ArticleGeneration: React.FC = () => {
 
     // Selection
     const [selectedSide, setSelectedSide] = useState<'A' | 'B' | null>(null);
-
-    // Mock data for testing
-    const MOCK_ARTICLE = {
-        article: {
-            meta: {
-                id: "20260122_test_topic",
-                slug: "test-topic",
-                title: "Test Article: Tech Industry Trends",
-                level: "10",
-                topic: "科技",
-                date: new Date().toISOString().split('T')[0],
-                wordCount: 350,
-                briefing: {
-                    what: "Major technology companies announce new AI initiatives",
-                    who: "Global tech giants including Google, Microsoft, and emerging startups",
-                    when: "January 2026",
-                    impact: "Expected to reshape the industry landscape"
-                }
-            },
-            title: {
-                type: "title",
-                id: "title-test",
-                zh: "测试文章：科技行业趋势",
-                en: "Test Article: Tech Industry Trends"
-            },
-            intro: {
-                type: "intro",
-                id: "intro-test",
-                text: "2026年1月，全球科技巨头纷纷宣布新的人工智能计划，预计将重塑行业格局。"
-            },
-            paragraphs: [
-                {
-                    type: "paragraph",
-                    id: "p1",
-                    paragraph: {
-                        id: "p1",
-                        tokenizedSentences: [
-                            {
-                                id: "s1-test",
-                                tokens: [
-                                    { text: "The", type: "word" },
-                                    { text: " ", type: "space" },
-                                    { text: "technology", type: "word" },
-                                    { text: " ", type: "space" },
-                                    { text: "industry", type: "word" },
-                                    { text: " ", type: "space" },
-                                    { text: "is", type: "word" },
-                                    { text: " ", type: "space" },
-                                    { text: "undergoing", type: "word" },
-                                    { text: " ", type: "space" },
-                                    { text: "rapid", type: "word" },
-                                    { text: " ", type: "space" },
-                                    { text: "transformation", type: "word" },
-                                    { text: ".", type: "punctuation" }
-                                ],
-                                zh: "科技行业正在经历快速转型。",
-                                analysis: {
-                                    grammar: "简单句，主语+谓语+宾语结构",
-                                    explanation: "人话：科技圈正在大变样。"
-                                }
-                            }
-                        ]
-                    }
-                }
-            ]
-        },
-        glossary: {}
-    };
-
-    const useTestData = (side: 'A' | 'B') => {
-        const setJson = side === 'A' ? setJsonA : setJsonB;
-        const setStatus = side === 'A' ? setStatusA : setStatusB;
-        setJson(JSON.stringify(MOCK_ARTICLE, null, 2));
-        setStatus('success');
-    };
 
     const generateSide = async (side: 'A' | 'B') => {
         if (!session?.context.topic) return;
@@ -234,13 +159,6 @@ export const ArticleGeneration: React.FC = () => {
                 </div>
 
                 <div className="flex gap-2">
-                    <button
-                        onClick={() => { useTestData('A'); useTestData('B'); }}
-                        className="flex items-center gap-2 bg-yellow-600/20 hover:bg-yellow-600/30 text-yellow-400 border border-yellow-600/30 px-3 py-2 rounded-lg text-sm font-medium transition-all"
-                    >
-                        使用测试数据
-                    </button>
-
                     <button
                         onClick={handleGenerateAll}
                         disabled={statusA === 'generating' || statusB === 'generating'}

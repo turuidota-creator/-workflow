@@ -775,11 +775,9 @@ app.post('/api/synthesize', async (req, res) => {
         const ttsScript = path.join(SKILLS_DIR, 'podcast-script-expert', 'scripts', 'generate_podcast.py');
 
         if (!fs.existsSync(ttsScript)) {
-            // Fallback: Return a mock URL if TTS script doesn't exist
-            console.log('TTS script not found, returning mock URL');
-            return res.json({
-                audioUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3',
-                message: 'TTS script not found, using mock audio'
+            console.log('TTS script not found');
+            return res.status(500).json({
+                error: 'TTS script not found. Please install the TTS dependencies and ensure the script exists.'
             });
         }
 
@@ -815,12 +813,9 @@ app.post('/api/synthesize', async (req, res) => {
                     localPath: outputFile
                 });
             } else {
-                // TTS failed - return mock for demo purposes
                 console.error('TTS failed:', stderr || stdout);
-                res.json({
-                    audioUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3',
-                    message: 'TTS synthesis failed, using mock audio',
-                    error: stderr || stdout
+                res.status(500).json({
+                    error: stderr || stdout || 'TTS synthesis failed'
                 });
             }
         });
@@ -836,7 +831,7 @@ app.use('/temp', express.static(path.join(PROJECT_ROOT, 'temp')));
 
 /**
  * POST /api/schema
- * Get collection schema from PocketBase or return mock schema
+ * Get collection schema from PocketBase
  */
 app.post('/api/schema', async (req, res) => {
     try {
@@ -848,43 +843,28 @@ app.post('/api/schema', async (req, res) => {
         const pbUrlMatch = content.match(/POCKETBASE_URL=(.+)/);
         const pbUrl = pbUrlMatch ? pbUrlMatch[1].trim() : null;
 
-        if (pbUrl) {
-            try {
-                // Attempt to get schema from PocketBase admin API
-                const response = await fetch(`${pbUrl}/api/collections/${collection}`, {
-                    headers: { 'Content-Type': 'application/json' }
-                });
-
-                if (response.ok) {
-                    const data = await response.json();
-                    const schema = data.schema?.map(field => ({
-                        name: field.name,
-                        type: field.type,
-                        required: field.required || false,
-                        description: field.options?.maxSize ? `Max: ${field.options.maxSize}` : ''
-                    })) || [];
-
-                    return res.json({ schema, source: 'pocketbase' });
-                }
-            } catch (e) {
-                console.log('PocketBase schema fetch failed, using mock');
-            }
+        if (!pbUrl) {
+            return res.status(400).json({ error: 'POCKETBASE_URL is not configured.' });
         }
 
-        // Return mock schema for articles collection
-        const mockSchema = [
-            { name: 'title', type: 'text', required: true, description: '文章标题' },
-            { name: 'slug', type: 'text', required: true, description: 'URL 友好的标识符' },
-            { name: 'content', type: 'json', required: true, description: '文章内容 (paragraphs)' },
-            { name: 'briefing', type: 'text', required: false, description: '文章简介' },
-            { name: 'level', type: 'number', required: true, description: '难度等级 (1-10)' },
-            { name: 'glossary', type: 'json', required: false, description: '词汇表' },
-            { name: 'podcast_script', type: 'text', required: false, description: '播客脚本' },
-            { name: 'podcast_url', type: 'text', required: false, description: '播客音频 URL' },
-            { name: 'published_at', type: 'date', required: false, description: '发布日期' },
-        ];
+        // Attempt to get schema from PocketBase admin API
+        const response = await fetch(`${pbUrl}/api/collections/${collection}`, {
+            headers: { 'Content-Type': 'application/json' }
+        });
 
-        res.json({ schema: mockSchema, source: 'mock' });
+        if (!response.ok) {
+            return res.status(502).json({ error: 'Failed to fetch schema from PocketBase.' });
+        }
+
+        const data = await response.json();
+        const schema = data.schema?.map(field => ({
+            name: field.name,
+            type: field.type,
+            required: field.required || false,
+            description: field.options?.maxSize ? `Max: ${field.options.maxSize}` : ''
+        })) || [];
+
+        return res.json({ schema, source: 'pocketbase' });
 
     } catch (e) {
         console.error("Server Error:", e);
@@ -1334,5 +1314,4 @@ app.listen(PORT, () => {
     console.log(`Backend server running on http://localhost:${PORT}`);
     console.log(`Project Root: ${PROJECT_ROOT}`);
 });
-
 

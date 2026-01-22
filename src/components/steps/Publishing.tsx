@@ -68,31 +68,6 @@ export const Publishing: React.FC = () => {
         }
     };
 
-    // 模拟发布（用于测试）
-    const simulatePublish = () => {
-        setStatus('publishing');
-        setResult(null);
-
-        setTimeout(() => {
-            setStatus('success');
-            setResult({
-                success: true,
-                articleId: 'article_' + Date.now(),
-                glossaryCount: Object.keys(session?.context.glossary || {}).length,
-                url: 'https://readread.app/articles/example'
-            });
-
-            if (session) {
-                updateSession(session.id, {
-                    status: 'completed',
-                    steps: session.steps.map(s =>
-                        s.id === 'publishing' ? { ...s, status: 'completed' } : s
-                    )
-                });
-            }
-        }, 2000);
-    };
-
     const handleCopy = async (text: string) => {
         try {
             await navigator.clipboard.writeText(text);
@@ -167,13 +142,6 @@ export const Publishing: React.FC = () => {
                             >
                                 <Upload className="w-5 h-5" />
                                 发布到 PocketBase
-                            </button>
-
-                            <button
-                                onClick={simulatePublish}
-                                className="w-full flex items-center justify-center gap-2 bg-yellow-500/20 hover:bg-yellow-500/30 text-yellow-400 border border-yellow-500/30 px-6 py-2 rounded-xl font-medium transition-all"
-                            >
-                                模拟发布 (测试)
                             </button>
                         </div>
 
