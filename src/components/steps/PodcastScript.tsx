@@ -177,22 +177,14 @@ export const PodcastScript: React.FC = () => {
 
             {/* Script Editor */}
             <div className="flex-1 min-h-0 overflow-hidden flex flex-col">
-                {status === 'generating' && (
+                {status === 'generating' ? (
                     <div className="h-full flex items-center justify-center">
                         <div className="text-center">
                             <RefreshCw className="w-10 h-10 animate-spin text-muted-foreground mx-auto mb-3" />
                             <p className="text-muted-foreground">正在生成播客脚本...</p>
                         </div>
                     </div>
-                )}
-
-                {status !== 'generating' && !script && (
-                    <div className="h-full flex items-center justify-center text-muted-foreground">
-                        点击 "生成脚本" 开始
-                    </div>
-                )}
-
-                {script && (
+                ) : (
                     <div className="flex-1 overflow-hidden flex flex-col">
                         {/* Preview Header */}
                         <div className="flex items-center justify-between mb-2 px-1">
@@ -215,7 +207,7 @@ export const PodcastScript: React.FC = () => {
                                 }
                             }}
                             className="flex-1 w-full min-h-[500px] bg-card/30 border border-white/5 rounded-lg p-4 text-sm font-mono leading-relaxed resize-none focus:outline-none focus:ring-2 focus:ring-purple-500/50"
-                            placeholder="脚本内容将在此显示..."
+                            placeholder="你可以先输入任意播客脚本，用于测试上传；点击“生成脚本”后会覆盖这里的内容。"
                         />
                     </div>
                 )}
