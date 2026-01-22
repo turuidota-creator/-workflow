@@ -1,10 +1,7 @@
 
-import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
-import { WorkflowSession, WorkflowStatus, INITIAL_STEPS, StepId } from '../types/workflow';
-import { v4 as uuidv4 } from 'uuid'; // Need to generate IDs, will implement a simple helper if uuid not installed
-
-// Simple UUID generator if package not available
-const generateId = () => Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+import React, { createContext, useContext, useState, useCallback, useEffect, useRef } from 'react';
+import { WorkflowSession, INITIAL_STEPS } from '../types/workflow';
+import pb from '../services/pocketbase';
 
 interface WorkflowContextType {
     sessions: WorkflowSession[];
@@ -29,56 +26,142 @@ export const useWorkflow = () => {
 export const WorkflowProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [sessions, setSessions] = useState<WorkflowSession[]>([]);
     const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
+    const saveTimers = useRef<Map<string, number>>(new Map());
+    const pendingSaves = useRef<Map<string, WorkflowSession>>(new Map());
 
-    // Load from localStorage on mount
-    useEffect(() => {
-        const saved = localStorage.getItem('cw_sessions');
-        if (saved) {
-            try {
-                const parsed = JSON.parse(saved);
-                setSessions(parsed);
-                if (parsed.length > 0) setActiveSessionId(parsed[0].id);
-            } catch (e) {
-                console.error("Failed to load sessions", e);
-            }
-        }
+    const getAuthUserId = useCallback(() => {
+        return pb.authStore.model?.id ?? null;
     }, []);
 
-    // Save to localStorage whenever sessions change
+    const serializeSession = useCallback((session: WorkflowSession) => {
+        const userId = getAuthUserId();
+        return {
+            title: session.title,
+            status: session.status,
+            currentStepId: session.currentStepId,
+            steps: session.steps,
+            context: session.context,
+            createdAt: session.createdAt,
+            ...(userId ? { user: userId } : {})
+        };
+    }, [getAuthUserId]);
+
+    const deserializeSession = useCallback((record: any): WorkflowSession => {
+        const createdAt = typeof record.createdAt === 'number'
+            ? record.createdAt
+            : record.created
+                ? new Date(record.created).getTime()
+                : Date.now();
+        return {
+            id: record.id,
+            title: record.title ?? 'New Workflow',
+            status: record.status ?? 'idle',
+            currentStepId: record.currentStepId ?? 'topic-discovery',
+            steps: Array.isArray(record.steps) ? record.steps : JSON.parse(JSON.stringify(INITIAL_STEPS)),
+            context: record.context ?? {},
+            createdAt
+        };
+    }, []);
+
+    const scheduleSave = useCallback((session: WorkflowSession) => {
+        pendingSaves.current.set(session.id, session);
+        const existing = saveTimers.current.get(session.id);
+        if (existing) {
+            window.clearTimeout(existing);
+        }
+        const timer = window.setTimeout(async () => {
+            const latest = pendingSaves.current.get(session.id);
+            if (!latest) return;
+            pendingSaves.current.delete(session.id);
+            saveTimers.current.delete(session.id);
+            try {
+                await pb.collection('workflow_sessions').update(session.id, serializeSession(latest));
+            } catch (error) {
+                console.error('Failed to save workflow session', error);
+            }
+        }, 800);
+        saveTimers.current.set(session.id, timer);
+    }, [serializeSession]);
+
+    // Load from PocketBase on mount
     useEffect(() => {
-        localStorage.setItem('cw_sessions', JSON.stringify(sessions));
-    }, [sessions]);
+        let isMounted = true;
+        const loadSessions = async () => {
+            try {
+                const records = await pb.collection('workflow_sessions').getFullList({ sort: '-updated' });
+                if (!isMounted) return;
+                const loadedSessions = records.map(deserializeSession);
+                setSessions(loadedSessions);
+                if (loadedSessions.length > 0) {
+                    setActiveSessionId(loadedSessions[0].id);
+                }
+            } catch (error) {
+                console.error('Failed to load workflow sessions', error);
+            }
+        };
+        void loadSessions();
+        return () => {
+            isMounted = false;
+            saveTimers.current.forEach(timer => window.clearTimeout(timer));
+            saveTimers.current.clear();
+            pendingSaves.current.clear();
+        };
+    }, [deserializeSession]);
 
     const createSession = useCallback(() => {
         const newSession: WorkflowSession = {
-            id: generateId(),
+            id: '',
             title: 'New Workflow',
             createdAt: Date.now(),
             status: 'idle',
             currentStepId: 'topic-discovery',
-            steps: JSON.parse(JSON.stringify(INITIAL_STEPS)), // Deep copy
+            steps: JSON.parse(JSON.stringify(INITIAL_STEPS)),
             context: {}
         };
 
-        setSessions(prev => [newSession, ...prev]);
-        setActiveSessionId(newSession.id);
-    }, []);
+        void (async () => {
+            try {
+                const record = await pb.collection('workflow_sessions').create(serializeSession(newSession));
+                const savedSession = deserializeSession(record);
+                setSessions(prev => [savedSession, ...prev]);
+                setActiveSessionId(savedSession.id);
+            } catch (error) {
+                console.error('Failed to create workflow session', error);
+            }
+        })();
+    }, [deserializeSession, serializeSession]);
 
     const switchSession = useCallback((id: string) => {
         setActiveSessionId(id);
     }, []);
 
     const updateSession = useCallback((id: string, updates: Partial<WorkflowSession>) => {
-        setSessions(prev => prev.map(session =>
-            session.id === id ? { ...session, ...updates } : session
-        ));
-    }, []);
+        setSessions(prev => prev.map(session => {
+            if (session.id !== id) return session;
+            const updatedSession = { ...session, ...updates };
+            scheduleSave(updatedSession);
+            return updatedSession;
+        }));
+    }, [scheduleSave]);
 
     const deleteSession = useCallback((id: string) => {
         setSessions(prev => prev.filter(s => s.id !== id));
         if (activeSessionId === id) {
             setActiveSessionId(null);
         }
+        const existing = saveTimers.current.get(id);
+        if (existing) {
+            window.clearTimeout(existing);
+            saveTimers.current.delete(id);
+        }
+        pendingSaves.current.delete(id);
+        void (async () => {
+            try {
+                await pb.collection('workflow_sessions').delete(id);
+            } catch (error) {
+                console.error('Failed to delete workflow session', error);
+            }
+        })();
     }, [activeSessionId]);
 
     const getActiveSession = useCallback(() => {
