@@ -1322,8 +1322,9 @@ app.post('/api/podcast-upload', async (req, res) => {
             return res.status(404).json({ error: 'Audio file not found.' });
         }
 
+        const fileBuffer = await fs.promises.readFile(filePath);
         const formData = new FormData();
-        formData.append('podcast_file', fs.createReadStream(filePath), path.basename(filePath));
+        formData.append('podcast_file', new Blob([fileBuffer]), path.basename(filePath));
         if (podcast_script !== undefined) {
             formData.append('podcast_script', podcast_script);
         }
