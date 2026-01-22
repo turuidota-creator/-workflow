@@ -66,6 +66,30 @@ function parseNewsTopic(rawTopic: string): NewsItem {
     };
 }
 
+function normalizeResearchResult(data: unknown, fallbackTopic: string): ResearchResult | null {
+    if (!data || typeof data !== 'object') {
+        return null;
+    }
+    const record = data as Partial<ResearchResult>;
+    const summary = typeof record.summary === 'string' ? record.summary : '';
+    const background = typeof record.background === 'string' ? record.background : '';
+    if (!summary && !background && !Array.isArray(record.keyPoints)) {
+        return null;
+    }
+    return {
+        summary,
+        background,
+        keyPoints: Array.isArray(record.keyPoints) ? record.keyPoints : [],
+        perspectives: {
+            supporters: typeof record.perspectives?.supporters === 'string' ? record.perspectives.supporters : '',
+            critics: typeof record.perspectives?.critics === 'string' ? record.perspectives.critics : ''
+        },
+        relatedTopics: Array.isArray(record.relatedTopics) ? record.relatedTopics : [],
+        sources: Array.isArray(record.sources) ? record.sources : [],
+        topic: typeof record.topic === 'string' ? record.topic : fallbackTopic
+    };
+}
+
 export const TopicDiscovery: React.FC = () => {
     const { updateSession, getActiveSession } = useWorkflow();
     const session = getActiveSession();
@@ -149,7 +173,12 @@ export const TopicDiscovery: React.FC = () => {
             if (data.error) {
                 setResearchError(data.error);
             } else {
-                setResearchResult(data);
+                const normalized = normalizeResearchResult(data, selectedTopic);
+                if (normalized) {
+                    setResearchResult(normalized);
+                } else {
+                    setResearchError('研究结果格式异常，请稍后重试。');
+                }
             }
         } catch (e) {
             setResearchError(String(e));

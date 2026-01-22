@@ -1,7 +1,6 @@
 
 import React, { createContext, useContext, useState, useCallback, useEffect, useRef } from 'react';
 import { WorkflowSession, INITIAL_STEPS } from '../types/workflow';
-import pb from '../services/pocketbase';
 
 interface WorkflowContextType {
     sessions: WorkflowSession[];
@@ -29,22 +28,16 @@ export const WorkflowProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     const saveTimers = useRef<Map<string, number>>(new Map());
     const pendingSaves = useRef<Map<string, WorkflowSession>>(new Map());
 
-    const getAuthUserId = useCallback(() => {
-        return pb.authStore.model?.id ?? null;
-    }, []);
-
     const serializeSession = useCallback((session: WorkflowSession) => {
-        const userId = getAuthUserId();
         return {
             title: session.title,
             status: session.status,
             currentStepId: session.currentStepId,
             steps: session.steps,
             context: session.context,
-            createdAt: session.createdAt,
-            ...(userId ? { user: userId } : {})
+            createdAt: session.createdAt
         };
-    }, [getAuthUserId]);
+    }, []);
 
     const deserializeSession = useCallback((record: any): WorkflowSession => {
         const createdAt = typeof record.createdAt === 'number'
@@ -63,6 +56,30 @@ export const WorkflowProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         };
     }, []);
 
+    const request = useCallback(async (url: string, options: RequestInit) => {
+        const headers = new Headers(options.headers);
+        const rawAuth = window.localStorage.getItem('pb_auth');
+        if (rawAuth) {
+            try {
+                const auth = JSON.parse(rawAuth) as { token?: string };
+                if (auth?.token && !headers.has('Authorization')) {
+                    headers.set('Authorization', auth.token);
+                }
+            } catch {
+                // ignore malformed auth
+            }
+        }
+        const response = await fetch(url, { ...options, headers });
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`Request failed (${response.status}): ${errorText}`);
+        }
+        if (response.status === 204) {
+            return null;
+        }
+        return response.json();
+    }, []);
+
     const scheduleSave = useCallback((session: WorkflowSession) => {
         pendingSaves.current.set(session.id, session);
         const existing = saveTimers.current.get(session.id);
@@ -75,20 +92,25 @@ export const WorkflowProvider: React.FC<{ children: React.ReactNode }> = ({ chil
             pendingSaves.current.delete(session.id);
             saveTimers.current.delete(session.id);
             try {
-                await pb.collection('workflow_sessions').update(session.id, serializeSession(latest));
+                await request(`/api/workflow-sessions/${session.id}`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(serializeSession(latest))
+                });
             } catch (error) {
                 console.error('Failed to save workflow session', error);
             }
         }, 800);
         saveTimers.current.set(session.id, timer);
-    }, [serializeSession]);
+    }, [request, serializeSession]);
 
     // Load from PocketBase on mount
     useEffect(() => {
         let isMounted = true;
         const loadSessions = async () => {
             try {
-                const records = await pb.collection('workflow_sessions').getFullList({ sort: '-updated' });
+                const data = await request('/api/workflow-sessions?sort=-updated', { method: 'GET' });
+                const records = Array.isArray(data?.items) ? data.items : [];
                 if (!isMounted) return;
                 const loadedSessions = records.map(deserializeSession);
                 setSessions(loadedSessions);
@@ -106,7 +128,7 @@ export const WorkflowProvider: React.FC<{ children: React.ReactNode }> = ({ chil
             saveTimers.current.clear();
             pendingSaves.current.clear();
         };
-    }, [deserializeSession]);
+    }, [deserializeSession, request]);
 
     const createSession = useCallback(() => {
         const newSession: WorkflowSession = {
@@ -121,7 +143,11 @@ export const WorkflowProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
         void (async () => {
             try {
-                const record = await pb.collection('workflow_sessions').create(serializeSession(newSession));
+                const record = await request('/api/workflow-sessions', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(serializeSession(newSession))
+                });
                 const savedSession = deserializeSession(record);
                 setSessions(prev => [savedSession, ...prev]);
                 setActiveSessionId(savedSession.id);
@@ -130,7 +156,7 @@ export const WorkflowProvider: React.FC<{ children: React.ReactNode }> = ({ chil
                 alert('Failed to create workflow session. Make sure "workflow_sessions" collection exists in PocketBase.\n' + (error instanceof Error ? error.message : String(error)));
             }
         })();
-    }, [deserializeSession, serializeSession]);
+    }, [deserializeSession, request, serializeSession]);
 
     const switchSession = useCallback((id: string) => {
         setActiveSessionId(id);
@@ -158,12 +184,12 @@ export const WorkflowProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         pendingSaves.current.delete(id);
         void (async () => {
             try {
-                await pb.collection('workflow_sessions').delete(id);
+                await request(`/api/workflow-sessions/${id}`, { method: 'DELETE' });
             } catch (error) {
                 console.error('Failed to delete workflow session', error);
             }
         })();
-    }, [activeSessionId]);
+    }, [activeSessionId, request]);
 
     const getActiveSession = useCallback(() => {
         return sessions.find(s => s.id === activeSessionId);
