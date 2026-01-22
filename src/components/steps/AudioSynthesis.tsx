@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useWorkflow } from '../../context/WorkflowContext';
 import { Volume2, RefreshCw, ChevronRight, Play, Pause, Download, Settings2, UploadCloud } from 'lucide-react';
-import pb from '../../services/pocketbase';
 
 export const AudioSynthesis: React.FC = () => {
     const { getActiveSession, updateSession } = useWorkflow();
@@ -70,59 +69,45 @@ export const AudioSynthesis: React.FC = () => {
 
             const tempUrl = data.audioUrl || data.url;
 
-            // 2. Upload to PocketBase
+            // 2. Upload metadata to server (server handles PocketBase auth)
             setStatus('uploading');
             setProgress(90);
 
-            // Fetch the blob from temp URL
-            const audioBlob = await fetch(tempUrl).then(r => r.blob());
-            const formData = new FormData();
-            formData.append('podcast_file', audioBlob, `podcast_${Date.now()}.mp3`);
+            const publishPayload = {
+                articleId: session.context.articleId,
+                article: session.context.articleJson,
+                glossary: session.context.glossary,
+                podcast_script: session.context.podcastScript,
+                podcast_url: tempUrl
+            };
 
-            // Prepare article data if creating new
             let articleId = session.context.articleId;
-            let record;
-
-            if (articleId) {
-                // Update existing article
-                record = await pb.collection('articles').update(articleId, formData);
-            } else {
-                // Ensure we have necessary fields for creation
-                const meta = session.context.articleJson?.meta || {};
-                const articlePayload = {
-                    date: new Date().toISOString(),
-                    level: session.context.level || '10',
-                    topic: session.context.topic || '科技',
-                    title_zh: meta.title_zh || session.context.topic || 'Untitled',
-                    title_en: meta.title_en || 'Untitled',
-                    // Optional fields that we have
-                    intro: meta.briefing ? { briefing: meta.briefing } : {},
-                    content: session.context.articleJson || {},
-                };
-
-                // Append text fields to FormData
-                Object.entries(articlePayload).forEach(([key, value]) => {
-                    formData.append(key, typeof value === 'object' ? JSON.stringify(value) : String(value));
+            try {
+                const publishRes = await fetch('/api/publish', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(publishPayload)
                 });
-
-                record = await pb.collection('articles').create(formData);
-                articleId = record.id;
+                if (!publishRes.ok) {
+                    throw new Error(await publishRes.text());
+                }
+                const publishData = await publishRes.json();
+                articleId = publishData.articleId || articleId;
+            } catch (publishError) {
+                console.warn('Publish failed, keeping local audio URL:', publishError);
+                setError(`上传失败，已保留本地音频: ${String(publishError)}`);
             }
-
-            // Construct permanent URL
-            // Format: /api/files/COLLECTION_ID_OR_NAME/RECORD_ID/FILENAME
-            const permanentUrl = `${pb.baseUrl}/api/files/articles/${record.id}/${record.podcast_file}`;
 
             clearInterval(progressInterval);
             setStatus('success');
             setProgress(100);
-            setAudioUrl(permanentUrl);
+            setAudioUrl(tempUrl);
 
             // Update Session
             updateSession(session.id, {
                 context: {
                     ...session.context,
-                    podcastUrl: permanentUrl,
+                    podcastUrl: tempUrl,
                     articleId: articleId // Save the ID so future steps use it
                 }
             });
