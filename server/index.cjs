@@ -1523,6 +1523,35 @@ app.post('/api/publish', async (req, res) => {
                 const headers = { 'Content-Type': 'application/json' };
                 if (token) headers['Authorization'] = token;
 
+                const updatePayload = {};
+                if (payload.podcast_script !== undefined) updatePayload.podcast_script = payload.podcast_script;
+                if (payload.podcast_url !== undefined) updatePayload.podcast_url = payload.podcast_url;
+                if (payload.glossary !== undefined) {
+                    updatePayload.glossary = normalizeJsonField(payload.glossary) || {};
+                }
+
+                if (payload.articleId && Object.keys(updatePayload).length > 0) {
+                    const updateRes = await fetch(`${pbUrl}/api/collections/articles/records/${payload.articleId}`, {
+                        method: 'PATCH',
+                        headers: headers,
+                        body: JSON.stringify(updatePayload)
+                    });
+
+                    if (updateRes.ok) {
+                        return res.json({
+                            success: true,
+                            articleId: payload.articleId,
+                            glossaryCount: Object.keys(payload.glossary || {}).length,
+                            url: `${pbUrl}/articles/${payload.articleId}`,
+                            source: 'pocketbase'
+                        });
+                    } else {
+                        const updateError = await updateRes.text();
+                        console.error('PocketBase update error:', updateError);
+                        // Fall through to create if update failed
+                    }
+                }
+
                 const articleRes = await fetch(`${pbUrl}/api/collections/articles/records`, {
                     method: 'POST',
                     headers: headers,
