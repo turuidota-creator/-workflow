@@ -44,12 +44,12 @@ async function main() {
                     // Check existence (optimistic: try create, catch error if unique constraint fails)
                     // Or check first. Checking first is safer.
                     try {
-                        await pb.collection('dictionary').getFirstListItem(`word="${cleanWord}"`);
+                        await pb.collection('dictionary_new').getFirstListItem(`word="${cleanWord}"`);
                         skipped++;
                         process.stdout.write('.');
                     } catch (err: any) {
                         if (err.status === 404) {
-                            await pb.collection('dictionary').create({
+                            await pb.collection('dictionary_new').create({
                                 word: cleanWord,
                                 original_word: entry.word,
                                 phonetic: entry.phonetic,

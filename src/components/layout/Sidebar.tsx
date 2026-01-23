@@ -39,6 +39,13 @@ export const Sidebar: React.FC = () => {
                     <Plus className="w-4 h-4" />
                     New Workflow
                 </button>
+                <button
+                    onClick={() => createSession({ isTestMode: true, title: '测试新闻工作流' })}
+                    className="w-full flex items-center justify-center gap-2 bg-purple-600 hover:bg-purple-500 text-white px-4 py-2 rounded-md transition-all active:scale-95 font-medium shadow-lg shadow-purple-500/20 mt-2"
+                >
+                    <Plus className="w-4 h-4" />
+                    新增测试
+                </button>
             </div>
 
             <div className="flex-1 overflow-y-auto p-2 space-y-1">

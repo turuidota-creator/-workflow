@@ -22,6 +22,7 @@ export interface NewsItem {
     category: string;
     source: string;
     title: string;
+    title_zh?: string;  // 中文翻译
     link: string;
     raw: string;
 }
@@ -35,6 +36,7 @@ export interface WorkflowSession {
     steps: WorkflowStep[];
     // Data accumulator
     context: {
+        isTestMode?: boolean;
         targetDate?: string; // e.g. "2024-01-20"
         category?: string;
         topic?: string;

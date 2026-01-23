@@ -735,10 +735,29 @@ app.post('/api/vocabulary', async (req, res) => {
             return res.status(500).json({ error: "No content generated" });
         }
 
-        // 5. Parse JSON
+        // 5. Parse JSON and normalize to Map format
         try {
             const json = JSON.parse(generatedText.replace(/```json/g, '').replace(/```/g, ''));
-            res.json(json);
+
+            // Normalize glossary to Map format (key: word, value: entry object)
+            let glossary = json.glossary || json;
+
+            // If glossary is an Array, convert to Map
+            if (Array.isArray(glossary)) {
+                console.log('[Vocabulary] Converting Array to Map format...');
+                const glossaryMap = {};
+                glossary.forEach(entry => {
+                    // Use lemma or word as key
+                    const key = (entry.lemma || entry.word || '').toLowerCase();
+                    if (key) {
+                        glossaryMap[key] = entry;
+                    }
+                });
+                glossary = glossaryMap;
+            }
+
+            // Ensure we return { glossary: {...} } format
+            res.json({ glossary });
         } catch (e) {
             console.error("JSON Parse Error:", e);
             res.json({ error: "Invalid JSON format", raw: generatedText });
@@ -752,26 +771,266 @@ app.post('/api/vocabulary', async (req, res) => {
 
 // ================= DICTIONARY SYNC APIs =================
 
-// Local dictionary storage (JSON file)
-const DICTIONARY_PATH = path.join(PROJECT_ROOT, 'data', 'dictionary.json');
+// PocketBase collection for dictionary
+const DICTIONARY_COLLECTION = 'dictionary_new';
 
-// Helper: Load dictionary from file
-function loadDictionary() {
+/**
+ * Helper: Load dictionary from PocketBase dictionary_new collection
+ * Returns a map of { word: entry } for compatibility with existing code
+ *
+ * Schema mapping (dictionary_new -> frontend):
+ * - word -> word
+ * - original_word -> original_word
+ * - phonetic -> phonetic
+ * - definitions (array of {meaning, partOfSpeech}) -> definitions (array of {zh, pos})
+ */
+async function loadDictionaryFromPB() {
     try {
-        if (fs.existsSync(DICTIONARY_PATH)) {
-            return JSON.parse(fs.readFileSync(DICTIONARY_PATH, 'utf-8'));
+        const { url: pbUrl, token } = await getPocketBaseAuth();
+        if (!pbUrl) {
+            console.warn('[Dictionary] PocketBase not configured, returning empty dictionary');
+            return {};
         }
+
+        const headers = { 'Content-Type': 'application/json' };
+        if (token) headers['Authorization'] = token;
+
+        // Fetch all records (paginated, up to 500 for now)
+        const response = await fetch(`${pbUrl}/api/collections/${DICTIONARY_COLLECTION}/records?perPage=500`, {
+            method: 'GET',
+            headers
+        });
+
+        if (!response.ok) {
+            console.error('[Dictionary] Failed to load from PocketBase:', response.status);
+            return {};
+        }
+
+        const data = await response.json();
+        const dictionary = {};
+
+        (data.items || []).forEach(record => {
+            const word = (record.word || record.original_word || '').toLowerCase();
+            if (!word) return;
+
+            // Adapt schema: dictionary_new uses { meaning, partOfSpeech }, frontend expects { zh, pos, en }
+            const adaptedDefinitions = (record.definitions || []).map(def => ({
+                pos: def.partOfSpeech || def.pos || '',
+                zh: def.meaning || def.zh || '',
+                en: def.en || '' // May not exist in new schema
+            }));
+
+            dictionary[word] = {
+                word: record.word || word,
+                original_word: record.original_word || record.word,
+                phonetic: record.phonetic || '',
+                definitions: adaptedDefinitions,
+                // Preserve additional fields from dictionary_new
+                collins: record.collins,
+                oxford: record.oxford,
+                tag: record.tag,
+                bnc: record.bnc,
+                frq: record.frq,
+                exchange: record.exchange,
+                pos: record.pos,
+                translation: record.translation,
+                detail: record.detail,
+                id: record.id // PocketBase record ID
+            };
+        });
+
+        console.log(`[Dictionary] Loaded ${Object.keys(dictionary).length} words from PocketBase`);
+        return dictionary;
     } catch (e) {
-        console.error('Error loading dictionary:', e);
+        console.error('[Dictionary] Error loading from PocketBase:', e.message);
+        return {};
     }
-    return {};
 }
 
-// Helper: Save dictionary to file
-function saveDictionary(dict) {
-    const dir = path.dirname(DICTIONARY_PATH);
-    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-    fs.writeFileSync(DICTIONARY_PATH, JSON.stringify(dict, null, 2), 'utf-8');
+/**
+ * Helper: Check if a word exists in PocketBase dictionary_new
+ */
+async function wordExistsInPB(word) {
+    try {
+        const { url: pbUrl, token } = await getPocketBaseAuth();
+        if (!pbUrl) return false;
+
+        const headers = { 'Content-Type': 'application/json' };
+        if (token) headers['Authorization'] = token;
+
+        const cleanWord = word.toLowerCase();
+        const response = await fetch(
+            `${pbUrl}/api/collections/${DICTIONARY_COLLECTION}/records?filter=(word='${cleanWord}')&perPage=1`,
+            { method: 'GET', headers }
+        );
+
+        if (!response.ok) return false;
+        const data = await response.json();
+        return (data.items || []).length > 0;
+    } catch (e) {
+        console.error('[Dictionary] wordExistsInPB error:', e.message);
+        return false;
+    }
+}
+
+/**
+ * Helper: Batch check words in PocketBase dictionary_new
+ * Querying only the requested words avoids loading the entire 700k+ dataset.
+ */
+async function checkWordsBatchPB(wordsToCheck) {
+    if (!wordsToCheck || wordsToCheck.length === 0) return {};
+
+    try {
+        const { url: pbUrl, token } = await getPocketBaseAuth();
+        if (!pbUrl) return {};
+
+        const headers = { 'Content-Type': 'application/json' };
+        if (token) headers['Authorization'] = token;
+
+        const foundDictionary = {};
+
+        // Unique words to check
+        const uniqueWords = [...new Set(wordsToCheck.map(w => w.toLowerCase()))];
+
+        // Process in chunks to avoid URL length limits
+        const CHUNK_SIZE = 30; // 30 words per batch is safe for URL length
+        for (let i = 0; i < uniqueWords.length; i += CHUNK_SIZE) {
+            const chunk = uniqueWords.slice(i, i + CHUNK_SIZE);
+            if (chunk.length === 0) continue;
+
+            // Build filter string like: (word='a'||word='b'||word='c')
+            const filterTerms = chunk.map(w => `word='${w.replace(/'/g, "\\'")}'`).join('||');
+            const filter = `(${filterTerms})`;
+
+            // We need to fetch enough items in case all 30 match
+            const response = await fetch(
+                `${pbUrl}/api/collections/${DICTIONARY_COLLECTION}/records?filter=${encodeURIComponent(filter)}&perPage=${CHUNK_SIZE * 2}`,
+                { method: 'GET', headers }
+            );
+
+            if (response.ok) {
+                const data = await response.json();
+                (data.items || []).forEach(record => {
+                    const word = (record.word || record.original_word || '').toLowerCase();
+                    if (!word) return;
+
+                    // Adapt schema: dictionary_new uses { meaning, partOfSpeech }, frontend expects { zh, pos, en }
+                    const adaptedDefinitions = (record.definitions || []).map(def => ({
+                        pos: def.partOfSpeech || def.pos || '',
+                        zh: def.meaning || def.zh || '',
+                        en: def.en || ''
+                    }));
+
+                    foundDictionary[word] = {
+                        word: record.word || word,
+                        original_word: record.original_word || record.word,
+                        phonetic: record.phonetic || '',
+                        definitions: adaptedDefinitions,
+                        collins: record.collins,
+                        oxford: record.oxford,
+                        tag: record.tag,
+                        bnc: record.bnc,
+                        frq: record.frq,
+                        exchange: record.exchange,
+                        pos: record.pos,
+                        translation: record.translation,
+                        detail: record.detail,
+                        id: record.id
+                    };
+                });
+            } else {
+                console.warn(`[Dictionary] Batch check failed: ${response.status}`);
+            }
+        }
+
+        console.log(`[Dictionary] Batch check found ${Object.keys(foundDictionary).length} matches out of ${uniqueWords.length} unique words.`);
+        return foundDictionary;
+
+    } catch (e) {
+        console.error('[Dictionary] Error batch checking in PB:', e.message);
+        return {};
+    }
+}
+
+/**
+ * Helper: Add a word entry to PocketBase dictionary_new
+ * Adapts from frontend format { zh, pos, en } to dictionary_new format { meaning, partOfSpeech }
+ */
+async function addWordToPB(entry) {
+    try {
+        const { url: pbUrl, token } = await getPocketBaseAuth();
+        if (!pbUrl || !token) {
+            console.error('[Dictionary] PocketBase auth required to add words');
+            return false;
+        }
+
+        const headers = { 'Content-Type': 'application/json', 'Authorization': token };
+
+        // Adapt definitions to dictionary_new schema
+        const adaptedDefinitions = (entry.definitions || []).map(def => ({
+            meaning: def.zh || def.meaning || '',
+            partOfSpeech: def.pos || def.partOfSpeech || ''
+        }));
+
+        // Also build translation string (Chinese definitions joined)
+        const translation = adaptedDefinitions.map(d => `${d.partOfSpeech} ${d.meaning}`).join('; ');
+
+        const payload = {
+            word: (entry.word || '').toLowerCase(),
+            original_word: entry.original_word || entry.word,
+            phonetic: entry.phonetic || '',
+            definitions: adaptedDefinitions,
+            translation: translation,
+            source: 'generated'
+        };
+
+        const response = await fetch(`${pbUrl}/api/collections/${DICTIONARY_COLLECTION}/records`, {
+            method: 'POST',
+            headers,
+            body: JSON.stringify(payload)
+        });
+
+        if (!response.ok) {
+            const errText = await response.text();
+            console.error('[Dictionary] Failed to add word:', entry.word, errText);
+            return false;
+        }
+
+        return true;
+    } catch (e) {
+        console.error('[Dictionary] addWordToPB error:', e.message);
+        return false;
+    }
+}
+
+/**
+ * Helper: Get dictionary stats from PocketBase
+ */
+async function getDictionaryStatsPB() {
+    try {
+        const { url: pbUrl, token } = await getPocketBaseAuth();
+        if (!pbUrl) return { totalWords: 0, lastUpdated: null };
+
+        const headers = { 'Content-Type': 'application/json' };
+        if (token) headers['Authorization'] = token;
+
+        // Get total count
+        const response = await fetch(
+            `${pbUrl}/api/collections/${DICTIONARY_COLLECTION}/records?perPage=1`,
+            { method: 'GET', headers }
+        );
+
+        if (!response.ok) return { totalWords: 0, lastUpdated: null };
+
+        const data = await response.json();
+        return {
+            totalWords: data.totalItems || 0,
+            lastUpdated: data.items?.[0]?.updated || null
+        };
+    } catch (e) {
+        console.error('[Dictionary] getDictionaryStatsPB error:', e.message);
+        return { totalWords: 0, lastUpdated: null };
+    }
 }
 
 // Helper: Extract words from article
@@ -853,16 +1112,15 @@ app.post('/api/dictionary/scan', async (req, res) => {
         // Extract words from article
         const { rawCount, vocabularyList } = extractWordsFromArticle(articleJson);
 
-        // Load existing dictionary
-        const dictionary = loadDictionary();
-        const dictWords = new Set(Object.keys(dictionary).map(w => w.toLowerCase()));
+        // Check words against PocketBase in batches
+        const dictionary = await checkWordsBatchPB(vocabularyList);
 
         // Find missing words
         const existingWords = [];
         const missingWords = [];
 
         vocabularyList.forEach(word => {
-            if (dictWords.has(word)) {
+            if (dictionary[word]) {
                 existingWords.push({ word, inDict: true, entry: dictionary[word] });
             } else {
                 missingWords.push({ word, inDict: false });
@@ -965,7 +1223,7 @@ app.post('/api/dictionary/generate', async (req, res) => {
  * POST /api/dictionary/add
  * Add new words to the dictionary
  */
-app.post('/api/dictionary/add', (req, res) => {
+app.post('/api/dictionary/add', async (req, res) => {
     try {
         const { entries } = req.body;
 
@@ -973,23 +1231,28 @@ app.post('/api/dictionary/add', (req, res) => {
             return res.status(400).json({ error: "Missing entries object" });
         }
 
-        const dictionary = loadDictionary();
         let addedCount = 0;
+        const entryList = Object.entries(entries);
 
-        Object.entries(entries).forEach(([word, entry]) => {
+        // Add each entry to PocketBase
+        for (const [word, entry] of entryList) {
             const key = word.toLowerCase();
-            if (!dictionary[key]) {
-                dictionary[key] = entry;
-                addedCount++;
+            // Check if word already exists
+            const exists = await wordExistsInPB(key);
+            if (!exists) {
+                const entryWithWord = { ...entry, word: key };
+                const success = await addWordToPB(entryWithWord);
+                if (success) addedCount++;
             }
-        });
+        }
 
-        saveDictionary(dictionary);
+        // Get updated stats
+        const stats = await getDictionaryStatsPB();
 
         res.json({
             success: true,
             addedCount,
-            totalWords: Object.keys(dictionary).length
+            totalWords: stats.totalWords
         });
 
     } catch (e) {
@@ -1002,15 +1265,10 @@ app.post('/api/dictionary/add', (req, res) => {
  * GET /api/dictionary/stats
  * Get dictionary statistics
  */
-app.get('/api/dictionary/stats', (req, res) => {
+app.get('/api/dictionary/stats', async (req, res) => {
     try {
-        const dictionary = loadDictionary();
-        res.json({
-            totalWords: Object.keys(dictionary).length,
-            lastUpdated: fs.existsSync(DICTIONARY_PATH)
-                ? fs.statSync(DICTIONARY_PATH).mtime.toISOString()
-                : null
-        });
+        const stats = await getDictionaryStatsPB();
+        res.json(stats);
     } catch (e) {
         res.status(500).json({ error: e.message });
     }
@@ -1125,35 +1383,51 @@ app.get('/api/news/scan', async (req, res) => {
     try {
         console.log('Scanning news from RSS...');
         const feeds = [
+            // 科技
             {
                 name: 'Hacker News',
                 category: '科技',
                 url: 'https://news.ycombinator.com/rss',
-                maxItems: 6
+                maxItems: 5
             },
+            {
+                name: 'NYTimes Technology',
+                category: '科技',
+                url: 'https://rss.nytimes.com/services/xml/rss/nyt/Technology.xml',
+                maxItems: 5
+            },
+            // 国际
+            {
+                name: 'NYTimes World',
+                category: '国际',
+                url: 'https://rss.nytimes.com/services/xml/rss/nyt/World.xml',
+                maxItems: 5
+            },
+            {
+                name: 'BBC World',
+                category: '国际',
+                url: 'https://feeds.bbci.co.uk/news/world/rss.xml',
+                maxItems: 5
+            },
+            // 政治
             {
                 name: 'NYTimes Politics',
                 category: '政治',
                 url: 'https://rss.nytimes.com/services/xml/rss/nyt/Politics.xml',
-                maxItems: 4
+                maxItems: 5
             },
-            {
-                name: 'BBC Politics',
-                category: '政治',
-                url: 'https://feeds.bbci.co.uk/news/politics/rss.xml',
-                maxItems: 4
-            },
+            // 财经
             {
                 name: 'NYTimes Business',
                 category: '财经',
                 url: 'https://rss.nytimes.com/services/xml/rss/nyt/Business.xml',
-                maxItems: 4
+                maxItems: 5
             },
             {
                 name: 'WSJ Markets',
                 category: '财经',
                 url: 'https://feeds.a.dj.com/rss/RSSMarketsMain.xml',
-                maxItems: 4
+                maxItems: 5
             }
         ];
 
@@ -1214,6 +1488,61 @@ app.get('/api/news/scan', async (req, res) => {
         const trimmedItems = newsItems.slice(0, 22);
         console.log(`Found ${trimmedItems.length} news items`);
 
+        // === 批量翻译标题为中文 ===
+        try {
+            const envPath = path.join(PROJECT_ROOT, '.env');
+            const envContent = fs.existsSync(envPath) ? fs.readFileSync(envPath, 'utf-8') : '';
+            const apiKeyMatch = envContent.match(/GEMINI_API_KEY=(.+)/);
+            const apiKey = apiKeyMatch ? apiKeyMatch[1].trim() : null;
+
+            if (apiKey && trimmedItems.length > 0) {
+                // 构建翻译请求
+                const titlesToTranslate = trimmedItems.map((item, idx) => `${idx}: ${item.title}`).join('\n');
+                const translatePrompt = `Translate these English news headlines to Chinese. Return ONLY a JSON object mapping index to translation.
+
+${titlesToTranslate}
+
+Example output format: {"0": "中文标题1", "1": "中文标题2"}
+IMPORTANT: Return ONLY valid JSON, no markdown.`;
+
+                console.log('[News Scan] Translating titles with Gemini Flash...');
+                const translateResponse = await fetch(
+                    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
+                    {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            contents: [{ role: 'user', parts: [{ text: translatePrompt }] }],
+                            generationConfig: { temperature: 0.1, responseMimeType: 'application/json' }
+                        }),
+                        dispatcher: proxyDispatcher
+                    }
+                );
+
+                if (translateResponse.ok) {
+                    const translateData = await translateResponse.json();
+                    const translatedText = translateData.candidates?.[0]?.content?.parts?.[0]?.text;
+                    if (translatedText) {
+                        try {
+                            const translations = JSON.parse(translatedText.replace(/```json/g, '').replace(/```/g, ''));
+                            trimmedItems.forEach((item, idx) => {
+                                if (translations[idx] || translations[String(idx)]) {
+                                    item.title_zh = translations[idx] || translations[String(idx)];
+                                }
+                            });
+                            console.log(`[News Scan] Successfully translated ${Object.keys(translations).length} titles`);
+                        } catch (parseErr) {
+                            console.warn('[News Scan] Translation parse error:', parseErr.message);
+                        }
+                    }
+                } else {
+                    console.warn('[News Scan] Translation API failed:', translateResponse.status);
+                }
+            }
+        } catch (translateErr) {
+            console.warn('[News Scan] Translation error (non-fatal):', translateErr.message);
+        }
+
         // 返回结构化数据，同时保留 topics 字段以兼容旧版前端
         res.json({
             items: trimmedItems,
@@ -1223,11 +1552,11 @@ app.get('/api/news/scan', async (req, res) => {
         console.error("News Scan Error:", e);
         // Fallback to static items if network fails
         const fallbackItems = [
-            { category: '科技', source: 'Tech News', title: 'SpaceX Starship Latest Updates', link: '', raw: '【科技 | Tech News】SpaceX Starship Latest Updates' },
-            { category: '科技', source: 'AI News', title: 'New AI Models Released This Week', link: '', raw: '【科技 | AI News】New AI Models Released This Week' },
-            { category: '财经', source: 'Finance', title: 'Global Economic Trends 2026', link: '', raw: '【财经 | Finance】Global Economic Trends 2026' },
-            { category: '科技', source: 'Tech News', title: 'Quantum Computing Breakthroughs', link: '', raw: '【科技 | Tech News】Quantum Computing Breakthroughs' },
-            { category: '科技', source: 'Auto News', title: 'Electric Vehicle Market Analysis', link: '', raw: '【科技 | Auto News】Electric Vehicle Market Analysis' }
+            { category: '科技', source: 'Tech News', title: 'SpaceX Starship Latest Updates', title_zh: 'SpaceX 星舰最新动态', link: '', raw: '【科技 | Tech News】SpaceX Starship Latest Updates' },
+            { category: '科技', source: 'AI News', title: 'New AI Models Released This Week', title_zh: '本周发布的新 AI 模型', link: '', raw: '【科技 | AI News】New AI Models Released This Week' },
+            { category: '财经', source: 'Finance', title: 'Global Economic Trends 2026', title_zh: '2026 全球经济趋势', link: '', raw: '【财经 | Finance】Global Economic Trends 2026' },
+            { category: '科技', source: 'Tech News', title: 'Quantum Computing Breakthroughs', title_zh: '量子计算突破', link: '', raw: '【科技 | Tech News】Quantum Computing Breakthroughs' },
+            { category: '科技', source: 'Auto News', title: 'Electric Vehicle Market Analysis', title_zh: '电动汽车市场分析', link: '', raw: '【科技 | Auto News】Electric Vehicle Market Analysis' }
         ];
         res.json({
             items: fallbackItems,
@@ -1666,7 +1995,7 @@ app.post('/api/publish', async (req, res) => {
                         title_zh: articleData.title?.zh || articleData.title?.cn || '无标题',
                         title_en: articleData.title?.en || 'Untitled',
                         date: articleData.meta?.date || new Date().toISOString(),
-                        level: articleData.meta?.level || "10",
+                        level: payload.level || articleData.meta?.level || "10",
                         topic: articleData.meta?.topic || "科技",
 
                         // Content fields
@@ -1678,7 +2007,8 @@ app.post('/api/publish', async (req, res) => {
 
                         // Other fields from payload
                         glossary: payload.glossary || articleRoot.glossary,
-                        podcast_script: payload.podcast_script,
+                        // PocketBase has 5000 char limit; skip if too long (will be handled in podcast step)
+                        podcast_script: (payload.podcast_script?.length || 0) <= 5000 ? (payload.podcast_script || '') : '',
                         podcast_url: payload.podcast_url || articleData.podcastUrl,
                     };
 
@@ -1699,7 +2029,42 @@ app.post('/api/publish', async (req, res) => {
                     updatePayload.glossary = normalizeJsonField(payload.glossary) || {};
                 }
 
-                if (payload.articleId && Object.keys(updatePayload).length > 0) {
+                // CRITICAL FIX: Ensure level and content are also updated during PATCH
+                if (payload.level) updatePayload.level = payload.level;
+                if (payload.article || payload.content) {
+                    // Re-construct content payload logic similar to create
+                    const isDirectPayload = !payload.article && (payload.title_zh || payload.title_en || payload.content || payload.intro);
+                    const articleRoot = payload.article || {};
+                    const articleData = articleRoot.article || articleRoot;
+
+                    if (isDirectPayload) {
+                        if (payload.title_zh) updatePayload.title_zh = payload.title_zh;
+                        if (payload.title_en) updatePayload.title_en = payload.title_en;
+                        if (payload.date) updatePayload.date = payload.date;
+                        if (payload.topic) updatePayload.topic = payload.topic;
+                        if (payload.intro) updatePayload.intro = normalizeJsonField(payload.intro);
+                        if (payload.content) updatePayload.content = normalizeJsonField(payload.content);
+                    } else {
+                        if (articleData.title?.zh || articleData.title?.cn) updatePayload.title_zh = articleData.title?.zh || articleData.title?.cn;
+                        if (articleData.title?.en) updatePayload.title_en = articleData.title?.en;
+                        if (articleData.meta?.date) updatePayload.date = articleData.meta?.date;
+                        // level is handled above
+                        if (articleData.meta?.topic) updatePayload.topic = articleData.meta?.topic;
+
+                        updatePayload.intro = articleData.intro || (articleData.briefing ? { text: articleData.briefing } : null);
+                        updatePayload.content = {
+                            meta: articleData.meta,
+                            paragraphs: articleData.paragraphs
+                        };
+                    }
+                }
+
+
+                // Detect local IDs (start with 'article_') - these don't exist in PocketBase
+                // Only attempt PATCH if ID looks like a PocketBase ID (alphanumeric, no prefix)
+                const isPocketBaseId = payload.articleId && !payload.articleId.startsWith('article_');
+
+                if (isPocketBaseId && Object.keys(updatePayload).length > 0) {
                     const updateRes = await fetch(`${pbUrl}/api/collections/articles/records/${payload.articleId}`, {
                         method: 'PATCH',
                         headers: headers,
@@ -1721,6 +2086,12 @@ app.post('/api/publish', async (req, res) => {
                     }
                 }
 
+                console.log('[Publish] Attempting POST to PocketBase...', {
+                    url: `${pbUrl}/api/collections/articles/records`,
+                    level: pbPayload.level,
+                    title: pbPayload.title_en?.substring(0, 50)
+                });
+
                 const articleRes = await fetch(`${pbUrl}/api/collections/articles/records`, {
                     method: 'POST',
                     headers: headers,
@@ -1729,6 +2100,7 @@ app.post('/api/publish', async (req, res) => {
 
                 if (articleRes.ok) {
                     const data = await articleRes.json();
+                    console.log('[Publish] SUCCESS! Created article ID:', data.id);
                     return res.json({
                         success: true,
                         articleId: data.id,
@@ -1738,7 +2110,7 @@ app.post('/api/publish', async (req, res) => {
                     });
                 } else {
                     const error = await articleRes.text();
-                    console.error('PocketBase error:', error);
+                    console.error('[Publish] PocketBase POST FAILED:', articleRes.status, error);
                     // Fall through to local save
                 }
             } catch (e) {
@@ -1911,9 +2283,9 @@ app.delete('/api/database/articles/:id', async (req, res) => {
  * GET /api/database/dictionary
  * Get the entire dictionary
  */
-app.get('/api/database/dictionary', (req, res) => {
+app.get('/api/database/dictionary', async (req, res) => {
     try {
-        const dictionary = loadDictionary();
+        const dictionary = await loadDictionaryFromPB();
         res.json({ dictionary, count: Object.keys(dictionary).length });
     } catch (e) {
         res.status(500).json({ error: e.message });
@@ -1954,7 +2326,7 @@ app.get('/api/database/collections', async (req, res) => {
             // If fetching collections failed (e.g. 403), return default list
             return res.json({
                 source: 'pocketbase_restricted',
-                collections: [{ name: 'articles', type: 'base' }, { name: 'users', type: 'auth' }, { name: 'dictionary', type: 'base' }]
+                collections: [{ name: 'articles', type: 'base' }, { name: 'users', type: 'auth' }, { name: 'dictionary_new', type: 'base' }]
             });
         }
     } catch (e) {

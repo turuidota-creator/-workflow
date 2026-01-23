@@ -1,0 +1,2249 @@
+{
+  "articleId": "1ecopgyc2e5efxm",
+  "article": {
+    "intro": {
+      "id": "intro-20260123",
+      "text": "2026年1月23日，随着日内瓦峰会的失败，科技巨头与政府之间的矛盾公开化，标志着全球数字主权时代的正式到来。",
+      "type": "intro"
+    },
+    "meta": {
+      "briefing": {
+        "grammar_analysis": "语法重点：文章使用了对比句型（While...）和强调句结构，同时运用了定语从句来修饰复杂的名词短语。",
+        "market_implications": "科技公司面临极高的合规成本；全球互联网可能分裂为区域性网络（Splinternet）。",
+        "scope": "影响全球互联网架构、数据隐私政策及跨国数字贸易。",
+        "what": "全球科技巨头与各国政府关于数字监管的谈判破裂，导致各国加速建立独立的网络防火墙。",
+        "when": "2026年1月23日",
+        "who": "跨国科技公司（如谷歌、Meta等）与各国政府监管机构。"
+      },
+      "date": "2026-01-23",
+      "id": "20260123_digital_sovereignty",
+      "level": "7",
+      "slug": "digital-sovereignty-clash",
+      "title": "数字围墙：科技巨头面临全球监管新秩序",
+      "topic": "科技",
+      "wordCount": 236
+    },
+    "paragraphs": [
+      {
+        "id": "p1",
+        "paragraph": {
+          "id": "p1",
+          "tokenizedSentences": [
+            {
+              "analysis": {
+                "explanation": "人话：开头先交代时间。这句话用 'fragile peace'（脆弱的和平）来形容双方之前勉强维持的关系。",
+                "grammar": "时间状语前置 + 介词短语作后置定语",
+                "keywords": [
+                  "fragile",
+                  "negotiation",
+                  "broke"
+                ]
+              },
+              "id": "s1-p1",
+              "tokens": [
+                {
+                  "isWord": true,
+                  "text": "On"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "January"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "23"
+                },
+                {
+                  "isWord": false,
+                  "text": ","
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "the"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "fragile"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "peace"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "between"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "powerful"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "tech"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "companies"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "and"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "national"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "governments"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "finally"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "broke"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "after"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "months"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "of"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "intense"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "negotiation"
+                },
+                {
+                  "isWord": false,
+                  "text": "."
+                }
+              ],
+              "zh": "1月23日，在经历了数月的紧张谈判后，强大的科技公司与各国政府之间脆弱的和平最终破裂。"
+            },
+            {
+              "analysis": {
+                "explanation": "人话：政府开始动真格了。'Used by...' 是修饰 'algorithms' 的，说明这些算法是谁在用。",
+                "grammar": "Past Participle (过去分词作定语)",
+                "keywords": [
+                  "coordinated",
+                  "campaign",
+                  "algorithms"
+                ]
+              },
+              "id": "s2-p1",
+              "tokens": [
+                {
+                  "isWord": true,
+                  "text": "Authorities"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "around"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "the"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "world"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "launched"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "a"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "strict"
+                },
+                {
+                  "isWord": false,
+                  "text": ","
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "coordinated"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "campaign"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "against"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "the"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "complex"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "and"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "often"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "secret"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "algorithms"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "used"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "by"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "these"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "global"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "corporations"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "to"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "manage"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "user"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "data"
+                },
+                {
+                  "isWord": false,
+                  "text": "."
+                }
+              ],
+              "zh": "世界各地的监管机构发起了一场严格的、协调一致的行动，针对这些跨国公司用来管理用户数据的复杂且往往隐秘的算法。"
+            },
+            {
+              "analysis": {
+                "explanation": "人话：这是长期积累的结果。'Unbearable pressure' 指压力大到受不了了。",
+                "grammar": "Not... but... (不是...而是...)",
+                "keywords": [
+                  "primary",
+                  "unbearable",
+                  "refuse"
+                ]
+              },
+              "id": "s3-p1",
+              "tokens": [
+                {
+                  "isWord": true,
+                  "text": "The"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "primary"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "cause"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "was"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "not"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "one"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "single"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "disaster"
+                },
+                {
+                  "isWord": false,
+                  "text": ","
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "but"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "the"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "growing"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "and"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "unbearable"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "pressure"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "of"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "digital"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "control"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "extending"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "across"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "national"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "borders"
+                },
+                {
+                  "isWord": false,
+                  "text": ","
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "which"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "governments"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "now"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "refuse"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "to"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "accept"
+                },
+                {
+                  "isWord": false,
+                  "text": "."
+                }
+              ],
+              "zh": "主要原因并非单一的灾难性事件，而是数字控制权跨境延伸所带来的日益增长且难以忍受的压力，各国政府现在拒绝接受这一点。"
+            }
+          ]
+        },
+        "type": "paragraph"
+      },
+      {
+        "id": "p2",
+        "paragraph": {
+          "id": "p2",
+          "tokenizedSentences": [
+            {
+              "analysis": {
+                "explanation": "人话：描述当时的场面。'Blaming each other' 是伴随的动作，大家都吵翻了。",
+                "grammar": "With + Object + Participle (With复合结构)",
+                "keywords": [
+                  "incredibly",
+                  "blaming",
+                  "diplomatic"
+                ]
+              },
+              "id": "s1-p2",
+              "tokens": [
+                {
+                  "isWord": true,
+                  "text": "The"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "mood"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "at"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "the"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "sudden"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "end"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "of"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "the"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "Geneva"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "summit"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "was"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "incredibly"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "angry"
+                },
+                {
+                  "isWord": false,
+                  "text": ","
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "with"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "both"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "sides"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "loudly"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "blaming"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "each"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "other"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "for"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "the"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "complete"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "failure"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "of"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "the"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "diplomatic"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "talks"
+                },
+                {
+                  "isWord": false,
+                  "text": "."
+                }
+              ],
+              "zh": "日内瓦峰会突然结束后，气氛极其愤怒，双方都大声指责对方导致了外交谈判的彻底失败。"
+            },
+            {
+              "analysis": {
+                "explanation": "人话：两边观点完全相反。一边说要有'Global ecosystem'（全球生态），一边说那是'Dangerous chaos'（危险的混乱）。",
+                "grammar": "While... (对比从句)",
+                "keywords": [
+                  "ecosystem",
+                  "old-fashioned",
+                  "unchecked"
+                ]
+              },
+              "id": "s2-p2",
+              "tokens": [
+                {
+                  "isWord": true,
+                  "text": "Wealthy"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "tech"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "leaders"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "argued"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "that"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "true"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "innovation"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "needs"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "a"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "global"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "ecosystem"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "without"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "old-fashioned"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "borders"
+                },
+                {
+                  "isWord": false,
+                  "text": ","
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "while"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "government"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "officials"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "insisted"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "that"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "such"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "unchecked"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "freedom"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "is"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "just"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "dangerous"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "chaos"
+                },
+                {
+                  "isWord": false,
+                  "text": "."
+                }
+              ],
+              "zh": "富有的科技领袖们争辩说，真正的创新需要一个没有过时边界的全球生态系统，而政府官员则坚持认为，这种不受约束的自由只是危险的混乱。"
+            },
+            {
+              "analysis": {
+                "explanation": "人话：因为意见不合，大家开始建墙，结果就是互联网要分裂了。'Isolated' 强调了这种分裂后的孤立状态。",
+                "grammar": "Present Participle Phrase (现在分词短语作结果状语)",
+                "keywords": [
+                  "ideological",
+                  "disagreement",
+                  "isolated"
+                ]
+              },
+              "id": "s3-p2",
+              "tokens": [
+                {
+                  "isWord": true,
+                  "text": "This"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "deep"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "ideological"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "disagreement"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "is"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "now"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "leading"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "countries"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "to"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "build"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "their"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "own"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": false,
+                  "text": "\""
+                },
+                {
+                  "isWord": true,
+                  "text": "digital"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "walls"
+                },
+                {
+                  "isWord": false,
+                  "text": ","
+                },
+                {
+                  "isWord": false,
+                  "text": "\""
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "a"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "move"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "that"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "threatens"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "to"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "split"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "the"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "once-global"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "internet"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "into"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "separate"
+                },
+                {
+                  "isWord": false,
+                  "text": ","
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "isolated"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "local"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "networks"
+                },
+                {
+                  "isWord": false,
+                  "text": "."
+                }
+              ],
+              "zh": "这种深刻的意识形态分歧正导致各国建立自己的“数字墙”，这一举动威胁要将曾经全球化的互联网分裂成独立的、孤立的本地网络。"
+            }
+          ]
+        },
+        "type": "paragraph"
+      },
+      {
+        "id": "p3",
+        "paragraph": {
+          "id": "p3",
+          "tokenizedSentences": [
+            {
+              "analysis": {
+                "explanation": "人话：先承认对方说得对。Steelman（钢铁人）原则，帮对手说句公道话：互联网分裂确实不好。",
+                "grammar": "It is true that... (形式主语)",
+                "keywords": [
+                  "valid",
+                  "sharing",
+                  "progress"
+                ]
+              },
+              "id": "s1-p3",
+              "tokens": [
+                {
+                  "isWord": true,
+                  "text": "It"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "is"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "true"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "that"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "the"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "companies"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "have"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "a"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "valid"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "point"
+                },
+                {
+                  "isWord": false,
+                  "text": ";"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "breaking"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "the"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "internet"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "into"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "small"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "pieces"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "could"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "easily"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "stop"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "the"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "sharing"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "of"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "good"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "ideas"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "that"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "drives"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "human"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "progress"
+                },
+                {
+                  "isWord": false,
+                  "text": "."
+                }
+              ],
+              "zh": "诚然，这些公司有一个合理的观点；将互联网分割成小块很容易阻止推动人类进步的优秀思想的共享。"
+            },
+            {
+              "analysis": {
+                "explanation": "人话：话锋一转。虽然分裂不好，但乱收集数据的代价更大。'Prevailing view' 指现在大多数人的看法。",
+                "grammar": "However... (转折连词)",
+                "keywords": [
+                  "prevailing",
+                  "uncontrolled",
+                  "ignore"
+                ]
+              },
+              "id": "s2-p3",
+              "tokens": [
+                {
+                  "isWord": true,
+                  "text": "However"
+                },
+                {
+                  "isWord": false,
+                  "text": ","
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "the"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "prevailing"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "view"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "among"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "citizens"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "and"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "leaders"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "is"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "that"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "the"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "social"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "cost"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "of"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "uncontrolled"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "data"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "collection"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "has"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "become"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "too"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "high"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "to"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "ignore"
+                },
+                {
+                  "isWord": false,
+                  "text": "."
+                }
+              ],
+              "zh": "然而，公民和领导人的普遍观点是，不受控制的数据收集带来的社会成本已经变得高到无法忽视。"
+            },
+            {
+              "analysis": {
+                "explanation": "人话：总结陈词。世道变了，想活下去就得守规矩。'No longer optional' 强调了强制性。",
+                "grammar": "As... (时间状语从句)",
+                "keywords": [
+                  "historical",
+                  "strict",
+                  "survival"
+                ]
+              },
+              "id": "s3-p3",
+              "tokens": [
+                {
+                  "isWord": true,
+                  "text": "As"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "we"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "face"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "this"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "major"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "historical"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "change"
+                },
+                {
+                  "isWord": false,
+                  "text": ","
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "the"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "global"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "market"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "must"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "accept"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "that"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "following"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "strict"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "local"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "rules"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "is"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "no"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "longer"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "optional"
+                },
+                {
+                  "isWord": false,
+                  "text": ","
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "but"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "necessary"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "for"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "survival"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "in"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "a"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "reshaped"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "world"
+                },
+                {
+                  "isWord": false,
+                  "text": "."
+                }
+              ],
+              "zh": "当我们面对这一重大的历史性变革时，全球市场必须接受，在一个重塑的世界中，遵守严格的当地规则不再是可选项，而是生存的必要条件。"
+            }
+          ]
+        },
+        "type": "paragraph"
+      }
+    ],
+    "title": {
+      "en": "Digital Walls: Tech Giants Face a New Global Order",
+      "id": "title-20260123",
+      "type": "title",
+      "zh": "数字围墙：科技巨头面临全球监管新秩序"
+    }
+  },
+  "glossary": {
+    "fragile": {
+      "word": "fragile",
+      "lemma": "fragile",
+      "definition": "易碎的；脆弱的",
+      "contextDefinition": "（关系或和平状态）脆弱的，不稳定的",
+      "pos": "adj.",
+      "sentence": "On January 23, the fragile peace between powerful tech companies and national governments finally broke after months of intense negotiation."
+    },
+    "negotiation": {
+      "word": "negotiation",
+      "lemma": "negotiation",
+      "definition": "谈判；协商",
+      "contextDefinition": "（政府与企业间）为达成协议而进行的正式谈判",
+      "pos": "n.",
+      "sentence": "On January 23, the fragile peace between powerful tech companies and national governments finally broke after months of intense negotiation."
+    },
+    "coordinate": {
+      "word": "coordinated",
+      "lemma": "coordinate",
+      "definition": "协调；配合",
+      "contextDefinition": "（多国监管机构）步调一致的，协调好的",
+      "pos": "v.",
+      "sentence": "Authorities around the world launched a strict, coordinated campaign against the complex and often secret algorithms used by these global corporations to manage user data."
+    },
+    "algorithm": {
+      "word": "algorithms",
+      "lemma": "algorithm",
+      "definition": "算法",
+      "contextDefinition": "（科技公司用于处理数据的）复杂计算程序",
+      "pos": "n.",
+      "sentence": "Authorities around the world launched a strict, coordinated campaign against the complex and often secret algorithms used by these global corporations to manage user data."
+    },
+    "unbearable": {
+      "word": "unbearable",
+      "lemma": "unbearable",
+      "definition": "难以忍受的",
+      "contextDefinition": "（数字控制权过度扩张带来的）无法承受的压力",
+      "pos": "adj.",
+      "sentence": "The primary cause was not one single disaster, but the growing and unbearable pressure of digital control extending across national borders, which governments now refuse to accept."
+    },
+    "summit": {
+      "word": "summit",
+      "lemma": "summit",
+      "definition": "首脑会议；峰会",
+      "contextDefinition": "（讨论全球数字监管的）高级别外交会议",
+      "pos": "n.",
+      "sentence": "The mood at the sudden end of the Geneva summit was incredibly angry, with both sides loudly blaming each other for the complete failure of the diplomatic talks."
+    },
+    "diplomatic": {
+      "word": "diplomatic",
+      "lemma": "diplomatic",
+      "definition": "外交的",
+      "contextDefinition": "（处理国际关系的）外交层面的谈判",
+      "pos": "adj.",
+      "sentence": "The mood at the sudden end of the Geneva summit was incredibly angry, with both sides loudly blaming each other for the complete failure of the diplomatic talks."
+    },
+    "ecosystem": {
+      "word": "ecosystem",
+      "lemma": "ecosystem",
+      "definition": "生态系统",
+      "contextDefinition": "（无国界限制的）全球数字创新环境",
+      "pos": "n.",
+      "sentence": "Wealthy tech leaders argued that true innovation needs a global ecosystem without old-fashioned borders, while government officials insisted that such unchecked freedom is just dangerous chaos."
+    },
+    "unchecked": {
+      "word": "unchecked",
+      "lemma": "unchecked",
+      "definition": "未受抑制的；不受约束的",
+      "contextDefinition": "（科技巨头）缺乏政府监管的绝对自由",
+      "pos": "adj.",
+      "sentence": "Wealthy tech leaders argued that true innovation needs a global ecosystem without old-fashioned borders, while government officials insisted that such unchecked freedom is just dangerous chaos."
+    },
+    "ideological": {
+      "word": "ideological",
+      "lemma": "ideological",
+      "definition": "意识形态的",
+      "contextDefinition": "（关于监管与自由的）观念与价值观上的分歧",
+      "pos": "adj.",
+      "sentence": "This deep ideological disagreement is now leading countries to build their own \"digital walls,\" a move that threatens to split the once-global internet into separate, isolated local networks."
+    },
+    "isolate": {
+      "word": "isolated",
+      "lemma": "isolate",
+      "definition": "孤立的；隔离的",
+      "contextDefinition": "（因数字墙而）相互隔绝的本地网络",
+      "pos": "v.",
+      "sentence": "This deep ideological disagreement is now leading countries to build their own \"digital walls,\" a move that threatens to split the once-global internet into separate, isolated local networks."
+    },
+    "valid": {
+      "word": "valid",
+      "lemma": "valid",
+      "definition": "有效的；合理的",
+      "contextDefinition": "（科技公司的观点）有道理的，站得住脚的",
+      "pos": "adj.",
+      "sentence": "It is true that the companies have a valid point; breaking the internet into small pieces could easily stop the sharing of good ideas that drives human progress."
+    },
+    "prevail": {
+      "word": "prevailing",
+      "lemma": "prevail",
+      "definition": "流行的；占优势的",
+      "contextDefinition": "（当前社会大众）普遍持有的，主流的观点",
+      "pos": "v.",
+      "sentence": "However, the prevailing view among citizens and leaders is that the social cost of uncontrolled data collection has become too high to ignore."
+    },
+    "optional": {
+      "word": "optional",
+      "lemma": "optional",
+      "definition": "可选择的",
+      "contextDefinition": "（在新的监管秩序下）不再是可有可无的选项",
+      "pos": "adj.",
+      "sentence": "As we face this major historical change, the global market must accept that following strict local rules is no longer optional, but necessary for survival in a reshaped world."
+    },
+    "reshape": {
+      "word": "reshaped",
+      "lemma": "reshape",
+      "definition": "重塑；改造",
+      "contextDefinition": "（监管秩序改变后）被重新构建的全球格局",
+      "pos": "v.",
+      "sentence": "As we face this major historical change, the global market must accept that following strict local rules is no longer optional, but necessary for survival in a reshaped world."
+    }
+  },
+  "podcast_script": "Hello everyone, welcome to ReadRead Daily. I'm Leo.\n今天我们要解读的文章标题是：数字围墙，科技巨头面临全球监管新秩序。\n\n先给大家交代一下背景：就在2026年1月23日，日内瓦峰会宣告失败。这不仅仅是一次会议的结束，它标志着全球互联网可能走向分裂。\n科技巨头和各国政府彻底谈崩了，原本那个无国界的互联网时代，可能要画上句号了。\n接下来，我们将逐句拆解这篇报道，看看作者是如何描述这一历史性时刻的。\n\n文章开篇第一句，作者首先交代了时间点和事件的结局。\n作者想表达：在经历了数月的紧张谈判后，强大的科技公司与各国政府之间那种“脆弱的和平”，最终破裂了。\n如果让你来写，你可能会用 \"The peace broke\" 这样简单的句子。\n但作者为了强调这种关系本来就岌岌可危，用了 fragile peace 这个词组。\n请听原文：\n\nOn January 23, the fragile peace between powerful tech companies and national governments finally broke after months of intense negotiation.\n\n这句话的主干其实很简单：The fragile peace broke。\n中间插入了 between... and... 的介词短语作定语，修饰 peace，告诉你是谁和谁之间的和平。\n句尾的 after months of intense negotiation 是时间状语，交代了背景。\n这里的 fragile 选得很准，意思是脆弱的、易碎的，暗示了这种和平关系从来就不稳固。\n带着这种一触即溃的紧张感，我们再听一遍：\n\nOn January 23, the fragile peace between powerful tech companies and national governments finally broke after months of intense negotiation.\n\n紧接着，作者描述了政府方面的动作。\n意思是：世界各地的监管机构发起了一场严格的、协调一致的行动，针对的是这些跨国公司用来管理用户数据的复杂且往往隐秘的算法。\n这句话很长，我们先听听作者是怎么组织的：\n\nAuthorities around the world launched a strict, coordinated campaign against the complex and often secret algorithms used by these global corporations to manage user data.\n\n这句话的语法核心在于后半部分。\n注意 algorithms 后面的 used by these global corporations。\n这是一个过去分词短语作后置定语，修饰 algorithms。\n它相当于省略了 which are 的定语从句，让句子更紧凑。\nCoordinated campaign 指的是“协调一致的运动”，说明各国政府不是单打独斗，而是联手行动。\n我们再来感受一下这种雷霆手段：\n\nAuthorities around the world launched a strict, coordinated campaign against the complex and often secret algorithms used by these global corporations to manage user data.\n\n那么，导致决裂的根本原因是什么呢？\n作者解释说：主要原因并非单一的灾难性事件，而是数字控制权跨境延伸所带来的日益增长且难以忍受的压力，各国政府现在拒绝接受这一点。\n这里用了一个非常经典的否定结构：Not A, but B。不是A，而是B。\n请听原文：\n\nThe primary cause was not one single disaster, but the growing and unbearable pressure of digital control extending across national borders, which governments now refuse to accept.\n\n这句话的逻辑非常清晰：The primary cause was not... but...\n注意 extending across national borders，这是现在分词短语修饰 digital control，形象地描绘了数字权力像触手一样伸到了国界之外。\n句尾的 which 引导了一个非限制性定语从句，补充说明了政府对这种压力的态度。\nUnbearable 这个词很有情绪色彩，表示“无法忍受的”，说明政府的忍耐已经到了极限。\n带着这种逻辑，再听一遍：\n\nThe primary cause was not one single disaster, but the growing and unbearable pressure of digital control extending across national borders, which governments now refuse to accept.\n\n接下来，视线转回到峰会现场。\n作者描述道：日内瓦峰会突然结束后，气氛极其愤怒，双方都大声指责对方导致了外交谈判的彻底失败。\n这里作者用了一个很棒的“伴随状语”结构来描写乱哄哄的场面。\n请听原文：\n\nThe mood at the sudden end of the Geneva summit was incredibly angry, with both sides loudly blaming each other for the complete failure of the diplomatic talks.\n\n大家注意逗号后面的 with both sides loudly blaming each other。\n这叫作“with 复合结构”，用来补充说明主句发生时的背景或伴随情况。\nBlaming each other 这种互相甩锅的状态，生动地展现了谈判破裂后的难堪。\nIncredibly angry 强调了愤怒的程度极高。\n让我们再听一遍这充满火药味的一幕：\n\nThe mood at the sudden end of the Geneva summit was incredibly angry, with both sides loudly blaming each other for the complete failure of the diplomatic talks.\n\n双方到底在吵什么呢？作者用了一个对比句来展示分歧。\n富有的科技领袖们争辩说，真正的创新需要一个没有“过时边界”的全球生态系统，而政府官员则坚持认为，这种不受约束的自由只是危险的混乱。\n这里用 while 连词连接了两个截然相反的观点。\n请听原文：\n\nWealthy tech leaders argued that true innovation needs a global ecosystem without old-fashioned borders, while government officials insisted that such unchecked freedom is just dangerous chaos.\n\n这句话的张力在于 old-fashioned borders 和 dangerous chaos 这两个词的选择。\n科技巨头把国界称为 old-fashioned（过时的），暗示政府顽固守旧；\n而政府把自由称为 dangerous chaos（危险的混乱），暗示企业无法无天。\nUnchecked freedom 中的 unchecked 意思是“未受遏制的”、“不加约束的”。\n体会一下这种针锋相对的语气：\n\nWealthy tech leaders argued that true innovation needs a global ecosystem without old-fashioned borders, while government officials insisted that such unchecked freedom is just dangerous chaos.\n\n这种分歧带来了什么后果？\n作者写道：这种深刻的意识形态分歧正导致各国建立自己的“数字墙”，这一举动威胁要将曾经全球化的互联网分裂成独立的、孤立的本地网络。\n这里有一个很形象的比喻：Digital walls。\n请听原文：\n\nThis deep ideological disagreement is now leading countries to build their own \"digital walls,\" a move that threatens to split the once-global internet into separate, isolated local networks.\n\n这句话的后半部分 a move that threatens to... 是同位语结构，用来解释说明前半句话的后果。\nSplit... into... 是一个固定搭配，意思是“把...分裂成...”。\nIsolated local networks 指的是“孤立的本地网络”，这正是“互联网分裂”的具体表现。\nIdeological disagreement 指的是“意识形态分歧”，说明这不仅仅是生意问题，更是观念之争。\n再听一遍这句充满危机感的描述：\n\nThis deep ideological disagreement is now leading countries to build their own \"digital walls,\" a move that threatens to split the once-global internet into separate, isolated local networks.\n\n文章进入后半段，作者开始进行辩证分析。\n首先，作者做了一个让步：诚然，这些公司有一个合理的观点；将互联网分割成小块很容易阻止推动人类进步的优秀思想的共享。\nIt is true that... 是一个典型的让步状语从句开头，表示“确实...”。\n请听原文：\n\nIt is true that the companies have a valid point; breaking the internet into small pieces could easily stop the sharing of good ideas that drives human progress.\n\nValid point 意思是“站得住脚的观点”、“有道理”。\n句中的分号 ; 起到了连接上下文解释说明的作用。\nBreaking the internet into small pieces 这里的 breaking 是动名词作主语。\n作者承认，分裂确实会阻碍 progress（进步）。\n带着这种理性的思考，再听一遍：\n\nIt is true that the companies have a valid point; breaking the internet into small pieces could easily stop the sharing of good ideas that drives human progress.\n\n紧接着，作者话锋一转。\n然而，公民和领导人的普遍观点是，不受控制的数据收集带来的社会成本已经变得高到无法忽视。\n这里用了 However 来引入转折。\n请听原文：\n\nHowever, the prevailing view among citizens and leaders is that the social cost of uncontrolled data collection has become too high to ignore.\n\nPrevailing view 指的是“普遍的观点”、“主流看法”。\n这里用了一个经典的 too... to... 结构：too high to ignore，太高了以至于无法忽视。\nUncontrolled data collection 点出了问题的核心：数据收集一旦失控，代价是巨大的。\n感受一下这种转折的力度：\n\nHowever, the prevailing view among citizens and leaders is that the social cost of uncontrolled data collection has become too high to ignore.\n\n最后，作者给出了结论和展望。\n当我们面对这一重大的历史性变革时，全球市场必须接受，在一个重塑的世界中，遵守严格的当地规则不再是可选项，而是生存的必要条件。\n这是一个非常有力的结尾句。\n请听原文：\n\nAs we face this major historical change, the global market must accept that following strict local rules is no longer optional, but necessary for survival in a reshaped world.\n\n这句话用 As 引导时间状语从句。\n主句中有一个宾语从句：that following strict local rules is...\nNo longer optional, but necessary 是核心信息：不再是选修课，而是必修课。\nReshaped world 指的是被“重塑”后的世界，暗示旧秩序已经一去不复返。\n让我们最后完整地听一遍这句掷地有声的结论：\n\nAs we face this major historical change, the global market must accept that following strict local rules is no longer optional, but necessary for survival in a reshaped world.\n\n总结一下，这篇文章记录了互联网历史上的一个转折点。\n从 fragile peace 的破裂，到 digital walls 的建立，我们正在见证全球数字版图的重新划分。\n对于企业来说，合规（Compliance）不再是简单的法律问题，而是生存问题。\n\nThanks for listening to ReadRead Daily. I'm Leo.\nSee you next time.",
+  "level": "7"
+}

@@ -369,7 +369,9 @@ export const ArticleGeneration: React.FC = () => {
                     researchContext: session.context.researchResult || null,
                     targetDate: session.context.targetDate, // Pass the target date
                     previousDraft,
-                    feedback,
+                    feedback: session.context.isTestMode
+                        ? (feedback ? feedback + "\n\n" : "") + "IMPORTANT: TEST MODE. Generate an article with strictly ONE paragraph. Length: 50-70 words. Maintain all other JSON structures."
+                        : feedback,
                     briefingTarget,
                     briefingLabel: briefingTarget ? briefingFieldLabels[briefingTarget] : undefined,
                     analysisTarget
@@ -783,6 +785,22 @@ export const ArticleGeneration: React.FC = () => {
                 </div>
 
                 <div className="flex gap-2">
+                    <button
+                        onClick={() => generateSide('A')}
+                        disabled={statusA === 'generating'}
+                        className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg font-medium transition-all text-sm"
+                    >
+                        {statusA === 'generating' ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4" />}
+                        生成 A
+                    </button>
+                    <button
+                        onClick={() => generateSide('B')}
+                        disabled={statusB === 'generating'}
+                        className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white px-3 py-2 rounded-lg font-medium transition-all text-sm"
+                    >
+                        {statusB === 'generating' ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4" />}
+                        生成 B
+                    </button>
                     <button
                         onClick={handleGenerateAll}
                         disabled={statusA === 'generating' || statusB === 'generating'}

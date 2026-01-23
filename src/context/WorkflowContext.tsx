@@ -29,14 +29,36 @@ export const WorkflowProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     const pendingSaves = useRef<Map<string, WorkflowSession>>(new Map());
 
     const serializeSession = useCallback((session: WorkflowSession) => {
+        // Clone context to avoid mutating original
+        const contextClone = { ...session.context };
+
+        // Extract fields to be stored in separate DB columns
+        const context2 = contextClone.generationState?.B ?? undefined;
+        const context_7 = contextClone.articleJson7 ?? undefined;
+        const podcast_script_wf = contextClone.podcastScript ?? undefined;
+        const podcast_script_wf_7 = contextClone.podcastScript7 ?? undefined;
+
+        // Remove offloaded fields from main context to save space
+        if (contextClone.generationState) {
+            const { B, ...restGenState } = contextClone.generationState;
+            contextClone.generationState = Object.keys(restGenState).length > 0 ? restGenState as any : undefined;
+        }
+        delete contextClone.articleJson7;
+        delete contextClone.podcastScript7;
+        // Keep podcastScript in context for backward compatibility reads, but also store in dedicated field
+
         return {
             title: session.title,
             status: session.status,
             currentStepId: session.currentStepId,
             steps: session.steps,
-            context: session.context,
+            context: contextClone,
             createdAt: session.createdAt,
-            podcast_script_wf: session.context.podcastScript ?? undefined
+            // New distributed fields
+            context2,
+            context_7,
+            podcast_script_wf,
+            podcast_script_wf_7
         };
     }, []);
 
@@ -47,9 +69,28 @@ export const WorkflowProvider: React.FC<{ children: React.ReactNode }> = ({ chil
                 ? new Date(record.created).getTime()
                 : Date.now();
         const context = record.context ?? {};
+
+        // Reassemble distributed fields back into context
+        // podcast_script_wf -> podcastScript
         if (!context.podcastScript && record.podcast_script_wf) {
             context.podcastScript = record.podcast_script_wf;
         }
+        // podcast_script_wf_7 -> podcastScript7
+        if (!context.podcastScript7 && record.podcast_script_wf_7) {
+            context.podcastScript7 = record.podcast_script_wf_7;
+        }
+        // context_7 -> articleJson7
+        if (!context.articleJson7 && record.context_7) {
+            context.articleJson7 = record.context_7;
+        }
+        // context2 -> generationState.B
+        if (record.context2) {
+            context.generationState = context.generationState ?? {};
+            if (!context.generationState.B) {
+                context.generationState.B = record.context2;
+            }
+        }
+
         return {
             id: record.id,
             title: record.title ?? 'New Workflow',

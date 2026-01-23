@@ -1,7 +1,7 @@
 
 import React, { useState, useMemo } from 'react';
 import { useWorkflow } from '../../context/WorkflowContext';
-import { Search, Loader2, Newspaper, ChevronRight, ExternalLink, Sparkles, BookOpen, Users, AlertCircle } from 'lucide-react';
+import { Search, Loader2, ChevronRight, ExternalLink, Sparkles, BookOpen, Users, AlertCircle } from 'lucide-react';
 import { NewsItem } from '../../types/workflow';
 
 // 研究结果结构
@@ -21,6 +21,7 @@ interface ResearchResult {
 // 类别颜色映射
 const CATEGORY_COLORS: Record<string, string> = {
     '科技': 'bg-blue-500/20 text-blue-400 border-blue-500/30',
+    '国际': 'bg-indigo-500/20 text-indigo-400 border-indigo-500/30',
     '政治': 'bg-red-500/20 text-red-400 border-red-500/30',
     '财经': 'bg-green-500/20 text-green-400 border-green-500/30',
     '默认': 'bg-white/5 text-slate-400 border-white/10'
@@ -106,6 +107,24 @@ export const TopicDiscovery: React.FC = () => {
     // Sync state when switching sessions
     React.useEffect(() => {
         if (session) {
+            // Test Mode Logic
+            if (session.context.isTestMode) {
+                const testItem: NewsItem = {
+                    category: '科技',
+                    source: 'Test Source',
+                    title: 'Test News Item for Workflow Verification',
+                    link: '',
+                    raw: '【测试 | Test Source】Test News Item for Workflow Verification'
+                };
+                setNewsItems([testItem]);
+                setSelectedTopic(testItem.raw);
+                setResearchResult(null);
+                setIsSearching(false);
+                setIsResearching(false);
+                setResearchError(null);
+                return;
+            }
+
             setSelectedTopic(session.context.topic || null);
             setNewsItems(
                 session.context.newsItems && session.context.newsItems.length > 0
@@ -117,7 +136,7 @@ export const TopicDiscovery: React.FC = () => {
             setIsResearching(false);
             setResearchError(null);
         }
-    }, [session?.id]);
+    }, [session?.id, session?.context?.isTestMode]);
 
     // 获取选中的新闻项
     const selectedNewsItem = useMemo(() => {
@@ -133,7 +152,7 @@ export const TopicDiscovery: React.FC = () => {
             }
             groups[item.category].push(item);
         });
-        const order = ['科技', '政治', '财经'];
+        const order = ['科技', '国际', '政治', '财经'];
         const sortedKeys = Object.keys(groups).sort((a, b) => {
             const aIdx = order.indexOf(a);
             const bIdx = order.indexOf(b);
@@ -332,62 +351,55 @@ export const TopicDiscovery: React.FC = () => {
                 </button>
             </div>
 
-            {/* 按类别分组显示新闻 */}
-            <div className="space-y-6 max-h-[400px] overflow-y-auto pr-2">
+            {/* 按类别分列显示新闻 */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 min-h-[500px] max-h-[calc(100vh-400px)] overflow-y-auto pr-2">
                 {groupedNews.map(group => (
-                    <div key={group.category} className="space-y-3">
-                        <div className="flex items-center gap-2">
+                    <div key={group.category} className="space-y-3 p-3 rounded-xl bg-card/20 border border-white/5">
+                        <div className="flex items-center gap-2 sticky top-0 bg-card/80 backdrop-blur-sm py-2 z-10">
                             <span className={`text-sm font-semibold px-3 py-1 rounded-full border ${getCategoryStyle(group.category)}`}>
                                 {group.category}
                             </span>
                             <span className="text-xs text-slate-500">
-                                {group.items.length} 条新闻
+                                {group.items.length} 条
                             </span>
                         </div>
-                        <div className="grid gap-3 pl-2">
+                        <div className="space-y-2">
                             {group.items.map((item, idx) => (
                                 <div
                                     key={`${group.category}-${idx}`}
                                     onClick={() => {
                                         setSelectedTopic(item.raw);
-                                        setResearchResult(null); // 清除之前的研究结果
+                                        setResearchResult(null);
                                     }}
                                     className={`
-                                        group flex items-center gap-4 p-4 rounded-xl border cursor-pointer transition-all
+                                        group p-3 rounded-lg border cursor-pointer transition-all
                                         ${selectedTopic === item.raw
-                                            ? 'bg-primary/10 border-primary shadow-[0_0_15px_rgba(56,189,248,0.2)]'
+                                            ? 'bg-primary/10 border-primary shadow-[0_0_10px_rgba(56,189,248,0.2)]'
                                             : 'bg-card/30 border-white/5 hover:bg-card/50 hover:border-white/10'
                                         }
                                     `}
                                 >
-                                    <div className={`p-3 rounded-full ${selectedTopic === item.raw ? 'bg-primary text-primary-foreground' : 'bg-white/5 text-muted-foreground'}`}>
-                                        <Newspaper className="w-5 h-5" />
-                                    </div>
-                                    <div className="flex-1 min-w-0">
-                                        <h4 className={`font-medium truncate ${selectedTopic === item.raw ? 'text-primary' : 'text-foreground'}`}>
-                                            {item.title}
-                                        </h4>
-                                        <div className="flex items-center gap-2 mt-1 flex-wrap">
-                                            <span className={`text-xs px-2 py-0.5 rounded-full border ${getCategoryStyle(item.category)}`}>
-                                                {item.category}
-                                            </span>
-                                            <span className="text-xs px-2 py-0.5 rounded-full bg-white/5 text-slate-400">
-                                                {item.source}
-                                            </span>
-                                            {item.link && (
-                                                <button
-                                                    onClick={(e) => handleOpenLink(e, item.link)}
-                                                    className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 hover:bg-cyan-500/20 transition-colors"
-                                                    title="在新窗口打开原文"
-                                                >
-                                                    <ExternalLink className="w-3 h-3" />
-                                                    查看原文
-                                                </button>
-                                            )}
-                                        </div>
-                                    </div>
-                                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${selectedTopic === item.raw ? 'border-primary' : 'border-slate-600'}`}>
-                                        {selectedTopic === item.raw && <div className="w-2.5 h-2.5 rounded-full bg-primary" />}
+                                    <h4 className={`text-sm font-medium line-clamp-2 ${selectedTopic === item.raw ? 'text-primary' : 'text-foreground'}`}>
+                                        {item.title}
+                                    </h4>
+                                    {item.title_zh && (
+                                        <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">
+                                            {item.title_zh}
+                                        </p>
+                                    )}
+                                    <div className="flex items-center gap-2 mt-2 flex-wrap">
+                                        <span className="text-xs px-2 py-0.5 rounded-full bg-white/5 text-slate-400">
+                                            {item.source}
+                                        </span>
+                                        {item.link && (
+                                            <button
+                                                onClick={(e) => handleOpenLink(e, item.link)}
+                                                className="inline-flex items-center gap-1 text-xs text-cyan-400 hover:text-cyan-300 transition-colors"
+                                                title="在新窗口打开原文"
+                                            >
+                                                <ExternalLink className="w-3 h-3" />
+                                            </button>
+                                        )}
                                     </div>
                                 </div>
                             ))}

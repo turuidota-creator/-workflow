@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useWorkflow } from '../../context/WorkflowContext';
-import { Bot, RefreshCw, AlertTriangle, ChevronRight, FileText, ArrowRight } from 'lucide-react';
+import { Bot, RefreshCw, AlertTriangle, ChevronRight, FileText, ArrowRight, Upload, CheckCircle2 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 
 export const ArticleRewrite: React.FC = () => {
@@ -18,6 +18,10 @@ export const ArticleRewrite: React.FC = () => {
         session?.context.articleJson7 ? JSON.stringify(session.context.articleJson7, null, 2) : ''
     );
     const [error7, setError7] = useState('');
+
+    // Upload State for Level 7
+    const [uploadStatus, setUploadStatus] = useState<'idle' | 'uploading' | 'success' | 'error'>('idle');
+    const [uploadError, setUploadError] = useState('');
 
     // View Mode for Level 7
     const [viewMode7, setViewMode7] = useState<'json' | 'preview'>('preview');
@@ -81,6 +85,63 @@ export const ArticleRewrite: React.FC = () => {
                     s.id === 'vocabulary' ? { ...s, status: 'running' } : s
             )
         });
+    };
+
+    // Upload Level 7 article to articles collection
+    const handleUpload7 = async () => {
+        if (!session || !json7) return;
+
+        setUploadStatus('uploading');
+        setUploadError('');
+
+        try {
+            const parsed7 = JSON.parse(json7);
+            const articleData = parsed7.article || parsed7;
+            const articleId = session.context.articleId7;
+
+            const res = await fetch('/api/publish', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    articleId, // Add ID for update
+                    article: articleData,
+                    level: '7',
+                    glossary: session.context.glossary7 || {},
+                    // NOTE: Don't send podcast fields here - they are handled in the Podcast step
+                })
+            });
+
+            const data = await res.json();
+
+            // Debug: Log all IDs for comparison
+            console.log('[ArticleRewrite Upload Debug]', {
+                sentArticleId: articleId,
+                returnedArticleId: data.articleId,
+                contextArticleId: session.context.articleId,
+                contextArticleId7: session.context.articleId7,
+                level: '7'
+            });
+
+            if (data.error) {
+                setUploadStatus('error');
+                setUploadError(data.error);
+            } else {
+                setUploadStatus('success');
+                // Save the article ID to context if created new
+                if (data.articleId && !articleId) {
+                    updateSession(session.id, {
+                        context: {
+                            ...session.context,
+                            articleId7: data.articleId || data.id
+                        }
+                    });
+                }
+                alert(`[DEBUG] Level 7 Upload:\n- Sent ID (L7): ${articleId || 'NONE (will create)'}\n- Returned ID: ${data.articleId}\n- L10 ID in context: ${session.context.articleId || 'NONE'}\n- Mode: ${articleId ? 'UPDATE' : 'CREATE'}`);
+            }
+        } catch (e) {
+            setUploadStatus('error');
+            setUploadError(String(e));
+        }
     };
 
     // Helper to render preview (reuse logic or simplify? Simplified here for now)
@@ -201,6 +262,30 @@ export const ArticleRewrite: React.FC = () => {
                                 {status7 === 'generating' ? <RefreshCw className="w-3 h-3 animate-spin" /> : <Bot className="w-3 h-3" />}
                                 {status7 === 'success' ? '重新改写' : '开始改写'}
                             </button>
+                            {/* Upload Button for Level 7 */}
+                            {status7 === 'success' && (
+                                <button
+                                    onClick={handleUpload7}
+                                    disabled={uploadStatus === 'uploading'}
+                                    className={cn(
+                                        "px-3 py-1 text-xs rounded flex items-center gap-1 transition-colors disabled:opacity-50",
+                                        uploadStatus === 'success'
+                                            ? "bg-green-600 text-white"
+                                            : uploadStatus === 'error'
+                                                ? "bg-red-600 hover:bg-red-700 text-white"
+                                                : "bg-emerald-600 hover:bg-emerald-700 text-white"
+                                    )}
+                                >
+                                    {uploadStatus === 'uploading' ? (
+                                        <RefreshCw className="w-3 h-3 animate-spin" />
+                                    ) : uploadStatus === 'success' ? (
+                                        <CheckCircle2 className="w-3 h-3" />
+                                    ) : (
+                                        <Upload className="w-3 h-3" />
+                                    )}
+                                    {uploadStatus === 'success' ? '已上传' : uploadStatus === 'error' ? '重试上传' : '上传到 DB'}
+                                </button>
+                            )}
                         </div>
                     </div>
 
@@ -223,6 +308,11 @@ export const ArticleRewrite: React.FC = () => {
                             <div className="p-4 text-red-400 text-xs font-mono break-all">
                                 <AlertTriangle className="w-4 h-4 mb-2" />
                                 {error7}
+                            </div>
+                        )}
+                        {uploadError && (
+                            <div className="absolute bottom-2 right-2 bg-red-500/20 border border-red-500/30 text-red-400 px-3 py-1 rounded text-xs">
+                                上传失败: {uploadError}
                             </div>
                         )}
 
