@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useWorkflow } from '../../context/WorkflowContext';
-import { Volume2, RefreshCw, ChevronRight, Play, Pause, Download, Settings2, UploadCloud, Check } from 'lucide-react';
+import { Volume2, RefreshCw, ChevronRight, Play, Pause, UploadCloud, Check } from 'lucide-react';
 import { cn } from '../../lib/utils';
 
 interface AudioState {
@@ -51,7 +51,9 @@ export const AudioSynthesis: React.FC = () => {
     }, [audio7.playbackSpeed]);
 
     const handleSynthesize = async (level: '10' | '7') => {
-        const script = level === '10' ? session?.context.podcastScript : session?.context.podcastScript7;
+        // Re-fetch the latest session to avoid stale closure values
+        const latestSession = getActiveSession();
+        const script = level === '10' ? latestSession?.context.podcastScript : latestSession?.context.podcastScript7;
         const set = level === '10' ? setAudio10 : setAudio7;
 
         if (!script) {
@@ -86,10 +88,10 @@ export const AudioSynthesis: React.FC = () => {
                 set(prev => ({ ...prev, status: 'success', url: tempUrl, progress: 100 }));
 
                 // Update Session immediately for temp persistence
-                if (session) {
+                if (latestSession) {
                     const updateKey = level === '10' ? 'podcastUrl' : 'podcastUrl7';
-                    updateSession(session.id, {
-                        context: { ...session.context, [updateKey]: tempUrl }
+                    updateSession(latestSession.id, {
+                        context: { ...latestSession.context, [updateKey]: tempUrl }
                     });
                 }
             }
@@ -100,7 +102,9 @@ export const AudioSynthesis: React.FC = () => {
     };
 
     const handleUpload = async (level: '10' | '7') => {
-        if (!session) return;
+        // CRITICAL: Re-fetch the latest session to avoid stale closure values
+        const latestSession = getActiveSession();
+        if (!latestSession) return;
 
         const set = level === '10' ? setAudio10 : setAudio7;
         const state = level === '10' ? audio10 : audio7;
@@ -108,11 +112,26 @@ export const AudioSynthesis: React.FC = () => {
         // Critical: Determine target article ID. 
         // L10 users existing articleId. 
         // L7 needs a new one if not exists.
-        const targetArticleId = level === '10' ? session.context.articleId : session.context.articleId7;
+        const targetArticleId = level === '10' ? latestSession.context.articleId : latestSession.context.articleId7;
+
+        // Debug log
+        console.log('[AudioSynthesis] handleUpload called', {
+            level,
+            targetArticleId,
+            hasArticleId: !!latestSession.context.articleId,
+            hasArticleId7: !!latestSession.context.articleId7,
+        });
 
         if (!state.url) return;
         if (!targetArticleId) {
             set(prev => ({ ...prev, uploadStatus: 'error', error: `请先上传 Level ${level} 文章，生成对应的文章记录后再上传播客。` }));
+            return;
+        }
+
+        // Strict Check: Don't allow uploading to local temporary IDs
+        // The spec requires that the article must be synced to PocketBase (real ID) before attaching audio.
+        if (targetArticleId.startsWith('article_')) {
+            set(prev => ({ ...prev, uploadStatus: 'error', error: `当前文章 ID 为本地临时 ID (${targetArticleId})。请返回文章页面点击“上传”按钮同步到数据库后，再尝试上传音频。` }));
             return;
         }
 
@@ -122,7 +141,7 @@ export const AudioSynthesis: React.FC = () => {
             const payload = {
                 articleId: targetArticleId,
                 audioUrl: state.url,
-                podcast_script: level === '10' ? session.context.podcastScript : session.context.podcastScript7,
+                podcast_script: level === '10' ? latestSession.context.podcastScript : latestSession.context.podcastScript7,
             };
 
             const res = await fetch('/api/podcast-upload', {
@@ -141,15 +160,15 @@ export const AudioSynthesis: React.FC = () => {
 
                 // Update Session
                 const urlKey = level === '10' ? 'podcastUrl' : 'podcastUrl7';
-                updateSession(session.id, {
-                    context: { ...session.context, [urlKey]: data.podcastUrl }
+                updateSession(latestSession.id, {
+                    context: { ...latestSession.context, [urlKey]: data.podcastUrl }
                 });
             }
 
             // If we got a new article ID (e.g. for L7), save it!
             if (data?.articleId && level === '7') {
-                updateSession(session.id, {
-                    context: { ...session.context, articleId7: data.articleId }
+                updateSession(latestSession.id, {
+                    context: { ...latestSession.context, articleId7: data.articleId }
                 });
             }
 
@@ -189,7 +208,7 @@ export const AudioSynthesis: React.FC = () => {
 
     const AudioCard = ({ level, state, set, title, color }: { level: '10' | '7', state: AudioState, set: React.Dispatch<React.SetStateAction<AudioState>>, title: string, color: string }) => {
         const ref = level === '10' ? audioRef10 : audioRef7;
-        const isUploaded = state.url && !state.url.includes('/temp/');
+        const isUploaded = !!state.url && !state.url.includes('/temp/');
 
         return (
             <div className="flex-1 flex flex-col border border-white/10 rounded-xl overflow-hidden bg-black/20">

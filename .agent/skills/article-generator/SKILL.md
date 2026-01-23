@@ -221,7 +221,7 @@ interface ArticleToken {
 
 ## 4. 质量熔断 (Circuit Breaker)
 
-- **规则**: `meta.wordCount < 210` 或 `meta.wordCount > 260` -> 无效。
+- **规则**: `meta.wordCount < 210` 或 `meta.wordCount > 270` -> 无效。
 - **结构**: 必须正好 **3个自然段**。
 - **Action**: 丢弃 -> 重试 (最多 3 次) -> 失败报错。
 

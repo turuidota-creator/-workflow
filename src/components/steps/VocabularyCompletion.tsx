@@ -16,7 +16,8 @@ interface GlossaryEntry {
 }
 
 interface ScanResult {
-    totalArticleWords: number;
+    totalArticleWords: number;  // Total word occurrences
+    uniqueWordCount?: number;   // Unique words count
     existingCount: number;
     missingCount: number;
     missingWords: { word: string; inDict: boolean }[];
@@ -72,7 +73,9 @@ export const VocabularyCompletion: React.FC = () => {
 
     // Generate vocabulary for specified level
     const handleGenerate = async (level: LevelTab) => {
-        const articleJson = level === '10' ? session?.context.articleJson : session?.context.articleJson7;
+        // Re-fetch the latest session to avoid stale closure values
+        const latestSession = getActiveSession();
+        const articleJson = level === '10' ? latestSession?.context.articleJson : latestSession?.context.articleJson7;
         const setStatus = level === '10' ? setStatus10 : setStatus7;
         const setGlossary = level === '10' ? setGlossary10 : setGlossary7;
         const setError = level === '10' ? setError10 : setError7;
@@ -102,9 +105,18 @@ export const VocabularyCompletion: React.FC = () => {
                 setStatus('success');
                 const extracted = data.glossary || data;
                 setGlossary(extracted);
-                if (session) {
-                    updateSession(session.id, {
-                        context: { ...session.context, [contextKey]: extracted }
+
+                // CRITICAL: Re-fetch session again before saving to ensure we have the latest context
+                const currentSession = getActiveSession();
+                if (currentSession) {
+                    console.log('[VocabularyCompletion] Saving glossary', {
+                        level,
+                        contextKey,
+                        glossaryKeys: Object.keys(extracted).length,
+                        sessionId: currentSession.id
+                    });
+                    updateSession(currentSession.id, {
+                        context: { ...currentSession.context, [contextKey]: extracted }
                     });
                 }
             }
@@ -116,11 +128,23 @@ export const VocabularyCompletion: React.FC = () => {
 
     // Upload glossary for specified level
     const handleUpload = async (level: LevelTab) => {
-        if (!session) return;
+        // CRITICAL: Re-fetch the latest session to avoid stale closure values
+        // This ensures articleId7 set in ArticleRewrite is properly read
+        const latestSession = getActiveSession();
+        if (!latestSession) return;
 
-        const articleId = level === '10' ? session.context.articleId : session.context.articleId7;
-        const articleJson = level === '10' ? session.context.articleJson : session.context.articleJson7;
+        const articleId = level === '10' ? latestSession.context.articleId : latestSession.context.articleId7;
+        const articleJson = level === '10' ? latestSession.context.articleJson : latestSession.context.articleJson7;
         const glossary = level === '10' ? glossary10 : glossary7;
+
+        // Debug log to help diagnose issues
+        console.log('[VocabularyCompletion] handleUpload called', {
+            level,
+            articleId,
+            hasArticleId: !!latestSession.context.articleId,
+            hasArticleId7: !!latestSession.context.articleId7,
+            glossaryKeys: Object.keys(glossary).length
+        });
 
         if (!articleId) {
             alert(`❌ 请先在 Level ${level} 的文章页面上传文章，再上传词汇。`);
@@ -141,14 +165,20 @@ export const VocabularyCompletion: React.FC = () => {
             });
             if (res.ok) {
                 const data = await res.json();
-                // Save the articleId if this was a new creation
-                if (data.articleId && !articleId) {
+                // Save the articleId if:
+                // 1. We got a new ID from PocketBase
+                // 2. AND (no existing ID OR existing ID is a local one OR IDs are different)
+                const isLocalId = articleId?.startsWith('article_');
+                const shouldUpdateId = data.articleId && (!articleId || isLocalId || data.articleId !== articleId);
+
+                if (shouldUpdateId) {
                     const idKey = level === '10' ? 'articleId' : 'articleId7';
-                    updateSession(session.id, {
-                        context: { ...session.context, [idKey]: data.articleId }
+                    console.log(`[VocabularyCompletion] Updating ${idKey}:`, { old: articleId, new: data.articleId });
+                    updateSession(latestSession.id, {
+                        context: { ...latestSession.context, [idKey]: data.articleId }
                     });
                 }
-                alert(`✅ Level ${level} 词汇已${articleId ? '更新' : '上传'}至数据库`);
+                alert(`✅ Level ${level} 词汇已${articleId && !isLocalId ? '更新' : '上传'}至数据库`);
             } else {
                 alert('❌ 上传失败');
             }
@@ -388,8 +418,9 @@ export const VocabularyCompletion: React.FC = () => {
                 {/* Scan Results */}
                 {scanResult && (
                     <div className="space-y-3 pt-2 border-t border-white/5">
-                        <div className="flex items-center gap-4 text-sm">
-                            <span>文章单词: <strong className="text-foreground">{scanResult.totalArticleWords}</strong></span>
+                        <div className="flex items-center gap-4 text-sm flex-wrap">
+                            <span>总词数: <strong className="text-foreground">{scanResult.totalArticleWords}</strong></span>
+                            <span>唯一词: <strong className="text-foreground">{scanResult.uniqueWordCount || scanResult.totalArticleWords}</strong></span>
                             <span>已收录: <strong className="text-green-400">{scanResult.existingCount}</strong></span>
                             <span>缺失: <strong className={scanResult.missingCount > 0 ? 'text-red-400' : 'text-green-400'}>{scanResult.missingCount}</strong></span>
                             <span>覆盖率: <strong className={scanResult.coveragePercent >= 90 ? 'text-green-400' : 'text-yellow-400'}>{scanResult.coveragePercent}%</strong></span>

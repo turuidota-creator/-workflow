@@ -14,25 +14,57 @@ const PORT = 3003;
 // ================= PROXY CONFIGURATION =================
 // Configure proxy dispatcher if HTTPS_PROXY is set
 // This requires 'undici' package: npm install undici
-let proxyDispatcher = undefined;
-try {
-    const envPath = path.resolve(__dirname, '..', '.env');
-    if (fs.existsSync(envPath)) {
-        const content = fs.readFileSync(envPath, 'utf-8');
-        const match = content.match(/HTTPS_PROXY=(.+)/);
-        if (match && match[1]) {
-            const proxyUrl = match[1].trim();
-            const { ProxyAgent } = require('undici');
-            proxyDispatcher = new ProxyAgent(proxyUrl);
-            console.log(`[Proxy] Proxy dispatcher configured: ${proxyUrl}`);
+function getProxyUrl() {
+    try {
+        const envPath = path.resolve(__dirname, '..', '.env');
+        if (fs.existsSync(envPath)) {
+            const content = fs.readFileSync(envPath, 'utf-8');
+            const match = content.match(/HTTPS_PROXY=(.+)/);
+            if (match && match[1]) {
+                let url = match[1].trim();
+                if (!url.startsWith('http://') && !url.startsWith('https://')) {
+                    url = `http://${url}`;
+                }
+                return url;
+            }
         }
+    } catch (e) {
+        // ignore
     }
-} catch (e) {
-    console.warn('[Proxy] Failed to configure proxy (undici might be missing):', e.message);
+    return null;
+}
+
+function createProxyDispatcher() {
+    try {
+        const proxyUrl = getProxyUrl();
+        if (proxyUrl) {
+            const { ProxyAgent } = require('undici');
+            // Create a new agent with short keep-alive to avoid stale connections
+            return new ProxyAgent({
+                uri: proxyUrl,
+                connect: {
+                    timeout: 20000
+                },
+                // forceful connection behavior
+                keepAliveTimeout: 4000,
+                keepAliveMaxTimeout: 4000
+            });
+        }
+    } catch (e) {
+        console.warn('[Proxy] Failed to configure proxy:', e.message);
+    }
+    return undefined;
+}
+
+// Global instance for initial attempts
+let proxyDispatcher = createProxyDispatcher();
+if (getProxyUrl()) {
+    console.log(`[Proxy] Proxy dispatcher configured: ${getProxyUrl()}`);
 }
 
 app.use(cors());
-app.use(bodyParser.json());
+app.use(bodyParser.json({ limit: '50mb' }));
+app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
 
 // ================= CONSTANTS =================
 const PROJECT_ROOT = path.resolve(__dirname, '..');
@@ -141,6 +173,155 @@ async function getPocketBaseAuth() {
     }
 }
 
+// ================= POCKETBASE DICTIONARY HELPERS =================
+const PB_DICTIONARY_COLLECTION = 'dictionary_new';
+
+/**
+ * Check if a word exists in PocketBase dictionary
+ * @param {string} word - The word to check
+ * @returns {Promise<boolean>}
+ */
+async function wordExistsInPB(word) {
+    try {
+        const { url: pbUrl, token } = await getPocketBaseAuth();
+        if (!pbUrl) return false;
+
+        const headers = { 'Content-Type': 'application/json' };
+        if (token) headers['Authorization'] = token;
+
+        const filter = encodeURIComponent(`word="${word.toLowerCase()}"`);
+        const response = await fetch(
+            `${pbUrl}/api/collections/${PB_DICTIONARY_COLLECTION}/records?filter=${filter}&perPage=1`,
+            { headers }
+        );
+
+        if (response.ok) {
+            const data = await response.json();
+            return data.totalItems > 0;
+        }
+        return false;
+    } catch (e) {
+        console.error('[Dictionary] wordExistsInPB error:', e.message);
+        return false;
+    }
+}
+
+/**
+ * Add a word entry to PocketBase dictionary
+ * @param {object} entry - The word entry { word, phonetic, definitions }
+ * @returns {Promise<boolean>}
+ */
+async function addWordToPB(entry) {
+    try {
+        const { url: pbUrl, token } = await getPocketBaseAuth();
+        if (!pbUrl) return false;
+
+        const headers = { 'Content-Type': 'application/json' };
+        if (token) headers['Authorization'] = token;
+
+        // Map entry to PocketBase schema
+        const pbEntry = {
+            word: entry.word?.toLowerCase() || '',
+            phonetic: entry.phonetic || '',
+            definitions: entry.definitions || []
+        };
+
+        const response = await fetch(
+            `${pbUrl}/api/collections/${PB_DICTIONARY_COLLECTION}/records`,
+            {
+                method: 'POST',
+                headers,
+                body: JSON.stringify(pbEntry)
+            }
+        );
+
+        if (response.ok) {
+            console.log(`[Dictionary] Added word: ${pbEntry.word}`);
+            return true;
+        } else {
+            const errorText = await response.text();
+            console.error(`[Dictionary] Failed to add word ${pbEntry.word}:`, errorText);
+            return false;
+        }
+    } catch (e) {
+        console.error('[Dictionary] addWordToPB error:', e.message);
+        return false;
+    }
+}
+
+/**
+ * Get dictionary statistics from PocketBase
+ * @returns {Promise<{totalWords: number}>}
+ */
+async function getDictionaryStatsPB() {
+    try {
+        const { url: pbUrl, token } = await getPocketBaseAuth();
+        if (!pbUrl) return { totalWords: 0 };
+
+        const headers = { 'Content-Type': 'application/json' };
+        if (token) headers['Authorization'] = token;
+
+        const response = await fetch(
+            `${pbUrl}/api/collections/${PB_DICTIONARY_COLLECTION}/records?perPage=1`,
+            { headers }
+        );
+
+        if (response.ok) {
+            const data = await response.json();
+            return { totalWords: data.totalItems || 0 };
+        }
+        return { totalWords: 0 };
+    } catch (e) {
+        console.error('[Dictionary] getDictionaryStatsPB error:', e.message);
+        return { totalWords: 0 };
+    }
+}
+
+/**
+ * Load entire dictionary from PocketBase
+ * @returns {Promise<object>} Dictionary keyed by word
+ */
+async function loadDictionaryFromPB() {
+    try {
+        const { url: pbUrl, token } = await getPocketBaseAuth();
+        if (!pbUrl) return {};
+
+        const headers = { 'Content-Type': 'application/json' };
+        if (token) headers['Authorization'] = token;
+
+        const dictionary = {};
+        let page = 1;
+        let hasMore = true;
+
+        while (hasMore) {
+            const response = await fetch(
+                `${pbUrl}/api/collections/${PB_DICTIONARY_COLLECTION}/records?perPage=500&page=${page}`,
+                { headers }
+            );
+
+            if (response.ok) {
+                const data = await response.json();
+                for (const item of data.items || []) {
+                    dictionary[item.word?.toLowerCase() || item.id] = {
+                        word: item.word,
+                        phonetic: item.phonetic,
+                        definitions: item.definitions || []
+                    };
+                }
+                hasMore = data.items && data.items.length === 500;
+                page++;
+            } else {
+                hasMore = false;
+            }
+        }
+
+        return dictionary;
+    } catch (e) {
+        console.error('[Dictionary] loadDictionaryFromPB error:', e.message);
+        return {};
+    }
+}
+
 // ================= API ROUTES =================
 
 /**
@@ -217,6 +398,20 @@ app.get('/api/prompts', (req, res) => {
             filePath = path.join(AGENT_DIR, 'prompts', 'style_old_editor.md');
         } else if (key === 'style-show-off') {
             filePath = path.join(AGENT_DIR, 'prompts', 'style_show_off.md');
+        } else if (key === 'article-evaluation-briefing') {
+            filePath = path.join(AGENT_DIR, 'prompts', 'article_evaluation_briefing.md');
+        } else if (key === 'article-evaluation-analysis') {
+            filePath = path.join(AGENT_DIR, 'prompts', 'article_evaluation_analysis.md');
+        } else if (key === 'article-refinement') {
+            filePath = path.join(AGENT_DIR, 'prompts', 'article_refinement.md');
+        } else if (key === 'vocabulary-ask') {
+            filePath = path.join(AGENT_DIR, 'prompts', 'vocabulary_ask.md');
+        } else if (key === 'article-research-context') {
+            filePath = path.join(AGENT_DIR, 'prompts', 'article_research_context.md');
+        } else if (key === 'article-basic-context') {
+            filePath = path.join(AGENT_DIR, 'prompts', 'article_basic_context.md');
+        } else if (key === 'article-task-instruction') {
+            filePath = path.join(AGENT_DIR, 'prompts', 'article_task_instruction.md');
         } else {
             return res.status(400).json({ error: "Invalid key" });
         }
@@ -251,6 +446,20 @@ app.post('/api/prompts', (req, res) => {
             filePath = path.join(AGENT_DIR, 'prompts', 'style_old_editor.md');
         } else if (key === 'style-show-off') {
             filePath = path.join(AGENT_DIR, 'prompts', 'style_show_off.md');
+        } else if (key === 'article-evaluation-briefing') {
+            filePath = path.join(AGENT_DIR, 'prompts', 'article_evaluation_briefing.md');
+        } else if (key === 'article-evaluation-analysis') {
+            filePath = path.join(AGENT_DIR, 'prompts', 'article_evaluation_analysis.md');
+        } else if (key === 'article-refinement') {
+            filePath = path.join(AGENT_DIR, 'prompts', 'article_refinement.md');
+        } else if (key === 'vocabulary-ask') {
+            filePath = path.join(AGENT_DIR, 'prompts', 'vocabulary_ask.md');
+        } else if (key === 'article-research-context') {
+            filePath = path.join(AGENT_DIR, 'prompts', 'article_research_context.md');
+        } else if (key === 'article-basic-context') {
+            filePath = path.join(AGENT_DIR, 'prompts', 'article_basic_context.md');
+        } else if (key === 'article-task-instruction') {
+            filePath = path.join(AGENT_DIR, 'prompts', 'article_task_instruction.md');
         } else {
             return res.status(400).json({ error: "Invalid key" });
         }
@@ -264,6 +473,367 @@ app.post('/api/prompts', (req, res) => {
         fs.writeFileSync(filePath, content, 'utf-8');
         res.json({ success: true });
     } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// ================= DICTIONARY API ROUTES =================
+
+/**
+ * GET /api/dictionary/stats
+ * Get dictionary statistics
+ */
+app.get('/api/dictionary/stats', async (req, res) => {
+    try {
+        const stats = await getDictionaryStatsPB();
+        res.json(stats);
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+/**
+ * POST /api/dictionary/scan
+ * Scan article text and compare with dictionary to find missing words
+ */
+app.post('/api/dictionary/scan', async (req, res) => {
+    try {
+        const { articleJson } = req.body;
+        if (!articleJson) {
+            return res.status(400).json({ error: 'Missing articleJson' });
+        }
+
+        // Extract all words from article
+        const extractWords = (obj) => {
+            const uniqueWords = new Set();
+            let totalWordCount = 0;
+
+            // Helper to add a word (handles splitting and normalization)
+            const addWord = (rawWord) => {
+                if (!rawWord) return;
+                let word = rawWord.toLowerCase().trim();
+
+                // Remove possessive 's at the end
+                if (word.endsWith("'s")) {
+                    word = word.slice(0, -2);
+                }
+
+                // Split hyphenated words
+                if (word.includes('-')) {
+                    const parts = word.split('-');
+                    for (const part of parts) {
+                        const cleanPart = part.replace(/[^a-z]/g, '');
+                        if (cleanPart.length > 1) {
+                            uniqueWords.add(cleanPart);
+                            totalWordCount++;
+                        }
+                    }
+                } else {
+                    // Clean and add single word
+                    const cleanWord = word.replace(/[^a-z]/g, '');
+                    if (cleanWord.length > 1) {
+                        uniqueWords.add(cleanWord);
+                        totalWordCount++;
+                    }
+                }
+            };
+
+            // Process tokens array and extract words
+            const processTokens = (tokens) => {
+                if (!Array.isArray(tokens)) return;
+                for (const token of tokens) {
+                    if (token.isWord && token.text) {
+                        addWord(token.text);
+                    }
+                }
+            };
+
+            // Extract words from plain text as fallback
+            const extractFromText = (text) => {
+                if (typeof text !== 'string') return;
+                const matches = text.match(/[a-zA-Z][a-zA-Z'-]*/g);
+                if (matches) {
+                    for (const word of matches) {
+                        addWord(word);
+                    }
+                }
+            };
+
+            // Process tokenized sentences within paragraphs
+            const processTokenizedSentences = (sentences) => {
+                if (!Array.isArray(sentences)) return;
+                for (const sentence of sentences) {
+                    if (sentence.tokens) {
+                        processTokens(sentence.tokens);
+                    }
+                }
+            };
+
+            // Try different article structures based on SKILL.md schema
+            // Structure: article.paragraphs[].paragraph.tokenizedSentences[].tokens[]
+            const articleData = obj.article || obj;
+
+            if (articleData.paragraphs) {
+                for (const para of articleData.paragraphs) {
+                    // Standard structure: paragraph.tokenizedSentences
+                    if (para.paragraph?.tokenizedSentences) {
+                        processTokenizedSentences(para.paragraph.tokenizedSentences);
+                    }
+                    // Alternative: direct tokenizedSentences
+                    if (para.tokenizedSentences) {
+                        processTokenizedSentences(para.tokenizedSentences);
+                    }
+                    // Legacy: direct tokens
+                    if (para.tokens) {
+                        processTokens(para.tokens);
+                    }
+                    // Fallback: raw text
+                    if (para.text) {
+                        extractFromText(para.text);
+                    }
+                }
+            }
+
+            // Process intro
+            if (articleData.intro?.tokens) {
+                processTokens(articleData.intro.tokens);
+            }
+            if (articleData.intro?.text) {
+                extractFromText(articleData.intro.text);
+            }
+
+            // Process title
+            if (articleData.title?.en) {
+                extractFromText(articleData.title.en);
+            }
+
+            // Log for debugging
+            console.log(`[Dictionary Scan] Extracted ${uniqueWords.size} unique words (${totalWordCount} total occurrences) from article`);
+
+            return { unique: Array.from(uniqueWords), totalCount: totalWordCount };
+        };
+
+        const extractionResult = extractWords(articleJson);
+        const uniqueWords = extractionResult.unique;
+        const totalWordCount = extractionResult.totalCount;
+
+        // Instead of loading entire dictionary (which could be millions of words),
+        // batch query PocketBase to check if each word exists
+        const { url: pbUrl, token } = await getPocketBaseAuth();
+        if (!pbUrl) {
+            return res.status(500).json({ error: 'PocketBase not configured' });
+        }
+
+        const headers = { 'Content-Type': 'application/json' };
+        if (token) headers['Authorization'] = token;
+
+        // Batch check words (PocketBase filter has length limits, so batch in groups)
+        const BATCH_SIZE = 50;
+        const missingWords = [];
+        let existingCount = 0;
+
+        for (let i = 0; i < uniqueWords.length; i += BATCH_SIZE) {
+            const batch = uniqueWords.slice(i, i + BATCH_SIZE);
+
+            // Build OR filter for batch
+            const filterParts = batch.map(word => `word="${word.replace(/"/g, '\\"')}"`);
+            const filter = encodeURIComponent(filterParts.join('||'));
+
+            try {
+                const response = await fetch(
+                    `${pbUrl}/api/collections/${PB_DICTIONARY_COLLECTION}/records?filter=${filter}&perPage=100&fields=word`,
+                    { headers }
+                );
+
+                if (response.ok) {
+                    const data = await response.json();
+                    const foundWords = new Set((data.items || []).map(item => item.word?.toLowerCase()));
+
+                    for (const word of batch) {
+                        if (foundWords.has(word)) {
+                            existingCount++;
+                        } else {
+                            missingWords.push({ word, inDict: false });
+                        }
+                    }
+                } else {
+                    // If query fails, mark all as missing
+                    console.error('[Dictionary Scan] Batch query failed:', await response.text());
+                    for (const word of batch) {
+                        missingWords.push({ word, inDict: false });
+                    }
+                }
+            } catch (batchError) {
+                console.error('[Dictionary Scan] Batch error:', batchError.message);
+                for (const word of batch) {
+                    missingWords.push({ word, inDict: false });
+                }
+            }
+        }
+
+        const coveragePercent = uniqueWords.length > 0
+            ? Math.round((existingCount / uniqueWords.length) * 100)
+            : 100;
+
+        console.log(`[Dictionary Scan] Result: ${existingCount}/${uniqueWords.length} unique words found, ${coveragePercent}% coverage`);
+
+        res.json({
+            totalArticleWords: totalWordCount,      // Total word occurrences in article
+            uniqueWordCount: uniqueWords.length,    // Unique words count
+            existingCount,
+            missingCount: missingWords.length,
+            missingWords,
+            coveragePercent
+        });
+    } catch (e) {
+        console.error('[Dictionary Scan Error]:', e);
+        res.status(500).json({ error: e.message });
+    }
+});
+
+/**
+ * POST /api/dictionary/generate
+ * Generate dictionary entries for given words using Gemini
+ */
+app.post('/api/dictionary/generate', async (req, res) => {
+    try {
+        const { words } = req.body;
+        console.log('[Dictionary Generate] Received request for words:', words);
+
+        if (!words || !Array.isArray(words) || words.length === 0) {
+            return res.status(400).json({ error: 'Missing or invalid words array' });
+        }
+
+        // Get API Key
+        const envPath = path.join(PROJECT_ROOT, '.env');
+        const content = fs.existsSync(envPath) ? fs.readFileSync(envPath, 'utf-8') : '';
+        const apiKeyMatch = content.match(/GEMINI_API_KEY=(.+)/);
+        const apiKey = apiKeyMatch ? apiKeyMatch[1].trim() : null;
+
+        if (!apiKey) {
+            console.error('[Dictionary Generate] No GEMINI_API_KEY found');
+            return res.status(400).json({ error: 'Missing GEMINI_API_KEY in .env' });
+        }
+
+        const prompt = `Generate dictionary entries for the following English words. For each word, provide:
+- word: the word itself (lowercase)
+- phonetic: IPA pronunciation (without slashes)
+- definitions: array of objects with { pos: part of speech (e.g., "n.", "v.", "adj."), zh: Chinese definition, en: English definition }
+
+Return ONLY a valid JSON array, no markdown, no explanation. Example format:
+[{"word":"example","phonetic":"ɪɡˈzæmpəl","definitions":[{"pos":"n.","zh":"例子","en":"a thing that serves as a model"}]}]
+
+Words to define: ${words.join(', ')}`;
+
+        console.log('[Dictionary Generate] Calling Gemini API...');
+
+        let geminiResponse;
+        try {
+            geminiResponse = await fetch(
+                `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
+                {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: prompt }] }],
+                        generationConfig: {
+                            temperature: 0.3,
+                            maxOutputTokens: 4096
+                        }
+                    }),
+                    dispatcher: proxyDispatcher
+                }
+            );
+        } catch (fetchError) {
+            console.error('[Dictionary Generate] Fetch error:', fetchError);
+            return res.status(503).json({ error: `Network error: ${fetchError.message}` });
+        }
+
+        if (!geminiResponse.ok) {
+            const errorText = await geminiResponse.text();
+            console.error('[Dictionary Generate] Gemini API error:', geminiResponse.status, errorText);
+            return res.status(502).json({ error: `Gemini API error: ${geminiResponse.status}` });
+        }
+
+        const geminiData = await geminiResponse.json();
+
+        if (geminiData.error) {
+            console.error('[Dictionary Generate] Gemini returned error:', geminiData.error);
+            return res.status(500).json({ error: geminiData.error.message });
+        }
+
+        const text = geminiData.candidates?.[0]?.content?.parts?.[0]?.text || '';
+        console.log('[Dictionary Generate] Gemini response text length:', text.length);
+
+        // Extract JSON array from response
+        let entries = [];
+        try {
+            // Try to find JSON array in response
+            const jsonMatch = text.match(/\[[\s\S]*\]/);
+            if (jsonMatch) {
+                entries = JSON.parse(jsonMatch[0]);
+            } else {
+                console.warn('[Dictionary Generate] No JSON array found in response:', text.substring(0, 200));
+            }
+        } catch (parseError) {
+            console.error('[Dictionary Generate] JSON parse error:', parseError, 'Text:', text.substring(0, 500));
+            return res.status(500).json({ error: 'Failed to parse Gemini response as JSON' });
+        }
+
+        console.log('[Dictionary Generate] Successfully generated', entries.length, 'entries');
+        res.json({ entries, count: entries.length });
+    } catch (e) {
+        console.error('[Dictionary Generate Error]:', e);
+        res.status(500).json({ error: e.message || 'Unknown error' });
+    }
+});
+
+/**
+ * POST /api/dictionary/add
+ * Add multiple dictionary entries to PocketBase
+ */
+app.post('/api/dictionary/add', async (req, res) => {
+    try {
+        const { entries } = req.body;
+        if (!entries || !Array.isArray(entries) || entries.length === 0) {
+            return res.status(400).json({ error: 'Missing or invalid entries array' });
+        }
+
+        let addedCount = 0;
+        let skippedCount = 0;
+        const errors = [];
+
+        for (const entry of entries) {
+            if (!entry.word) {
+                errors.push({ word: 'unknown', error: 'Missing word field' });
+                continue;
+            }
+
+            // Check if word already exists
+            const exists = await wordExistsInPB(entry.word);
+            if (exists) {
+                skippedCount++;
+                continue;
+            }
+
+            // Add word to PocketBase
+            const success = await addWordToPB(entry);
+            if (success) {
+                addedCount++;
+            } else {
+                errors.push({ word: entry.word, error: 'Failed to add to PocketBase' });
+            }
+        }
+
+        res.json({
+            success: true,
+            addedCount,
+            skippedCount,
+            errorCount: errors.length,
+            errors: errors.length > 0 ? errors : undefined
+        });
+    } catch (e) {
+        console.error('[Dictionary Add Error]:', e);
         res.status(500).json({ error: e.message });
     }
 });
@@ -282,14 +852,22 @@ app.post('/api/test-gemini', async (req, res) => {
         if (!apiKey) return res.status(400).json({ error: "Missing GEMINI_API_KEY in .env" });
 
         // Simple prompt
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3-pro-preview:generateContent?key=${apiKey}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                contents: [{ parts: [{ text: "Hello! Reply with 'Gemini is Online'." }] }]
-            }),
-            dispatcher: proxyDispatcher
-        });
+        let response;
+        try {
+            response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3-pro-preview:generateContent?key=${apiKey}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contents: [{ parts: [{ text: "Hello! Reply with 'Gemini is Online'." }] }]
+                }),
+                dispatcher: proxyDispatcher
+            });
+        } catch (netError) {
+            console.error("[Test] Network/Proxy Error details:", netError);
+            return res.status(503).json({
+                error: `Network/Proxy Error: ${netError.message}`
+            });
+        }
 
         const data = await response.json();
         res.json(data);
@@ -337,41 +915,63 @@ app.post('/api/generate', async (req, res) => {
 
         // If we have research context, include it for richer content generation
         if (researchContext && typeof researchContext === 'object') {
-            userPrompt += `
-        
-        [Deep Research Results - Use this to enrich the article]
-        
-        Summary: ${researchContext.summary || 'N/A'}
-        
-        Background Context: ${researchContext.background || 'N/A'}
-        
-        Key Points:
-        ${(researchContext.keyPoints || []).map((p, i) => `${i + 1}. ${p}`).join('\n        ')}
-        
-        Different Perspectives:
-        - Supporters' View: ${researchContext.perspectives?.supporters || 'N/A'}
-        - Critics' View: ${researchContext.perspectives?.critics || 'N/A'}
-        
-        Related Topics: ${(researchContext.relatedTopics || []).join(', ') || 'N/A'}
-        
-        IMPORTANT: Use the above research to create a balanced, informative article that:
-        1. Includes relevant background context
-        2. Presents multiple perspectives (both supporting and critical views)
-        3. References the key points discovered
-        `;
+            const promptPath = path.join(AGENT_DIR, 'prompts', 'article_research_context.md');
+            let template = "";
+            if (fs.existsSync(promptPath)) {
+                template = fs.readFileSync(promptPath, 'utf-8');
+            } else {
+                template = `
+                [Deep Research Results - Use this to enrich the article]
+                
+                Summary: {{SUMMARY}}
+                
+                Background Context: {{BACKGROUND}}
+                
+                Key Points:
+                {{KEY_POINTS}}
+                
+                Different Perspectives:
+                - Supporters' View: {{SUPPORTERS_VIEW}}
+                - Critics' View: {{CRITICS_VIEW}}
+                
+                Related Topics: {{RELATED_TOPICS}}
+                
+                IMPORTANT: Use the above research to create a balanced, informative article that:
+                1. Includes relevant background context
+                2. Presents multiple perspectives (both supporting and critical views)
+                3. References the key points discovered
+                `;
+            }
+
+            userPrompt += template
+                .replace('{{SUMMARY}}', researchContext.summary || 'N/A')
+                .replace('{{BACKGROUND}}', researchContext.background || 'N/A')
+                .replace('{{KEY_POINTS}}', (researchContext.keyPoints || []).map((p, i) => `${i + 1}. ${p}`).join('\n        '))
+                .replace('{{SUPPORTERS_VIEW}}', researchContext.perspectives?.supporters || 'N/A')
+                .replace('{{CRITICS_VIEW}}', researchContext.perspectives?.critics || 'N/A')
+                .replace('{{RELATED_TOPICS}}', (researchContext.relatedTopics || []).join(', ') || 'N/A');
+
         } else {
             // Fallback to simulated research for basic generation
-            userPrompt += `
-        [Basic Research Data]
-        Latest news indicates that "${topic}" is a trending issue. 
-        Key entities involved: Global Tech Giants, Governments.
-        Context: Significant developments have occurred in this field recently.
-        `;
+            const promptPath = path.join(AGENT_DIR, 'prompts', 'article_basic_context.md');
+            let template = "";
+            if (fs.existsSync(promptPath)) {
+                template = fs.readFileSync(promptPath, 'utf-8');
+            } else {
+                template = `
+                [Basic Research Data]
+                Latest news indicates that "{{TOPIC}}" is a trending issue. 
+                Key entities involved: Global Tech Giants, Governments.
+                Context: Significant developments have occurred in this field recently.
+                `;
+            }
+            userPrompt += template.replace('{{TOPIC}}', topic);
         }
 
         // Read Style Prompts
         const promptsDir = path.join(AGENT_DIR, 'prompts');
         const style = req.body.style; // 'A' or 'B'
+        let stylePrompt = ''; // Default to empty string if no style specified
         if (style === 'A') {
             const stylePath = path.join(promptsDir, 'style_old_editor.md');
             if (fs.existsSync(stylePath)) stylePrompt = fs.readFileSync(stylePath, 'utf-8');
@@ -380,84 +980,152 @@ app.post('/api/generate', async (req, res) => {
             if (fs.existsSync(stylePath)) stylePrompt = fs.readFileSync(stylePath, 'utf-8');
         }
 
-        userPrompt += `
-        Task: Transform this research into the JSON format defined in the System Prompt.
-        
-        ${stylePrompt}
-        `;
+        const taskPath = path.join(AGENT_DIR, 'prompts', 'article_task_instruction.md');
+        let taskTemplate = "";
+        if (fs.existsSync(taskPath)) {
+            taskTemplate = fs.readFileSync(taskPath, 'utf-8');
+        } else {
+            taskTemplate = `
+            Task: Transform this research into the JSON format defined in the System Prompt.
+            
+            {{STYLE_PROMPT}}
+            `;
+        }
+
+        userPrompt += taskTemplate.replace('{{STYLE_PROMPT}}', stylePrompt);
 
         // Refinement Logic (Rewrite with Feedback)
         const { previousDraft, feedback } = req.body;
         if (briefingTarget && previousDraft) {
-            userPrompt += `
+            const promptPath = path.join(AGENT_DIR, 'prompts', 'article_evaluation_briefing.md');
+            let template = "";
+            if (fs.existsSync(promptPath)) {
+                template = fs.readFileSync(promptPath, 'utf-8');
+            } else {
+                template = `
+                [Briefing Partial Update - CRITICAL]
+                You must regenerate ONLY meta.briefing.{{BRIEFING_TARGET}} ({{BRIEFING_LABEL}}).
+                Keep every other field EXACTLY the same as the previous draft (title, intro, paragraphs, tokens, meta, etc.).
+                DO NOT alter any other content or structure.
 
-            [Briefing Partial Update - CRITICAL]
-            You must regenerate ONLY meta.briefing.${briefingTarget} (${briefingLabel || briefingTarget}).
-            Keep every other field EXACTLY the same as the previous draft (title, intro, paragraphs, tokens, meta, etc.).
-            DO NOT alter any other content or structure.
+                Previous Draft (JSON):
+                {{PREVIOUS_DRAFT_TRUNCATED}}
 
-            Previous Draft (JSON):
-            ${JSON.stringify(previousDraft).substring(0, 15000)} ... (truncated if too long) ...
+                Requirements:
+                - Return full JSON in the exact schema.
+                - briefings are in meta.briefing.
+                - briefing.grammar_analysis MUST start with Chinese characters.
+                - Output ONLY valid JSON, no markdown.
+                `;
+            }
 
-            Requirements:
-            - Return full JSON in the exact schema.
-            - briefings are in meta.briefing.
-            - briefing.grammar_analysis MUST start with Chinese characters.
-            - Output ONLY valid JSON, no markdown.
-            `;
+            userPrompt += template
+                .replace('{{BRIEFING_TARGET}}', briefingTarget)
+                .replace('{{BRIEFING_LABEL}}', briefingLabel || briefingTarget)
+                .replace('{{PREVIOUS_DRAFT_TRUNCATED}}', JSON.stringify(previousDraft).substring(0, 15000));
+
         } else if (analysisTarget && previousDraft) {
-            userPrompt += `
+            const promptPath = path.join(AGENT_DIR, 'prompts', 'article_evaluation_analysis.md');
+            let template = "";
+            if (fs.existsSync(promptPath)) {
+                template = fs.readFileSync(promptPath, 'utf-8');
+            } else {
+                template = `
+                [Sentence Analysis Partial Update - CRITICAL]
+                You must regenerate ONLY sentence-level analysis fields (analysis.grammar and analysis.explanation) in paragraph.tokenizedSentences.
+                Keep every other field EXACTLY the same as the previous draft (title, intro, paragraphs, tokens, meta, etc.).
+                DO NOT alter any other content or structure.
 
-            [Sentence Analysis Partial Update - CRITICAL]
-            You must regenerate ONLY sentence-level analysis fields (analysis.grammar and analysis.explanation) in paragraph.tokenizedSentences.
-            Keep every other field EXACTLY the same as the previous draft (title, intro, paragraphs, tokens, meta, etc.).
-            DO NOT alter any other content or structure.
+                Previous Draft (JSON):
+                {{PREVIOUS_DRAFT_TRUNCATED}}
 
-            Previous Draft (JSON):
-            ${JSON.stringify(previousDraft).substring(0, 15000)} ... (truncated if too long) ...
+                Requirements:
+                - Return full JSON in the exact schema.
+                - All analysis.grammar and analysis.explanation entries MUST start with Chinese characters.
+                - Output ONLY valid JSON, no markdown.
+                `;
+            }
 
-            Requirements:
-            - Return full JSON in the exact schema.
-            - All analysis.grammar and analysis.explanation entries MUST start with Chinese characters.
-            - Output ONLY valid JSON, no markdown.
-            `;
+            userPrompt += template
+                .replace('{{PREVIOUS_DRAFT_TRUNCATED}}', JSON.stringify(previousDraft).substring(0, 15000));
+
         } else if (previousDraft && feedback) {
-            userPrompt += `
-            
-            [Refinement Task - CRITICAL]
-            The previous draft failed specific audit checks. You must fix these errors while maintaining the required style.
-            
-            Previous Draft (JSON):
-            ${JSON.stringify(previousDraft).substring(0, 15000)} ... (truncated if too long) ...
+            const promptPath = path.join(AGENT_DIR, 'prompts', 'article_refinement.md');
+            let template = "";
+            if (fs.existsSync(promptPath)) {
+                template = fs.readFileSync(promptPath, 'utf-8');
+            } else {
+                template = `
+                [Refinement Task - CRITICAL]
+                The previous draft failed specific audit checks. You must fix these errors while maintaining the required style.
+                
+                Previous Draft (JSON):
+                {{PREVIOUS_DRAFT_TRUNCATED}}
 
-            Audit Feedback / Errors to Fix:
-            ${feedback}
+                Audit Feedback / Errors to Fix:
+                {{FEEDBACK}}
 
-            Action: Rewrite the article to fix these errors.
-            CRITICAL REQUIREMENT: You MUST regenerate the full 'tokens' array for every sentence. The 'tokens' array contains the English text and MUST NOT be empty. Do not omit the English tokens.
-            `;
+                Action: Rewrite the article to fix these errors.
+                CRITICAL REQUIREMENT: You MUST regenerate the full 'tokens' array for every sentence. The 'tokens' array contains the English text and MUST NOT be empty. Do not omit the English tokens.
+                `;
+            }
+
+            userPrompt += template
+                .replace('{{PREVIOUS_DRAFT_TRUNCATED}}', JSON.stringify(previousDraft).substring(0, 15000))
+                .replace('{{FEEDBACK}}', feedback);
         }
 
         userPrompt += `
         IMPORTANT: Return ONLY valid JSON, no markdown code blocks.
         `;
 
+
         // 4. Call Gemini
         console.log(`Generating article for topic: ${topic}...`);
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                contents: [
-                    { role: "user", parts: [{ text: systemPrompt + "\n\n" + userPrompt }] }
-                ],
-                generationConfig: {
-                    temperature: 0.7,
-                    responseMimeType: "application/json"
+
+        // Helper: fetch with auto-retry on socket error
+        async function fetchWithRetry(url, options, retries = 1) {
+            try {
+                return await fetch(url, options);
+            } catch (err) {
+                if (retries > 0 && (err.code === 'UND_ERR_SOCKET' || err.cause?.code === 'UND_ERR_SOCKET')) {
+                    console.log("[Generate] Socket error, refreshing proxy and retrying...");
+                    proxyDispatcher = createProxyDispatcher();
+                    options.dispatcher = proxyDispatcher;
+                    return await fetchWithRetry(url, options, retries - 1);
                 }
-            }),
-            dispatcher: proxyDispatcher
-        });
+                throw err;
+            }
+        }
+
+        let response;
+        try {
+            response = await fetchWithRetry(
+                `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`,
+                {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [
+                            { role: "user", parts: [{ text: systemPrompt + "\n\n" + userPrompt }] }
+                        ],
+                        generationConfig: {
+                            temperature: 0.7,
+                            responseMimeType: "application/json"
+                        }
+                    }),
+                    dispatcher: proxyDispatcher
+                }
+            );
+        } catch (netError) {
+            const isProxyError = netError.code === 'UND_ERR_SOCKET' || netError.cause?.code === 'UND_ERR_SOCKET';
+            console.error("Network/Proxy Error details:", netError);
+            return res.status(503).json({
+                error: isProxyError
+                    ? `Proxy Connection Failed. Please check your proxy settings. Details: ${netError.message}`
+                    : `Network Error: ${netError.message}`
+            });
+        }
 
         const data = await response.json();
 
@@ -590,23 +1258,34 @@ IMPORTANT: Return ONLY valid JSON, no markdown formatting.
 
 
         // 3. Call Gemini with grounding
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${researchModel}:generateContent?key=${apiKey}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                contents: [
-                    { role: "user", parts: [{ text: researchPrompt }] }
-                ],
-                tools: [{
-                    googleSearch: {}
-                }],
-                generationConfig: {
-                    temperature: 0.3,
-                    responseMimeType: "application/json"
-                }
-            }),
-            dispatcher: proxyDispatcher
-        });
+        let response;
+        try {
+            response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${researchModel}:generateContent?key=${apiKey}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contents: [
+                        { role: "user", parts: [{ text: researchPrompt }] }
+                    ],
+                    tools: [{
+                        googleSearch: {}
+                    }],
+                    generationConfig: {
+                        temperature: 0.3,
+                        responseMimeType: "application/json"
+                    }
+                }),
+                dispatcher: proxyDispatcher
+            });
+        } catch (netError) {
+            const isProxyError = netError.code === 'UND_ERR_SOCKET' || netError.cause?.code === 'UND_ERR_SOCKET';
+            console.error("[Research] Network/Proxy Error details:", netError);
+            return res.status(503).json({
+                error: isProxyError
+                    ? `Proxy Connection Failed. Please check your proxy settings. Details: ${netError.message}`
+                    : `Network Error: ${netError.message}`
+            });
+        }
 
         const data = await response.json();
 
@@ -692,35 +1371,52 @@ app.post('/api/vocabulary', async (req, res) => {
         }
 
         // 3. Construct User Prompt
-        const userPrompt = `
-        Extract vocabulary from the following article.
-        Focus on words that:
-        - Are Level 7-10 (intermediate-advanced)
-        - Are key to understanding the article
-        - May be challenging for non-native speakers
-        
-        Article JSON:
-        ${JSON.stringify(articleJson, null, 2)}
-        
-        Return ONLY valid JSON with glossary map.
-        `;
+        const promptPath = path.join(AGENT_DIR, 'prompts', 'vocabulary_ask.md');
+        let userPromptTemplate = "";
+
+        if (fs.existsSync(promptPath)) {
+            userPromptTemplate = fs.readFileSync(promptPath, 'utf-8');
+        } else {
+            userPromptTemplate = `
+                Extract vocabulary from the following article.
+                Focus on words that:
+                - Are Level 7-10 (intermediate-advanced)
+                - Are key to understanding the article
+                - May be challenging for non-native speakers
+                
+                Article JSON:
+                {{ARTICLE_JSON}}
+                
+                Return ONLY valid JSON with glossary map.
+            `;
+        }
+
+        const userPrompt = userPromptTemplate.replace('{{ARTICLE_JSON}}', JSON.stringify(articleJson, null, 2));
 
         // 4. Call Gemini
         console.log('Generating vocabulary glossary...');
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                contents: [
-                    { role: "user", parts: [{ text: systemPrompt + "\n\n" + userPrompt }] }
-                ],
-                generationConfig: {
-                    temperature: 0.3,
-                    responseMimeType: "application/json"
-                }
-            }),
-            dispatcher: proxyDispatcher
-        });
+        let response;
+        try {
+            response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contents: [
+                        { role: "user", parts: [{ text: systemPrompt + "\n\n" + userPrompt }] }
+                    ],
+                    generationConfig: {
+                        temperature: 0.3,
+                        responseMimeType: "application/json"
+                    }
+                }),
+                dispatcher: proxyDispatcher
+            });
+        } catch (netError) {
+            console.error("[Vocabulary] Network/Proxy Error details:", netError);
+            return res.status(503).json({
+                error: `Network/Proxy Error: ${netError.message}`
+            });
+        }
 
         const data = await response.json();
 
@@ -1885,7 +2581,10 @@ app.post('/api/publish', async (req, res) => {
         if (!payload) {
             return res.status(400).json({ error: "Missing payload" });
         }
-        if (!payload.articleId && (payload.glossary || payload.podcast_script || payload.podcast_url)) {
+        // Only require articleId if we're doing a partial update (glossary/podcast only, no article)
+        const hasArticleData = payload.article && Object.keys(payload.article).length > 0;
+        const hasPartialUpdateData = payload.glossary || payload.podcast_script || payload.podcast_url;
+        if (!payload.articleId && !hasArticleData && hasPartialUpdateData) {
             return res.status(400).json({ error: "Missing articleId. Please upload the article first." });
         }
 

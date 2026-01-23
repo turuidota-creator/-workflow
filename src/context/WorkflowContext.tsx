@@ -34,7 +34,13 @@ export const WorkflowProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
         // Extract fields to be stored in separate DB columns
         const context2 = contextClone.generationState?.B ?? undefined;
-        const context_7 = contextClone.articleJson7 ?? undefined;
+
+        // Pack articleJson7 and glossary7 together in context_7
+        const context_7 = (contextClone.articleJson7 || contextClone.glossary7) ? {
+            articleJson7: contextClone.articleJson7,
+            glossary7: contextClone.glossary7
+        } : undefined;
+
         const podcast_script_wf = contextClone.podcastScript ?? undefined;
         const podcast_script_wf_7 = contextClone.podcastScript7 ?? undefined;
 
@@ -45,6 +51,7 @@ export const WorkflowProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         }
         delete contextClone.articleJson7;
         delete contextClone.podcastScript7;
+        delete contextClone.glossary7;
         // Keep podcastScript in context for backward compatibility reads, but also store in dedicated field
 
         return {
@@ -79,9 +86,23 @@ export const WorkflowProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         if (!context.podcastScript7 && record.podcast_script_wf_7) {
             context.podcastScript7 = record.podcast_script_wf_7;
         }
-        // context_7 -> articleJson7
-        if (!context.articleJson7 && record.context_7) {
-            context.articleJson7 = record.context_7;
+        // context_7 -> articleJson7 and glossary7 (packed together)
+        if (record.context_7) {
+            // Handle both old format (just articleJson7) and new format (packed object)
+            if (record.context_7.articleJson7 !== undefined || record.context_7.glossary7 !== undefined) {
+                // New packed format
+                if (!context.articleJson7 && record.context_7.articleJson7) {
+                    context.articleJson7 = record.context_7.articleJson7;
+                }
+                if (!context.glossary7 && record.context_7.glossary7) {
+                    context.glossary7 = record.context_7.glossary7;
+                }
+            } else {
+                // Old format - context_7 is directly articleJson7
+                if (!context.articleJson7) {
+                    context.articleJson7 = record.context_7;
+                }
+            }
         }
         // context2 -> generationState.B
         if (record.context2) {
@@ -138,10 +159,22 @@ export const WorkflowProvider: React.FC<{ children: React.ReactNode }> = ({ chil
             pendingSaves.current.delete(session.id);
             saveTimers.current.delete(session.id);
             try {
+                const serialized = serializeSession(latest);
+
+                // Debug: Log what we're saving
+                console.log('[WorkflowContext] Saving session', {
+                    sessionId: session.id,
+                    hasGlossary: !!latest.context.glossary,
+                    hasGlossary7: !!latest.context.glossary7,
+                    glossaryKeys: latest.context.glossary ? Object.keys(latest.context.glossary).length : 0,
+                    glossary7Keys: latest.context.glossary7 ? Object.keys(latest.context.glossary7).length : 0,
+                    serializedContextHasGlossary7: !!serialized.context?.glossary7
+                });
+
                 await request(`/api/workflow-sessions/${session.id}`, {
                     method: 'PATCH',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(serializeSession(latest))
+                    body: JSON.stringify(serialized)
                 });
             } catch (error) {
                 console.error('Failed to save workflow session', error);

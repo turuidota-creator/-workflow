@@ -2,6 +2,9 @@ import React, { useState } from 'react';
 import { useWorkflow } from '../../context/WorkflowContext';
 import { Bot, RefreshCw, AlertTriangle, ChevronRight, FileText, ArrowRight, Upload, CheckCircle2 } from 'lucide-react';
 import { cn } from '../../lib/utils';
+// Import shared audit logic
+import { AuditStatus } from '../parts/AuditStatus';
+import { BriefingFieldKey } from '../../lib/audit';
 
 export const ArticleRewrite: React.FC = () => {
     const { getActiveSession, updateSession } = useWorkflow();
@@ -26,25 +29,60 @@ export const ArticleRewrite: React.FC = () => {
     // View Mode for Level 7
     const [viewMode7, setViewMode7] = useState<'json' | 'preview'>('preview');
 
-    const handleRewrite = async () => {
+    // Handler helpers for audit regeneration (Confirmation wrapper)
+    const handleRegenerateBriefingField = async (_side: 'A' | 'B' | undefined, field: BriefingFieldKey) => {
+        if (!window.confirm(`确认要重新生成 Briefing 字段: ${field}? (这将覆盖当前字段)`)) return;
+        await handleRewrite({ briefingTarget: field });
+    };
+
+    const handleRegenerateSentenceAnalysis = async (_side: 'A' | 'B' | undefined) => {
+        if (!window.confirm('确认要重新生成句法分析? (这将覆盖当前句法分析)')) return;
+        await handleRewrite({ analysisTarget: 'sentence_analysis' });
+    };
+
+    const handleRewrite = async (options: { briefingTarget?: string, analysisTarget?: string } = {}) => {
         if (!session || !article10) return;
+
+        // If it's a full rewrite (no specific targets), confirm first if we already have content
+        if (!options.briefingTarget && !options.analysisTarget && status7 === 'success') {
+            if (!window.confirm('确认要重新全部改写吗？当前内容将被覆盖。')) return;
+        }
 
         setStatus7('generating');
         setError7('');
 
         try {
+            // Support partial update logic if backend supports it (ArticleGeneration does, we need to allow it here too)
+            // But currently backend uses "previousDraft" + "feedback". 
+            // If we are targeting specific field, we should construct the feedback accordingly or use the same params as ArticleGeneration.
+
+            const reqBody: any = {
+                topic: session.context.topic,
+                level: "7",
+                previousDraft: status7 === 'success' ? JSON.parse(json7) : article10, // If refining, use current; else use L10
+                targetDate: session.context.targetDate,
+                briefingTarget: options.briefingTarget,
+                analysisTarget: options.analysisTarget
+            };
+
+            if (options.briefingTarget || options.analysisTarget) {
+                // Partial update mode
+                // NO explicit feedback needed, server handles briefingTarget param
+            } else {
+                // Full Rewrite Mode (or Retry)
+                // If status7 is already success (or we just want to rewrite based on L10), we actually want to base it on L10 usually for a fresh rewrite.
+                // BUT if we want to "fix" the current L7 (e.g. word count), we might send current L7 as previousDraft? 
+                // The user wants "Rewrite this article to Level 7".
+                // Let's stick to using L10 as source for a fresh rewrite to avoid degradation, UNLESS it's a specific fix?
+                // Actually, "Rewrite" usually means fresh content. 
+                reqBody.previousDraft = article10;
+                reqBody.feedback = "Rewrite this article to Level 7 difficulty. Simplify vocabulary and sentence structure while keeping the same core information and structure (3 paragraphs). IMPORTANT: Target word count must be between 210-270 words.";
+            }
+
             const res = await fetch('/api/generate', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    topic: session.context.topic,
-                    level: "7", // Explicitly request Level 7
-                    // Use the *existing* Level 10 article as the previous draft/context to base the rewrite on
-                    previousDraft: article10,
-                    // Instruction to the model
-                    feedback: "Rewrite this article to Level 7 difficulty. Simplify vocabulary and sentence structure while keeping the same core information and structure (3 paragraphs).",
-                    targetDate: session.context.targetDate
-                })
+                body: JSON.stringify(reqBody)
             });
 
             const data = await res.json();
@@ -57,17 +95,63 @@ export const ArticleRewrite: React.FC = () => {
                 setJson7(newJson);
             } else {
                 setStatus7('success');
-                newJson = JSON.stringify(data, null, 2); // Data is likely { article: ... } or just hierarchy
+                // Handle partial updates merging logic (similar to ArticleGeneration)
+                if (options.briefingTarget) {
+                    try {
+                        const originalRoot = JSON.parse(json7);
+                        const updatedRoot = JSON.parse(JSON.stringify(originalRoot));
+                        const updatedData = data.article || data;
+                        const updatedBriefing = updatedData?.meta?.briefing || {};
+                        const nextValue = updatedBriefing?.[options.briefingTarget];
+                        if (typeof nextValue === 'string' && nextValue.trim()) {
+                            if (updatedRoot.article) {
+                                updatedRoot.article.meta.briefing[options.briefingTarget] = nextValue;
+                            } else {
+                                updatedRoot.meta.briefing[options.briefingTarget] = nextValue;
+                            }
+                            newJson = JSON.stringify(updatedRoot, null, 2);
+                        } else {
+                            newJson = JSON.stringify(data, null, 2);
+                        }
+                    } catch (e) { newJson = JSON.stringify(data, null, 2); }
+                } else if (options.analysisTarget) {
+                    try {
+                        const originalRoot = JSON.parse(json7);
+                        const updatedRoot = JSON.parse(JSON.stringify(originalRoot));
+                        const originalData = updatedRoot.article || updatedRoot;
+                        const updatedData = data.article || data;
+                        // Simplistic merge for sentences
+                        const originalParagraphs = originalData?.paragraphs || [];
+                        const updatedParagraphs = updatedData?.paragraphs || [];
+                        originalParagraphs.forEach((para: any, paraIndex: number) => {
+                            const originalSentences = para?.paragraph?.tokenizedSentences || [];
+                            const updatedPara = updatedParagraphs[paraIndex];
+                            const updatedSentences = updatedPara?.paragraph?.tokenizedSentences || [];
+                            originalSentences.forEach((sentence: any, sentenceIndex: number) => {
+                                if (updatedSentences[sentenceIndex]?.analysis) {
+                                    sentence.analysis = updatedSentences[sentenceIndex].analysis;
+                                }
+                            });
+                        });
+                        newJson = JSON.stringify(updatedRoot, null, 2);
+                    } catch (e) { newJson = JSON.stringify(data, null, 2); }
+                } else {
+                    newJson = JSON.stringify(data, null, 2);
+                }
+
                 setJson7(newJson);
 
-                // Persist immediately
-                const parsed7 = data.article || data;
-                updateSession(session.id, {
-                    context: {
-                        ...session.context,
-                        articleJson7: parsed7
-                    }
-                });
+                // Persist immediately - use getActiveSession() for fresh context
+                const parsed7 = JSON.parse(newJson);
+                const latestSession = getActiveSession();
+                if (latestSession) {
+                    updateSession(latestSession.id, {
+                        context: {
+                            ...latestSession.context,
+                            articleJson7: parsed7.article || parsed7
+                        }
+                    });
+                }
             }
         } catch (e) {
             const errString = String(e);
@@ -89,7 +173,9 @@ export const ArticleRewrite: React.FC = () => {
 
     // Upload Level 7 article to articles collection
     const handleUpload7 = async () => {
-        if (!session || !json7) return;
+        // CRITICAL: Re-fetch the latest session to get the most recent articleId7
+        const latestSession = getActiveSession();
+        if (!latestSession || !json7) return;
 
         setUploadStatus('uploading');
         setUploadError('');
@@ -97,7 +183,14 @@ export const ArticleRewrite: React.FC = () => {
         try {
             const parsed7 = JSON.parse(json7);
             const articleData = parsed7.article || parsed7;
-            const articleId = session.context.articleId7;
+            const articleId = latestSession.context.articleId7;
+
+            // Debug: Check what ID we're sending
+            console.log('[ArticleRewrite] handleUpload7 - sending request', {
+                articleId,
+                isLocalId: articleId?.startsWith('article_'),
+                willCreate: !articleId || articleId?.startsWith('article_')
+            });
 
             const res = await fetch('/api/publish', {
                 method: 'POST',
@@ -106,7 +199,7 @@ export const ArticleRewrite: React.FC = () => {
                     articleId, // Add ID for update
                     article: articleData,
                     level: '7',
-                    glossary: session.context.glossary7 || {},
+                    glossary: latestSession.context.glossary7 || {},
                     // NOTE: Don't send podcast fields here - they are handled in the Podcast step
                 })
             });
@@ -117,8 +210,8 @@ export const ArticleRewrite: React.FC = () => {
             console.log('[ArticleRewrite Upload Debug]', {
                 sentArticleId: articleId,
                 returnedArticleId: data.articleId,
-                contextArticleId: session.context.articleId,
-                contextArticleId7: session.context.articleId7,
+                contextArticleId: latestSession.context.articleId,
+                contextArticleId7: latestSession.context.articleId7,
                 level: '7'
             });
 
@@ -127,16 +220,26 @@ export const ArticleRewrite: React.FC = () => {
                 setUploadError(data.error);
             } else {
                 setUploadStatus('success');
-                // Save the article ID to context if created new
-                if (data.articleId && !articleId) {
-                    updateSession(session.id, {
+                // Save the article ID to context if:
+                // 1. We got a new ID from PocketBase
+                // 2. AND (no existing ID OR existing ID is a local one OR IDs are different)
+                const isLocalId = articleId?.startsWith('article_');
+                const shouldUpdateId = data.articleId && (!articleId || isLocalId || data.articleId !== articleId);
+
+                if (shouldUpdateId) {
+                    console.log('[ArticleRewrite] Updating articleId7:', {
+                        old: articleId,
+                        new: data.articleId,
+                        reason: !articleId ? 'no existing' : isLocalId ? 'replacing local ID' : 'ID changed'
+                    });
+                    updateSession(latestSession.id, {
                         context: {
-                            ...session.context,
-                            articleId7: data.articleId || data.id
+                            ...latestSession.context,
+                            articleId7: data.articleId
                         }
                     });
                 }
-                alert(`[DEBUG] Level 7 Upload:\n- Sent ID (L7): ${articleId || 'NONE (will create)'}\n- Returned ID: ${data.articleId}\n- L10 ID in context: ${session.context.articleId || 'NONE'}\n- Mode: ${articleId ? 'UPDATE' : 'CREATE'}`);
+                alert(`[DEBUG] Level 7 Upload:\n- Sent ID (L7): ${articleId || 'NONE (will create)'}\n- Returned ID: ${data.articleId}\n- L10 ID in context: ${latestSession.context.articleId || 'NONE'}\n- Mode: ${articleId ? 'UPDATE' : 'CREATE'}\n- ID Updated: ${shouldUpdateId ? 'YES' : 'NO'}`);
             }
         } catch (e) {
             setUploadStatus('error');
@@ -255,7 +358,7 @@ export const ArticleRewrite: React.FC = () => {
                                 </div>
                             )}
                             <button
-                                onClick={handleRewrite}
+                                onClick={() => handleRewrite()}
                                 disabled={status7 === 'generating'}
                                 className="px-3 py-1 text-xs bg-indigo-600 hover:bg-indigo-700 text-white rounded flex items-center gap-1 transition-colors disabled:opacity-50"
                             >
@@ -318,17 +421,27 @@ export const ArticleRewrite: React.FC = () => {
 
                         {/* Content */}
                         {(status7 === 'success' || (status7 === 'error' && json7)) && (
-                            <div className="h-full">
-                                {viewMode7 === 'json' ? (
-                                    <textarea
-                                        value={json7}
-                                        onChange={(e) => setJson7(e.target.value)} // Allow editing?
-                                        className="w-full h-full bg-transparent p-4 font-mono text-xs text-green-400 focus:outline-none resize-none leading-relaxed"
-                                        spellCheck={false}
+                            <div className="h-full flex flex-col">
+                                <div className="flex-1 overflow-auto">
+                                    {viewMode7 === 'json' ? (
+                                        <textarea
+                                            value={json7}
+                                            onChange={(e) => setJson7(e.target.value)} // Allow editing?
+                                            className="w-full h-full bg-transparent p-4 font-mono text-xs text-green-400 focus:outline-none resize-none leading-relaxed"
+                                            spellCheck={false}
+                                        />
+                                    ) : (
+                                        renderJsonPreview(json7)
+                                    )}
+                                </div>
+                                {/* Audit Panel */}
+                                <div className="p-4 border-t border-white/5 bg-black/20">
+                                    <AuditStatus
+                                        json={json7}
+                                        onRegenerateBriefingField={handleRegenerateBriefingField}
+                                        onRegenerateSentenceAnalysis={handleRegenerateSentenceAnalysis}
                                     />
-                                ) : (
-                                    renderJsonPreview(json7)
-                                )}
+                                </div>
                             </div>
                         )}
                     </div>

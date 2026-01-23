@@ -26,21 +26,27 @@ function App() {
             <div className="flex h-screen w-full bg-background text-foreground overflow-hidden selection:bg-primary selection:text-primary-foreground font-sans">
                 <Sidebar />
                 <div className="flex-1 flex flex-col h-full bg-background/50 relative">
-                    {showSettings ? (
-                        <div className="absolute inset-0 z-50 bg-background/95 backdrop-blur-sm overflow-y-auto">
-                            <div className="max-w-4xl mx-auto pt-10 px-6">
-                                <button
-                                    onClick={() => setShowSettings(false)}
-                                    className="mb-6 text-sm text-muted-foreground hover:text-foreground flex items-center gap-2"
-                                >
-                                    ← 返回工作流
-                                </button>
-                                <Settings />
+                    {showSettings && (
+                        <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-[2px]">
+                            <div className="w-[95vw] h-[90vh] bg-zinc-950 border border-white/10 rounded-xl shadow-2xl overflow-hidden flex flex-col animate-in zoom-in-95 duration-200">
+                                <div className="p-4 border-b border-white/10 flex items-center justify-between bg-zinc-900/50">
+                                    <h2 className="font-semibold text-lg flex items-center gap-2">
+                                        <span className="text-primary">⚙️</span> 设置 (Settings)
+                                    </h2>
+                                    <button
+                                        onClick={() => setShowSettings(false)}
+                                        className="text-sm text-muted-foreground hover:text-foreground px-3 py-1 bg-white/5 hover:bg-white/10 rounded-md transition-colors"
+                                    >
+                                        关闭 (Close)
+                                    </button>
+                                </div>
+                                <div className="flex-1 overflow-hidden">
+                                    <Settings />
+                                </div>
                             </div>
                         </div>
-                    ) : (
-                        <StepViewer />
                     )}
+                    {!showSettings && <StepViewer />}
                 </div>
             </div>
 
