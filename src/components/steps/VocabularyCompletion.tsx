@@ -121,16 +121,17 @@ export const VocabularyCompletion: React.FC = () => {
         const articleId = level === '10' ? session.context.articleId : session.context.articleId7;
         const articleJson = level === '10' ? session.context.articleJson : session.context.articleJson7;
         const glossary = level === '10' ? glossary10 : glossary7;
-        const podcastScript = level === '10' ? session.context.podcastScript : session.context.podcastScript7;
-        const podcastUrl = level === '10' ? session.context.podcastUrl : session.context.podcastUrl7;
+
+        if (!articleId) {
+            alert(`❌ 请先在 Level ${level} 的文章页面上传文章，再上传词汇。`);
+            return;
+        }
 
         try {
             const payload = {
                 articleId,  // Pass articleId for update instead of create
                 article: articleJson,
                 glossary,
-                podcast_script: podcastScript,
-                podcast_url: podcastUrl,
                 level,
             };
             const res = await fetch('/api/publish', {
