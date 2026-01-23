@@ -108,34 +108,21 @@ export const AudioSynthesis: React.FC = () => {
         // Critical: Determine target article ID. 
         // L10 users existing articleId. 
         // L7 needs a new one if not exists.
-        let targetArticleId = level === '10' ? session.context.articleId : session.context.articleId7;
+        const targetArticleId = level === '10' ? session.context.articleId : session.context.articleId7;
 
         if (!state.url) return;
+        if (!targetArticleId) {
+            set(prev => ({ ...prev, uploadStatus: 'error', error: `请先上传 Level ${level} 文章，生成对应的文章记录后再上传播客。` }));
+            return;
+        }
 
         set(prev => ({ ...prev, uploadStatus: 'uploading', error: '' }));
 
         try {
-            // If Level 7 and no ID, we need to inform backend to create a new article record
-            // OR the upload endpoint handles creation if we pass metadata.
-            // Let's assume /api/podcast-upload is smart enough or we pass extra data.
-            // Actually, we should probably ensure the article record exists first?
-            // "Podcast Upload" usually attaches a file to an EXISTING record in PocketBase.
-
-            // Strategy: Pass 'level' and 'topic'/'date' to upload endpoint.
-            // If it's a new L7 record, backend finds or creates it.
-
             const payload = {
-                articleId: targetArticleId, // Might be undefined for L7
+                articleId: targetArticleId,
                 audioUrl: state.url,
                 podcast_script: level === '10' ? session.context.podcastScript : session.context.podcastScript7,
-                // Extra metadata to help backend find/create the record if articleId is missing
-                level: level,
-                topic: session.context.topic, // topic from context
-                date: session.context.targetDate, // date from context
-                title_en: level === '10' ? session.context.articleJson?.title?.en : session.context.articleJson7?.title?.en,
-                title_zh: level === '10' ? (session.context.articleJson?.title?.zh || session.context.articleJson?.title?.cn) : (session.context.articleJson7?.title?.zh || session.context.articleJson7?.title?.cn),
-                // Pass full content if needed for creation
-                articleJson: level === '10' ? session.context.articleJson : session.context.articleJson7
             };
 
             const res = await fetch('/api/podcast-upload', {

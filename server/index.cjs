@@ -1653,78 +1653,19 @@ app.post('/api/podcast-upload', async (req, res) => {
         const {
             articleId,
             audioUrl,
-            podcast_script,
-            level,
-            topic,
-            date,
-            title_en,
-            title_zh,
-            articleJson
+            podcast_script
         } = req.body || {};
 
         if (!audioUrl) {
             return res.status(400).json({ error: 'Missing audioUrl' });
         }
+        if (!articleId) {
+            return res.status(400).json({ error: 'Missing articleId. Please upload the article first.' });
+        }
 
         const { url: pbUrl, token } = await getPocketBaseAuth();
         if (!pbUrl || !token) {
             return res.status(403).json({ error: 'PocketBase authentication required' });
-        }
-
-        const resolveArticleId = async () => {
-            if (articleId) return articleId;
-            if (!articleJson && !title_en && !title_zh) {
-                throw new Error('Missing articleId or article content for creation');
-            }
-
-            const articleRoot = articleJson?.article || articleJson || {};
-            const articleData = articleRoot.article || articleRoot;
-            const pbPayload = articleJson
-                ? {
-                    title_zh: articleData.title?.zh || articleData.title?.cn || title_zh || '无标题',
-                    title_en: articleData.title?.en || title_en || 'Untitled',
-                    date: articleData.meta?.date || date || new Date().toISOString(),
-                    level: articleData.meta?.level || level || '7',
-                    topic: articleData.meta?.topic || topic || '科技',
-                    intro: articleData.intro || (articleData.briefing ? { text: articleData.briefing } : null),
-                    content: {
-                        meta: articleData.meta,
-                        paragraphs: articleData.paragraphs || []
-                    }
-                }
-                : {
-                    title_zh: title_zh || '无标题',
-                    title_en: title_en || 'Untitled',
-                    date: date || new Date().toISOString(),
-                    level: level || '7',
-                    topic: topic || '科技',
-                    intro: null,
-                    content: {}
-                };
-
-            const headers = { 'Content-Type': 'application/json' };
-            if (token) headers['Authorization'] = token;
-
-            const createRes = await fetch(`${pbUrl}/api/collections/articles/records`, {
-                method: 'POST',
-                headers,
-                body: JSON.stringify(pbPayload)
-            });
-
-            if (!createRes.ok) {
-                const errorText = await createRes.text();
-                throw new Error(errorText || 'Failed to create article record');
-            }
-
-            const created = await createRes.json();
-            return created.id;
-        };
-
-        let resolvedArticleId;
-        try {
-            resolvedArticleId = await resolveArticleId();
-        } catch (e) {
-            return res.status(400).json({ error: e.message });
         }
 
         const audioPath = (() => {
@@ -1757,7 +1698,7 @@ app.post('/api/podcast-upload', async (req, res) => {
         const headers = {};
         if (token) headers['Authorization'] = token;
 
-        const uploadRes = await fetch(`${pbUrl}/api/collections/articles/records/${resolvedArticleId}`, {
+        const uploadRes = await fetch(`${pbUrl}/api/collections/articles/records/${articleId}`, {
             method: 'PATCH',
             headers,
             body: formData
@@ -1943,6 +1884,9 @@ app.post('/api/publish', async (req, res) => {
 
         if (!payload) {
             return res.status(400).json({ error: "Missing payload" });
+        }
+        if (!payload.articleId && (payload.glossary || payload.podcast_script || payload.podcast_url)) {
+            return res.status(400).json({ error: "Missing articleId. Please upload the article first." });
         }
 
         const normalizeJsonField = (value) => {
