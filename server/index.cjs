@@ -2606,7 +2606,9 @@ app.post('/api/publish', async (req, res) => {
         const pbUrl = pbUrlMatch ? pbUrlMatch[1].trim() : null;
 
         const timestamp = Date.now();
-        const articleId = `article_${timestamp}`;
+        const articleId = payload.articleId && payload.articleId.startsWith('article_')
+            ? payload.articleId
+            : `article_${timestamp}`;
 
         // If PocketBase is configured, try to publish there
         if (pbUrl) {
