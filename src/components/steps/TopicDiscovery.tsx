@@ -145,22 +145,35 @@ export const TopicDiscovery: React.FC = () => {
 
     // 按类别分组并排序
     const groupedNews = useMemo(() => {
-        const groups: Record<string, NewsItem[]> = {};
+        // Pre-initialize strict categories to ensure consistent layout
+        const groups: Record<string, NewsItem[]> = {
+            '科技': [],
+            '国际': [],
+            '政治': [],
+            '财经': []
+        };
+
         newsItems.forEach(item => {
             if (!groups[item.category]) {
+                // Determine if we should group unknown categories into '其他' or keep separate
+                // For now, keep separate
                 groups[item.category] = [];
             }
             groups[item.category].push(item);
         });
+
         const order = ['科技', '国际', '政治', '财经'];
-        const sortedKeys = Object.keys(groups).sort((a, b) => {
+        const allKeys = Array.from(new Set([...order, ...Object.keys(groups)]));
+
+        const sortedKeys = allKeys.sort((a, b) => {
             const aIdx = order.indexOf(a);
             const bIdx = order.indexOf(b);
-            if (aIdx === -1 && bIdx === -1) return a.localeCompare(b);
-            if (aIdx === -1) return 1;
-            if (bIdx === -1) return -1;
-            return aIdx - bIdx;
+            if (aIdx !== -1 && bIdx !== -1) return aIdx - bIdx;
+            if (aIdx !== -1) return -1;
+            if (bIdx !== -1) return 1;
+            return a.localeCompare(b);
         });
+
         return sortedKeys.map(key => ({ category: key, items: groups[key] }));
     }, [newsItems]);
 

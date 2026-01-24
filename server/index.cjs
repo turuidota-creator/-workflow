@@ -2092,6 +2092,18 @@ app.get('/api/news/scan', async (req, res) => {
                 url: 'https://rss.nytimes.com/services/xml/rss/nyt/Technology.xml',
                 maxItems: 5
             },
+            {
+                name: 'The Verge',
+                category: '科技',
+                url: 'https://www.theverge.com/rss/index.xml',
+                maxItems: 5
+            },
+            {
+                name: 'Wired',
+                category: '科技',
+                url: 'https://www.wired.com/feed/rss',
+                maxItems: 5
+            },
             // 国际
             {
                 name: 'NYTimes World',
@@ -2105,11 +2117,29 @@ app.get('/api/news/scan', async (req, res) => {
                 url: 'https://feeds.bbci.co.uk/news/world/rss.xml',
                 maxItems: 5
             },
+            {
+                name: 'The Guardian',
+                category: '国际',
+                url: 'https://www.theguardian.com/world/rss',
+                maxItems: 5
+            },
             // 政治
             {
                 name: 'NYTimes Politics',
                 category: '政治',
                 url: 'https://rss.nytimes.com/services/xml/rss/nyt/Politics.xml',
+                maxItems: 5
+            },
+            {
+                name: 'Politico',
+                category: '政治',
+                url: 'https://rss.politico.com/politics-news.xml',
+                maxItems: 5
+            },
+            {
+                name: 'Washington Post',
+                category: '政治',
+                url: 'https://feeds.washingtonpost.com/rss/politics',
                 maxItems: 5
             },
             // 财经
@@ -2124,14 +2154,24 @@ app.get('/api/news/scan', async (req, res) => {
                 category: '财经',
                 url: 'https://feeds.a.dj.com/rss/RSSMarketsMain.xml',
                 maxItems: 5
+            },
+            {
+                name: 'Yahoo Finance',
+                category: '财经',
+                url: 'https://finance.yahoo.com/news/rssindex',
+                maxItems: 5
             }
         ];
 
-        const itemRegex = /<item>([\s\S]*?)<\/item>/g;
-        const titleRegex = /<title>([\s\S]*?)<\/title>/;
-        const linkRegex = /<link>([\s\S]*?)<\/link>/;
-        // Hacker News uses <comments> for the discussion link, actual article is often in <link>
-        const commentsRegex = /<comments>([\s\S]*?)<\/comments>/;
+        // Improved parsing logic for both RSS (<item>) and Atom (<entry>)
+        // Regex to capture the content of an item/entry
+        const itemRegex = /<(?:item|entry)(?:\s+[^>]*)?>([\s\S]*?)<\/(?:item|entry)>/gi;
+
+        // Regex for Title and Link (handles CDATA)
+        // Title: <title>...</title>
+        const titleRegex = /<title(?:\s+[^>]*)?>\s*(?:<!\[CDATA\[)?([\s\S]*?)(?:\]\]>)?\s*<\/title>/i;
+        // Link: <link href="..."> (Atom) OR <link>...</link> (RSS)
+        const linkRegex = /<link(?:\s+[^>]*)?(?:\s+href="([^"]*)")?(?:\s*>\s*(?:<!\[CDATA\[)?([\s\S]*?)(?:\]\]>)?\s*<\/link>)?/i;
 
         const fetchResults = await Promise.allSettled(
             feeds.map(async (feed) => {
@@ -2142,22 +2182,31 @@ app.get('/api/news/scan', async (req, res) => {
                 const text = await response.text();
                 const items = [];
                 let match;
+
+                // Reset regex for each feed
+                itemRegex.lastIndex = 0;
+
                 while ((match = itemRegex.exec(text)) !== null) {
                     if (items.length >= feed.maxItems) break;
-                    const itemContent = match[1];
-                    const titleMatch = itemContent.match(titleRegex);
-                    const linkMatch = itemContent.match(linkRegex);
 
-                    if (titleMatch) {
-                        let title = titleMatch[1].trim();
-                        title = title.replace(/^<!\[CDATA\[|\]\]>$/g, '');
+                    const content = match[1];
 
-                        let link = '';
-                        if (linkMatch) {
-                            link = linkMatch[1].trim();
-                            link = link.replace(/^<!\[CDATA\[|\]\]>$/g, '');
-                        }
+                    // Extract Title
+                    const titleMatch = titleRegex.exec(content);
+                    let title = titleMatch ? titleMatch[1].trim() : '无标题';
 
+                    // Extract Link
+                    const linkMatch = linkRegex.exec(content);
+                    let link = '';
+                    if (linkMatch) {
+                        // Atom often puts link in group 1 (href), RSS in group 2 (text content)
+                        link = (linkMatch[1] || linkMatch[2] || '').trim();
+                    }
+
+                    // Decode HTML entities in title if needed (simple)
+                    title = title.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'");
+
+                    if (title && link) {
                         items.push({
                             category: feed.category,
                             source: feed.name,
