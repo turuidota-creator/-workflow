@@ -1,306 +1,392 @@
-import React, { useState, useEffect } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useWorkflow } from '../../context/WorkflowContext';
-import { Eye, RefreshCw, ChevronRight, Database, Edit3, Check, AlertCircle, Copy } from 'lucide-react';
+import { CheckCircle2, Eye, RefreshCw, Upload, XCircle } from 'lucide-react';
 
-interface SchemaField {
-    name: string;
-    type: string;
-    required: boolean;
-    description: string;
-}
+type LevelKey = '10' | '7';
+
+type UploadState = {
+    status: 'idle' | 'uploading' | 'success' | 'error';
+    error?: string;
+    articleId?: string;
+    url?: string;
+};
+
+type AuditItem = {
+    key: 'body' | 'glossary' | 'coverage' | 'podcast';
+    label: string;
+    passed: boolean;
+    detail: string;
+};
+
+type LevelSnapshot = {
+    level: LevelKey;
+    article: any | null;
+    glossary: Record<string, any>;
+    podcastScript: string;
+    podcastUrl: string;
+    meta: Record<string, any>;
+    paragraphs: any[];
+    glossaryKeys: string[];
+    coverageValue: number | null;
+    coverageSource: 'meta' | 'calculated' | null;
+    payload: Record<string, any> | null;
+};
+
+const coverageMetaKeys = ['wordCoverage', 'word_coverage', 'coverage', 'coveragePercent'] as const;
+
+const getMetaCoverage = (meta: Record<string, any>): number | null => {
+    for (const key of coverageMetaKeys) {
+        const value = meta[key];
+        if (typeof value === 'number' && Number.isFinite(value)) {
+            return value;
+        }
+    }
+    return null;
+};
+
+const countParagraphWords = (paragraphs: any[]): number => {
+    let totalWords = 0;
+    paragraphs.forEach((p: any) => {
+        const sentences = p?.paragraph?.tokenizedSentences || (Array.isArray(p) ? p : []);
+        sentences.forEach((s: any) => {
+            const tokens = Array.isArray(s?.tokens) ? s.tokens : [];
+            tokens.forEach((t: any) => {
+                const text = t?.text || t?.value || t?.word || '';
+                if (!text) return;
+                const words = String(text).split(/\s+/);
+                words.forEach((word: string) => {
+                    const cleanWord = word.replace(/^[^\w]+|[^\w]+$/g, '');
+                    if (cleanWord && /[a-zA-Z]/.test(cleanWord) && !/[\u4e00-\u9fa5]/.test(cleanWord)) {
+                        totalWords += 1;
+                    }
+                });
+            });
+        });
+    });
+    return totalWords;
+};
+
+const formatCoverage = (value: number | null): string => {
+    if (value === null || Number.isNaN(value)) return '未提供';
+    const normalized = value <= 1 ? value * 100 : value;
+    const rounded = normalized >= 100 ? Math.round(normalized) : Math.round(normalized * 10) / 10;
+    return `${rounded}%`;
+};
 
 export const PublishPreview: React.FC = () => {
     const { getActiveSession, updateSession } = useWorkflow();
     const session = getActiveSession();
-    const [schema, setSchema] = useState<SchemaField[]>([]);
-    const [payload, setPayload] = useState<Record<string, any>>({});
-    const [status, setStatus] = useState<'idle' | 'loading' | 'ready' | 'error'>('idle');
-    const [error, setError] = useState('');
-    const [editMode, setEditMode] = useState(false);
-    const [copied, setCopied] = useState(false);
 
-    // 从 session context 聚合数据
-    useEffect(() => {
-        if (session?.context) {
-            const ctx = session.context;
-            const meta = ctx.articleJson?.meta || {};
-            const aggregated: Record<string, any> = {
-                date: meta.date || new Date().toISOString().split('T')[0],
-                level: meta.level || ctx.level || '10',
-                topic: meta.topic || ctx.topic || '科技',
-                title_zh: ctx.articleJson?.title?.zh || meta.title_zh || meta.title || ctx.topic || '',
-                title_en: ctx.articleJson?.title?.en || meta.title_en || meta.title || '',
-                intro: ctx.articleJson?.intro || (meta.briefing ? { text: meta.briefing } : {}),
-                content: ctx.articleJson
-                    ? { meta, paragraphs: ctx.articleJson.paragraphs || [] }
-                    : {},
-                glossary: ctx.glossary || {},
-                podcast_script: ctx.podcastScript || '',
-                podcast_url: ctx.podcastUrl || '',
-            };
+    const [uploadState, setUploadState] = useState<Record<LevelKey, UploadState>>({
+        '10': { status: 'idle' },
+        '7': { status: 'idle' }
+    });
 
-            // Use finalPayload if exists, otherwise use aggregated
-            setPayload(ctx.finalPayload || aggregated);
-        }
-    }, [session?.context]);
+    const buildSnapshot = (level: LevelKey): LevelSnapshot => {
+        const article = level === '10' ? session?.context.articleJson : session?.context.articleJson7;
+        const glossary = (level === '10' ? session?.context.glossary : session?.context.glossary7) || {};
+        const podcastScript = level === '10' ? session?.context.podcastScript || '' : session?.context.podcastScript7 || '';
+        const podcastUrl = level === '10' ? session?.context.podcastUrl || '' : session?.context.podcastUrl7 || '';
+        const meta = article?.meta || {};
+        const paragraphs = Array.isArray(article?.paragraphs) ? article.paragraphs : [];
+        const glossaryKeys = Object.keys(glossary);
 
-    // 获取服务器 Schema
-    const fetchSchema = async () => {
-        setStatus('loading');
-        setError('');
+        const metaCoverage = getMetaCoverage(meta);
+        const computedCoverage = metaCoverage === null ? countParagraphWords(paragraphs) : metaCoverage;
+        const coverageSource: LevelSnapshot['coverageSource'] = metaCoverage === null
+            ? (computedCoverage > 0 ? 'calculated' : null)
+            : 'meta';
+        const coverageValue = coverageSource ? computedCoverage : null;
+
+        const payload = article
+            ? {
+                article,
+                glossary,
+                podcast_script: podcastScript,
+                podcast_url: podcastUrl,
+            }
+            : null;
+
+        return {
+            level,
+            article: article || null,
+            glossary,
+            podcastScript,
+            podcastUrl,
+            meta,
+            paragraphs,
+            glossaryKeys,
+            coverageValue,
+            coverageSource,
+            payload,
+        };
+    };
+
+    const snapshots = useMemo(() => ({
+        '10': buildSnapshot('10'),
+        '7': buildSnapshot('7'),
+    }), [session]);
+
+    const audits = useMemo<Record<LevelKey, AuditItem[]>>(() => {
+        const createAuditItems = (snapshot: LevelSnapshot): AuditItem[] => {
+            const hasBody = snapshot.paragraphs.length > 0;
+            const hasGlossary = snapshot.glossaryKeys.length > 0;
+            const hasCoverage = snapshot.coverageValue !== null && snapshot.coverageValue > 0;
+            const hasPodcast = snapshot.podcastScript.trim().length > 0;
+
+            return [
+                {
+                    key: 'body',
+                    label: '主文内容 (Body)',
+                    passed: hasBody,
+                    detail: hasBody ? `${snapshot.paragraphs.length} 段` : '缺少段落数据',
+                },
+                {
+                    key: 'glossary',
+                    label: '词汇表 (Glossary)',
+                    passed: hasGlossary,
+                    detail: hasGlossary ? `${snapshot.glossaryKeys.length} 个词` : '词汇表为空',
+                },
+                {
+                    key: 'coverage',
+                    label: '词汇覆盖率 (Coverage)',
+                    passed: hasCoverage,
+                    detail: hasCoverage
+                        ? `${formatCoverage(snapshot.coverageValue)}${snapshot.coverageSource === 'calculated' ? '（根据正文词数估算）' : ''}`
+                        : '缺少覆盖率信息',
+                },
+                {
+                    key: 'podcast',
+                    label: '播客脚本 (Podcast)',
+                    passed: hasPodcast,
+                    detail: hasPodcast ? `脚本长度 ${snapshot.podcastScript.length} 字符` : '播客脚本缺失',
+                },
+            ];
+        };
+
+        return {
+            '10': createAuditItems(snapshots['10']),
+            '7': createAuditItems(snapshots['7']),
+        };
+    }, [snapshots]);
+
+    const auditStatus = useMemo<Record<LevelKey, { ready: boolean; missing: number }>>(() => {
+        const summarize = (items: AuditItem[]) => {
+            const missing = items.filter(item => !item.passed).length;
+            return { ready: missing === 0, missing };
+        };
+
+        return {
+            '10': summarize(audits['10']),
+            '7': summarize(audits['7']),
+        };
+    }, [audits]);
+
+    const handleUpload = async (level: LevelKey) => {
+        if (!session) return;
+        if (!auditStatus[level].ready) return;
+
+        const snapshot = snapshots[level];
+        if (!snapshot.payload) return;
+
+        setUploadState(prev => ({
+            ...prev,
+            [level]: { status: 'uploading' }
+        }));
 
         try {
-            const res = await fetch('/api/schema', {
+            const res = await fetch('/api/publish', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ collection: 'articles' })
+                body: JSON.stringify({ ...snapshot.payload })
             });
-
             const data = await res.json();
 
-            if (!res.ok || data.error) {
-                const message = data?.error || '读取服务器字段失败，请检查后端连接。';
-                setError(message);
-                setStatus('error');
+            if (!res.ok || data?.error) {
+                const message = data?.error || `上传失败（${res.status}）`;
+                setUploadState(prev => ({
+                    ...prev,
+                    [level]: { status: 'error', error: message }
+                }));
                 return;
             }
 
-            setSchema(data.schema || []);
-            setStatus('ready');
-        } catch (e) {
-            setError(`读取服务器字段失败：${String(e)}`);
-            setStatus('error');
-        }
-    };
+            const nextContext = {
+                ...session.context,
+                finalPayload: level === '10' ? snapshot.payload : session.context.finalPayload,
+                ...(level === '10'
+                    ? { articleId: data.articleId || data.id }
+                    : { articleId7: data.articleId || data.id })
+            };
 
-    // 自动加载 schema
-    useEffect(() => {
-        if (status === 'idle') {
-            fetchSchema();
-        }
-    }, [status]);
-
-    // 更新字段值
-    const updateField = (fieldName: string, value: any) => {
-        const updated = { ...payload, [fieldName]: value };
-        setPayload(updated);
-        if (session) {
-            updateSession(session.id, {
-                context: { ...session.context, finalPayload: updated }
+            const updatedSteps = session.steps.map(step => {
+                if (step.id === 'publish-preview') {
+                    return { ...step, status: 'completed' as const };
+                }
+                if (step.id === 'publishing') {
+                    return { ...step, status: 'completed' as const };
+                }
+                return step;
             });
-        }
-    };
 
-    // 复制 JSON
-    const handleCopy = async () => {
-        try {
-            await navigator.clipboard.writeText(JSON.stringify(payload, null, 2));
-            setCopied(true);
-            setTimeout(() => setCopied(false), 2000);
+            updateSession(session.id, {
+                status: 'completed',
+                currentStepId: 'publish-preview',
+                context: nextContext,
+                steps: updatedSteps
+            });
+
+            setUploadState(prev => ({
+                ...prev,
+                [level]: {
+                    status: 'success',
+                    articleId: data.articleId || data.id,
+                    url: data.url
+                }
+            }));
         } catch (e) {
-            console.error('Failed to copy:', e);
+            setUploadState(prev => ({
+                ...prev,
+                [level]: { status: 'error', error: String(e) }
+            }));
         }
     };
 
-    // 验证数据
-    const validatePayload = (): { valid: boolean; errors: string[] } => {
-        const errors: string[] = [];
-        schema.forEach(field => {
-            if (field.required && !payload[field.name]) {
-                errors.push(`${field.name} 是必填字段`);
-            }
-        });
-        return { valid: errors.length === 0, errors };
-    };
-
-    const validation = validatePayload();
-
-    const handleNext = () => {
-        if (!session) return;
-        updateSession(session.id, {
-            currentStepId: 'publishing',
-            context: { ...session.context, finalPayload: payload },
-            steps: session.steps.map(s =>
-                s.id === 'publish-preview' ? { ...s, status: 'completed' } :
-                    s.id === 'publishing' ? { ...s, status: 'running' } : s
-            )
-        });
-    };
-
-    // 渲染字段编辑器
-    const renderFieldEditor = (field: SchemaField) => {
-        const value = payload[field.name];
-        const isJson = field.type === 'json';
-
-        if (!editMode) {
-            const preview = isJson ? JSON.stringify(value ?? null) ?? '' : String(value || '-');
-            return (
-                <div className="text-sm text-foreground truncate">
-                    {isJson ? (
-                        <span className="text-muted-foreground font-mono text-xs">
-                            {preview.slice(0, 100)}...
-                        </span>
-                    ) : (
-                        preview
-                    )}
+    const renderAuditItem = (item: AuditItem) => (
+        <div
+            key={item.key}
+            className={`flex items-start gap-3 rounded-lg border px-3 py-2 transition-colors ${item.passed ? 'border-emerald-500/30 bg-emerald-500/10' : 'border-red-500/30 bg-red-500/10'}`}
+        >
+            {item.passed ? (
+                <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-400" />
+            ) : (
+                <XCircle className="mt-0.5 h-4 w-4 shrink-0 text-red-400" />
+            )}
+            <div className="min-w-0">
+                <div className="text-sm font-medium text-foreground">{item.label}</div>
+                <div className={`text-xs ${item.passed ? 'text-emerald-300/80' : 'text-red-300/80'}`}>
+                    {item.detail}
                 </div>
-            );
-        }
+            </div>
+        </div>
+    );
 
-        if (isJson) {
-            return (
-                <textarea
-                    value={typeof value === 'string' ? value : JSON.stringify(value ?? null, null, 2) ?? ''}
-                    onChange={(e) => {
-                        try {
-                            updateField(field.name, JSON.parse(e.target.value));
-                        } catch {
-                            // Keep as string if not valid JSON
-                        }
-                    }}
-                    className="w-full h-24 bg-card/50 border border-white/10 rounded px-2 py-1 text-xs font-mono resize-none focus:outline-none focus:ring-1 focus:ring-primary"
-                />
-            );
-        }
+    const renderUploadButton = (level: LevelKey) => {
+        const state = uploadState[level];
+        const ready = auditStatus[level].ready;
+        const snapshot = snapshots[level];
+        const hasArticle = !!snapshot.article;
+        const disabled = !ready || !hasArticle || state.status === 'uploading';
 
-        if (field.type === 'number') {
-            return (
-                <input
-                    type="number"
-                    value={value || ''}
-                    onChange={(e) => updateField(field.name, parseInt(e.target.value) || 0)}
-                    className="w-full bg-card/50 border border-white/10 rounded px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
-                />
-            );
-        }
+        let label = `上传 Level ${level}`;
+        if (state.status === 'uploading') label = '上传中...';
+        if (state.status === 'success') label = '已上传';
+        if (!ready && hasArticle) label = `缺少 ${auditStatus[level].missing} 项`;
 
         return (
-            <input
-                type="text"
-                value={value || ''}
-                onChange={(e) => updateField(field.name, e.target.value)}
-                className="w-full bg-card/50 border border-white/10 rounded px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
-            />
+            <div className="space-y-2">
+                <button
+                    onClick={() => handleUpload(level)}
+                    disabled={disabled}
+                    className={`w-full flex items-center justify-center gap-2 rounded-lg px-4 py-2 font-medium transition-all ${state.status === 'success'
+                        ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
+                        : 'bg-primary hover:bg-primary/90 text-primary-foreground disabled:opacity-60 disabled:cursor-not-allowed'}`}
+                >
+                    {state.status === 'uploading' ? (
+                        <RefreshCw className="h-4 w-4 animate-spin" />
+                    ) : state.status === 'success' ? (
+                        <CheckCircle2 className="h-4 w-4" />
+                    ) : (
+                        <Upload className="h-4 w-4" />
+                    )}
+                    {label} 到 PocketBase
+                </button>
+
+                {!hasArticle && (
+                    <div className="text-xs text-red-300/80">缺少 Level {level} 文章数据。</div>
+                )}
+
+                {state.status === 'error' && state.error && (
+                    <div className="text-xs text-red-300/80">{state.error}</div>
+                )}
+
+                {state.status === 'success' && state.articleId && (
+                    <div className="text-xs text-emerald-300/90">
+                        文章 ID：<span className="font-mono">{state.articleId}</span>
+                        {state.url && (
+                            <a
+                                href={state.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="ml-2 text-blue-300 hover:text-blue-200 underline"
+                            >
+                                查看
+                            </a>
+                        )}
+                    </div>
+                )}
+            </div>
+        );
+    };
+
+    const renderColumn = (level: LevelKey) => {
+        const snapshot = snapshots[level];
+        const ready = auditStatus[level].ready;
+        const completedItems = audits[level].filter(item => item.passed).length;
+        const totalItems = audits[level].length;
+        const title = snapshot.meta?.title || snapshot.meta?.title_zh || snapshot.meta?.topic || session?.context.topic || '未命名';
+
+        return (
+            <div className="flex h-full flex-col rounded-xl border border-white/5 bg-card/30 p-4">
+                <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                        <div className="text-xs uppercase tracking-wider text-muted-foreground">Level {level}</div>
+                        <div className="truncate text-lg font-semibold text-foreground">{title}</div>
+                    </div>
+                    <div className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-medium ${ready ? 'bg-emerald-500/15 text-emerald-300' : 'bg-red-500/15 text-red-300'}`}>
+                        {completedItems}/{totalItems}
+                    </div>
+                </div>
+
+                <div className="mt-4 space-y-2">
+                    {audits[level].map(renderAuditItem)}
+                </div>
+
+                <div className="mt-4 grid grid-cols-2 gap-2 text-xs text-muted-foreground">
+                    <div className="rounded-lg border border-white/5 bg-black/20 px-3 py-2">
+                        正文段落：<span className="text-foreground">{snapshot.paragraphs.length}</span>
+                    </div>
+                    <div className="rounded-lg border border-white/5 bg-black/20 px-3 py-2">
+                        词汇数量：<span className="text-foreground">{snapshot.glossaryKeys.length}</span>
+                    </div>
+                    <div className="rounded-lg border border-white/5 bg-black/20 px-3 py-2">
+                        覆盖率：<span className="text-foreground">{formatCoverage(snapshot.coverageValue)}</span>
+                    </div>
+                    <div className="rounded-lg border border-white/5 bg-black/20 px-3 py-2">
+                        播客脚本：<span className="text-foreground">{snapshot.podcastScript ? '已生成' : '缺失'}</span>
+                    </div>
+                </div>
+
+                <div className="mt-6">{renderUploadButton(level)}</div>
+            </div>
         );
     };
 
     return (
-        <div className="space-y-4 h-full flex flex-col p-4">
-            {/* Header */}
-            <div className="flex items-center justify-between shrink-0">
-                <div>
-                    <h3 className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-cyan-500 bg-clip-text text-transparent flex items-center gap-2">
-                        <Eye className="w-6 h-6 text-blue-400" />
-                        发布预览 (Publish Preview)
-                    </h3>
-                    <p className="text-muted-foreground text-sm mt-1">
-                        查看并编辑即将上传到服务器的数据。
-                    </p>
-                </div>
-
-                <div className="flex gap-2">
-                    <button
-                        onClick={fetchSchema}
-                        disabled={status === 'loading'}
-                        className="flex items-center gap-2 bg-secondary hover:bg-secondary/80 text-secondary-foreground px-4 py-2 rounded-lg font-medium transition-all"
-                    >
-                        {status === 'loading' ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Database className="w-4 h-4" />}
-                        读取服务器字段
-                    </button>
-
-                    <button
-                        onClick={() => setEditMode(!editMode)}
-                        className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${editMode ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30' : 'bg-white/5 hover:bg-white/10'}`}
-                    >
-                        <Edit3 className="w-4 h-4" />
-                        {editMode ? '完成编辑' : '编辑模式'}
-                    </button>
-
-                    <button
-                        onClick={handleNext}
-                        disabled={!validation.valid || status !== 'ready'}
-                        className="flex items-center gap-2 bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2 rounded-lg font-medium transition-all disabled:opacity-50"
-                    >
-                        发布
-                        <ChevronRight className="w-4 h-4" />
-                    </button>
-                </div>
+        <div className="flex h-full flex-col space-y-4 p-4">
+            <div className="shrink-0">
+                <h3 className="flex items-center gap-2 bg-gradient-to-r from-blue-400 to-cyan-500 bg-clip-text text-2xl font-bold text-transparent">
+                    <Eye className="h-6 w-6 text-blue-400" />
+                    发布预览 (Publish Preview)
+                </h3>
+                <p className="mt-1 text-sm text-muted-foreground">
+                    在上传前审核 Level 10 与 Level 7 的内容完整性，并直接发布到 PocketBase。
+                </p>
             </div>
 
-            {/* Error/Validation Messages */}
-            {error && (
-                <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-3 rounded-lg text-sm flex items-start gap-2">
-                    <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
-                    <div>
-                        <strong>读取失败：</strong> {error}
-                    </div>
-                </div>
-            )}
-
-            {!validation.valid && !error && (
-                <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-3 rounded-lg text-sm flex items-start gap-2">
-                    <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
-                    <div>
-                        <strong>校验失败：</strong>
-                        <ul className="list-disc ml-4 mt-1">
-                            {validation.errors.map((err, i) => <li key={i}>{err}</li>)}
-                        </ul>
-                    </div>
-                </div>
-            )}
-
-            {/* Main Content */}
-            <div className="flex-1 min-h-0 flex gap-4">
-                {/* Left: Schema Fields */}
-                <div className="w-1/2 overflow-y-auto pr-2">
-                    <div className="flex items-center justify-between mb-3">
-                        <h4 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">服务器字段</h4>
-                        <span className="text-xs text-muted-foreground">{schema.length} 个字段</span>
-                    </div>
-
-                    <div className="space-y-2">
-                        {schema.map(field => (
-                            <div
-                                key={field.name}
-                                className="bg-card/30 border border-white/5 rounded-lg p-3 hover:bg-card/50 transition-colors"
-                            >
-                                <div className="flex items-center justify-between mb-1">
-                                    <div className="flex items-center gap-2">
-                                        <span className="font-mono text-sm font-medium">{field.name}</span>
-                                        <span className="text-xs px-1.5 py-0.5 bg-white/5 rounded text-muted-foreground">{field.type}</span>
-                                        {field.required && (
-                                            <span className="text-xs text-red-400">*必填</span>
-                                        )}
-                                    </div>
-                                    {payload[field.name] && (
-                                        <Check className="w-4 h-4 text-green-400" />
-                                    )}
-                                </div>
-                                <p className="text-xs text-muted-foreground mb-2">{field.description}</p>
-                                {renderFieldEditor(field)}
-                            </div>
-                        ))}
-                    </div>
-                </div>
-
-                {/* Right: JSON Preview */}
-                <div className="w-1/2 flex flex-col">
-                    <div className="flex items-center justify-between mb-3">
-                        <h4 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">JSON 预览</h4>
-                        <button
-                            onClick={handleCopy}
-                            className="flex items-center gap-1 text-xs text-blue-400 hover:text-blue-300 transition-colors"
-                        >
-                            {copied ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
-                            {copied ? '已复制' : '复制'}
-                        </button>
-                    </div>
-                    <div className="flex-1 bg-card/30 border border-white/5 rounded-lg p-4 overflow-auto">
-                        <pre className="text-xs font-mono text-slate-300 whitespace-pre-wrap">
-                            {JSON.stringify(payload, null, 2)}
-                        </pre>
-                    </div>
-                </div>
+            <div className="flex flex-1 min-h-0 gap-4">
+                <div className="w-1/2 min-w-0 overflow-y-auto pr-1">{renderColumn('10')}</div>
+                <div className="w-1/2 min-w-0 overflow-y-auto pl-1">{renderColumn('7')}</div>
             </div>
         </div>
     );
