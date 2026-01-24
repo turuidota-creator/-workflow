@@ -188,10 +188,10 @@ export const WorkflowProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         let isMounted = true;
         const loadSessions = async () => {
             try {
-                const data = await request('/api/workflow-sessions?sort=-updated', { method: 'GET' });
+                const data = await request('/api/workflow-sessions?sort=-created', { method: 'GET' });
                 const records = Array.isArray(data?.items) ? data.items : [];
                 if (!isMounted) return;
-                const loadedSessions = records.map(deserializeSession);
+                const loadedSessions = records.map(deserializeSession).sort((a, b) => b.createdAt - a.createdAt);
                 setSessions(loadedSessions);
                 if (loadedSessions.length > 0) {
                     setActiveSessionId(loadedSessions[0].id);

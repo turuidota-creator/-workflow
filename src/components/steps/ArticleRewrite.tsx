@@ -76,7 +76,7 @@ export const ArticleRewrite: React.FC = () => {
                 // Let's stick to using L10 as source for a fresh rewrite to avoid degradation, UNLESS it's a specific fix?
                 // Actually, "Rewrite" usually means fresh content. 
                 reqBody.previousDraft = article10;
-                reqBody.feedback = "Rewrite this article to Level 7 difficulty. Simplify vocabulary and sentence structure while keeping the same core information and structure (3 paragraphs). IMPORTANT: Target word count must be between 210-270 words.";
+                reqBody.feedback = "Rewrite this article to Level 7 difficulty. Simplify vocabulary and sentence structure while keeping the same core information and structure (3 paragraphs). STRICT REQUIREMENT: The final article word count MUST be between 210 and 270 words. Currently, generated articles are too short. You MUST expand the content to reach at least 210 words while maintaining Level 7 simplicity. Ensure all 3 paragraphs are substantively developed.";
             }
 
             const res = await fetch('/api/generate', {

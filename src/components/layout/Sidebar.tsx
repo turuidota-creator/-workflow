@@ -73,7 +73,13 @@ export const Sidebar: React.FC = () => {
                                     {session.title || 'Untitled Workflow'}
                                 </span>
                                 <span className="text-xs text-slate-500 truncate">
-                                    {new Date(session.createdAt).toLocaleTimeString()}
+                                    {new Date(session.createdAt).toLocaleString('zh-CN', {
+                                        year: 'numeric',
+                                        month: '2-digit',
+                                        day: '2-digit',
+                                        hour: '2-digit',
+                                        minute: '2-digit'
+                                    })}
                                 </span>
                             </div>
                         </div>
