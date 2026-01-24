@@ -2079,87 +2079,105 @@ app.get('/api/news/scan', async (req, res) => {
     try {
         console.log('Scanning news from RSS...');
         const feeds = [
-            // 科技
+            // 科技（保留稳定源 + 增加通用科技源，降低单点失败概率）
             {
                 name: 'Hacker News',
                 category: '科技',
                 url: 'https://news.ycombinator.com/rss',
-                maxItems: 5
+                maxItems: 6
             },
             {
                 name: 'NYTimes Technology',
                 category: '科技',
                 url: 'https://rss.nytimes.com/services/xml/rss/nyt/Technology.xml',
-                maxItems: 5
+                maxItems: 6
             },
             {
                 name: 'The Verge',
                 category: '科技',
                 url: 'https://www.theverge.com/rss/index.xml',
-                maxItems: 5
+                maxItems: 6
             },
             {
-                name: 'Wired',
+                name: 'TechCrunch',
                 category: '科技',
-                url: 'https://www.wired.com/feed/rss',
-                maxItems: 5
+                url: 'https://techcrunch.com/feed/',
+                maxItems: 6
             },
-            // 国际
+            // 国际（增加 Reuters/AP 等更稳定的开放源）
             {
                 name: 'NYTimes World',
                 category: '国际',
                 url: 'https://rss.nytimes.com/services/xml/rss/nyt/World.xml',
-                maxItems: 5
+                maxItems: 6
             },
             {
                 name: 'BBC World',
                 category: '国际',
                 url: 'https://feeds.bbci.co.uk/news/world/rss.xml',
-                maxItems: 5
+                maxItems: 6
             },
             {
-                name: 'The Guardian',
+                name: 'Reuters World',
                 category: '国际',
-                url: 'https://www.theguardian.com/world/rss',
-                maxItems: 5
+                url: 'https://feeds.reuters.com/Reuters/worldNews',
+                maxItems: 6
             },
-            // 政治
+            {
+                name: 'AP News World',
+                category: '国际',
+                url: 'https://apnews.com/hub/world-news?output=1',
+                maxItems: 6
+            },
+            // 政治（移除易失败/受限源，补充开放政治源）
             {
                 name: 'NYTimes Politics',
                 category: '政治',
                 url: 'https://rss.nytimes.com/services/xml/rss/nyt/Politics.xml',
-                maxItems: 5
+                maxItems: 6
             },
             {
                 name: 'Politico',
                 category: '政治',
                 url: 'https://rss.politico.com/politics-news.xml',
-                maxItems: 5
+                maxItems: 6
             },
             {
-                name: 'Washington Post',
+                name: 'The Guardian Politics',
                 category: '政治',
-                url: 'https://feeds.washingtonpost.com/rss/politics',
-                maxItems: 5
+                url: 'https://www.theguardian.com/politics/rss',
+                maxItems: 6
             },
-            // 财经
+            {
+                name: 'Reuters Politics',
+                category: '政治',
+                url: 'https://feeds.reuters.com/Reuters/politicsNews',
+                maxItems: 6
+            },
+            // 财经（替换 WSJ 为更稳定的财经源）
             {
                 name: 'NYTimes Business',
                 category: '财经',
                 url: 'https://rss.nytimes.com/services/xml/rss/nyt/Business.xml',
-                maxItems: 5
-            },
-            {
-                name: 'WSJ Markets',
-                category: '财经',
-                url: 'https://feeds.a.dj.com/rss/RSSMarketsMain.xml',
-                maxItems: 5
+                maxItems: 6
             },
             {
                 name: 'Yahoo Finance',
                 category: '财经',
                 url: 'https://finance.yahoo.com/news/rssindex',
-                maxItems: 5
+                maxItems: 6
+            },
+            {
+                name: 'CNBC Top News',
+                category: '财经',
+                url: 'https://search.cnbc.com/rs/search/combinedcms/view.xml?partnerId=wrss01&id=100003114',
+                maxItems: 6
+            },
+            {
+                name: 'Reuters Business',
+                category: '财经',
+                url: 'https://feeds.reuters.com/reuters/businessNews',
+                maxItems: 6
             }
         ];
 
@@ -2170,8 +2188,36 @@ app.get('/api/news/scan', async (req, res) => {
         // Regex for Title and Link (handles CDATA)
         // Title: <title>...</title>
         const titleRegex = /<title(?:\s+[^>]*)?>\s*(?:<!\[CDATA\[)?([\s\S]*?)(?:\]\]>)?\s*<\/title>/i;
-        // Link: <link href="..."> (Atom) OR <link>...</link> (RSS)
-        const linkRegex = /<link(?:\s+[^>]*)?(?:\s+href="([^"]*)")?(?:\s*>\s*(?:<!\[CDATA\[)?([\s\S]*?)(?:\]\]>)?\s*<\/link>)?/i;
+        // RSS often uses <link>...</link>
+        const rssLinkRegex = /<link(?:\s+[^>]*)?>\s*(?:<!\[CDATA\[)?([\s\S]*?)(?:\]\]>)?\s*<\/link>/i;
+        // Atom often uses <link ... href="..."/>
+        const atomLinkRegex = /<link\b([^>]*)>/gi;
+        const hrefRegex = /\bhref="([^"]+)"/i;
+        const relRegex = /\brel="([^"]+)"/i;
+
+        const extractBestLink = (content) => {
+            const rssMatch = rssLinkRegex.exec(content);
+            const rssLink = rssMatch?.[1]?.trim();
+            if (rssLink && rssLink.startsWith('http')) return rssLink;
+
+            const atomLinks = [];
+            atomLinkRegex.lastIndex = 0;
+            let atomMatch;
+            while ((atomMatch = atomLinkRegex.exec(content)) !== null) {
+                const attrs = atomMatch[1] || '';
+                const href = hrefRegex.exec(attrs)?.[1]?.trim();
+                if (!href) continue;
+                const rel = relRegex.exec(attrs)?.[1]?.trim() || 'alternate';
+                atomLinks.push({ href, rel });
+            }
+
+            const preferred =
+                atomLinks.find((l) => l.rel === 'alternate') ||
+                atomLinks.find((l) => l.rel === 'related') ||
+                atomLinks[0];
+
+            return preferred?.href || '';
+        };
 
         const fetchResults = await Promise.allSettled(
             feeds.map(async (feed) => {
@@ -2195,13 +2241,8 @@ app.get('/api/news/scan', async (req, res) => {
                     const titleMatch = titleRegex.exec(content);
                     let title = titleMatch ? titleMatch[1].trim() : '无标题';
 
-                    // Extract Link
-                    const linkMatch = linkRegex.exec(content);
-                    let link = '';
-                    if (linkMatch) {
-                        // Atom often puts link in group 1 (href), RSS in group 2 (text content)
-                        link = (linkMatch[1] || linkMatch[2] || '').trim();
-                    }
+                    // Extract Link (prefer alternate links for Atom feeds)
+                    const link = extractBestLink(content);
 
                     // Decode HTML entities in title if needed (simple)
                     title = title.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'");
@@ -2230,7 +2271,25 @@ app.get('/api/news/scan', async (req, res) => {
             throw new Error('No RSS items fetched');
         }
 
-        const trimmedItems = newsItems.slice(0, 22);
+        // 尽量保证每个类别都有内容，避免前端出现空列
+        const categoryOrder = ['科技', '国际', '政治', '财经'];
+        const minPerCategory = 3;
+        const maxTotal = 24;
+        const itemsByCategory = new Map(categoryOrder.map((c) => [c, []]));
+        const overflowItems = [];
+
+        for (const item of newsItems) {
+            const bucket = itemsByCategory.get(item.category);
+            if (bucket && bucket.length < minPerCategory) {
+                bucket.push(item);
+            } else {
+                overflowItems.push(item);
+            }
+        }
+
+        const seededItems = categoryOrder.flatMap((c) => itemsByCategory.get(c) || []);
+        const remainingSlots = Math.max(0, maxTotal - seededItems.length);
+        const trimmedItems = seededItems.concat(overflowItems.slice(0, remainingSlots));
         console.log(`Found ${trimmedItems.length} news items`);
 
         // === 批量翻译标题为中文 ===
