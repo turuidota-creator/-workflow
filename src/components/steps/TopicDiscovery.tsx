@@ -181,10 +181,11 @@ export const TopicDiscovery: React.FC = () => {
             if (newItems.length > 0) {
                 setNewsItems(newItems);
                 // Persist news items to session context immediately
-                if (session) {
-                    updateSession(session.id, {
+                const latestSession = getActiveSession();
+                if (latestSession) {
+                    updateSession(latestSession.id, {
                         context: {
-                            ...session.context,
+                            ...latestSession.context,
                             newsItems: newItems
                         }
                     });
@@ -206,6 +207,7 @@ export const TopicDiscovery: React.FC = () => {
         setResearchResult(null);
 
         try {
+            const latestSession = getActiveSession();
             const res = await fetch('/api/research', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -213,7 +215,7 @@ export const TopicDiscovery: React.FC = () => {
                     newsTitle: selectedNewsItem.title,
                     newsSource: selectedNewsItem.source,
                     topic: selectedTopic,
-                    targetDate: session?.context.targetDate // Pass the target date to backend
+                    targetDate: latestSession?.context.targetDate // Pass the target date to backend
                 })
             });
 

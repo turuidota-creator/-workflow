@@ -47,7 +47,8 @@ export const ArticleGeneration: React.FC = () => {
             analysisTarget?: AnalysisTarget;
         } = {}
     ) => {
-        if (!session?.context.topic) return null;
+        const latestSession = getActiveSession();
+        if (!latestSession?.context.topic) return null;
 
         const setStatus = side === 'A' ? setStatusA : setStatusB;
         const setJson = side === 'A' ? setJsonA : setJsonB;
@@ -98,13 +99,13 @@ export const ArticleGeneration: React.FC = () => {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    topic: session.context.topic,
+                    topic: latestSession.context.topic,
                     level: "10",
                     style: side,
-                    researchContext: session.context.researchResult || null,
-                    targetDate: session.context.targetDate, // Pass the target date
+                    researchContext: latestSession.context.researchResult || null,
+                    targetDate: latestSession.context.targetDate, // Pass the target date
                     previousDraft,
-                    feedback: session.context.isTestMode
+                    feedback: latestSession.context.isTestMode
                         ? (feedback ? feedback + "\n\n" : "") + "IMPORTANT: TEST MODE. Generate an article with strictly ONE paragraph. Length: 50-70 words. Maintain all other JSON structures."
                         : feedback,
                     briefingTarget,
@@ -200,8 +201,8 @@ export const ArticleGeneration: React.FC = () => {
             };
 
             // Persist to session only if requested
-            if (shouldPersist && session) {
-                updateSession(session.id, (prevSession) => {
+            if (shouldPersist && latestSession) {
+                updateSession(latestSession.id, (prevSession) => {
                     const currentState = prevSession.context.generationState || {};
                     return {
                         context: {
@@ -226,7 +227,8 @@ export const ArticleGeneration: React.FC = () => {
     };
 
     const handleGenerateAll = async () => {
-        if (!session) return;
+        const latestSession = getActiveSession();
+        if (!latestSession) return;
 
         // Run both in parallel without individual persistence
         const [resA, resB] = await Promise.all([
@@ -236,7 +238,7 @@ export const ArticleGeneration: React.FC = () => {
 
         // Atomic update for both
         if (resA && resB) {
-            updateSession(session.id, (prevSession) => {
+            updateSession(latestSession.id, (prevSession) => {
                 const currentState = prevSession.context.generationState || {};
                 return {
                     context: {
@@ -253,15 +255,16 @@ export const ArticleGeneration: React.FC = () => {
     };
 
     const handleNext = () => {
-        if (!session || !selectedSide) return;
+        const latestSession = getActiveSession();
+        if (!latestSession || !selectedSide) return;
         const finalJsonStr = selectedSide === 'A' ? jsonA : jsonB;
 
         try {
             const json = JSON.parse(finalJsonStr);
-            updateSession(session.id, {
+            updateSession(latestSession.id, {
                 currentStepId: 'article-rewrite',
-                context: { ...session.context, articleJson: json },
-                steps: session.steps.map(s =>
+                context: { ...latestSession.context, articleJson: json },
+                steps: latestSession.steps.map(s =>
                     s.id === 'article-generation' ? { ...s, status: 'completed' } :
                         s.id === 'article-rewrite' ? { ...s, status: 'running' } : s
                 )
