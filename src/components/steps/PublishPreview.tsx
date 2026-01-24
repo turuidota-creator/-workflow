@@ -21,12 +21,15 @@ type AuditItem = {
 type LevelSnapshot = {
     level: LevelKey;
     article: any | null;
+    articleData: any | null;
     glossary: Record<string, any>;
     podcastScript: string;
     podcastUrl: string;
     meta: Record<string, any>;
     paragraphs: any[];
     glossaryKeys: string[];
+    uniqueWordCount: number;
+    coveredWordCount: number;
     coverageValue: number | null;
     coverageSource: 'meta' | 'calculated' | null;
     payload: Record<string, any> | null;
@@ -44,32 +47,115 @@ const getMetaCoverage = (meta: Record<string, any>): number | null => {
     return null;
 };
 
-const countParagraphWords = (paragraphs: any[]): number => {
-    let totalWords = 0;
-    paragraphs.forEach((p: any) => {
-        const sentences = p?.paragraph?.tokenizedSentences || (Array.isArray(p) ? p : []);
-        sentences.forEach((s: any) => {
-            const tokens = Array.isArray(s?.tokens) ? s.tokens : [];
-            tokens.forEach((t: any) => {
-                const text = t?.text || t?.value || t?.word || '';
-                if (!text) return;
-                const words = String(text).split(/\s+/);
-                words.forEach((word: string) => {
-                    const cleanWord = word.replace(/^[^\w]+|[^\w]+$/g, '');
-                    if (cleanWord && /[a-zA-Z]/.test(cleanWord) && !/[\u4e00-\u9fa5]/.test(cleanWord)) {
-                        totalWords += 1;
-                    }
-                });
-            });
+const extractUniqueWords = (articleData: any): Set<string> => {
+    const uniqueWords = new Set<string>();
+
+    const addWord = (raw: any) => {
+        if (!raw) return;
+        const text = String(raw).toLowerCase();
+        const matches = text.match(/[a-zA-Z][a-zA-Z'-]*/g);
+        if (!matches) return;
+        matches.forEach(match => {
+            const clean = match.replace(/[^a-z'-]/g, '').replace(/^-+|-+$/g, '');
+            if (clean.length > 1) {
+                uniqueWords.add(clean);
+            }
         });
+    };
+
+    const processTokens = (tokens: any[]) => {
+        if (!Array.isArray(tokens)) return;
+        tokens.forEach(token => {
+            if (token?.isWord && token?.text) {
+                addWord(token.text);
+            } else if (token?.text) {
+                addWord(token.text);
+            }
+        });
+    };
+
+    const processTokenizedSentences = (sentences: any[]) => {
+        if (!Array.isArray(sentences)) return;
+        sentences.forEach(sentence => {
+            if (Array.isArray(sentence?.tokens)) {
+                processTokens(sentence.tokens);
+            } else if (sentence?.text) {
+                addWord(sentence.text);
+            }
+        });
+    };
+
+    const paragraphs = Array.isArray(articleData?.paragraphs) ? articleData.paragraphs : [];
+    paragraphs.forEach((para: any) => {
+        if (para?.paragraph?.tokenizedSentences) {
+            processTokenizedSentences(para.paragraph.tokenizedSentences);
+        } else if (para?.tokenizedSentences) {
+            processTokenizedSentences(para.tokenizedSentences);
+        } else if (Array.isArray(para?.tokens)) {
+            processTokens(para.tokens);
+        } else if (para?.text) {
+            addWord(para.text);
+        }
     });
-    return totalWords;
+
+    if (articleData?.intro?.tokens) {
+        processTokens(articleData.intro.tokens);
+    } else if (articleData?.intro?.text) {
+        addWord(articleData.intro.text);
+    }
+
+    if (articleData?.title?.en) {
+        addWord(articleData.title.en);
+    } else if (articleData?.title?.text) {
+        addWord(articleData.title.text);
+    }
+
+    return uniqueWords;
+};
+
+const buildGlossaryWordSet = (glossary: Record<string, any>): Set<string> => {
+    const glossaryWordSet = new Set<string>();
+    Object.entries(glossary || {}).forEach(([key, value]) => {
+        glossaryWordSet.add(key.toLowerCase());
+        const lemma = value?.lemma;
+        if (typeof lemma === 'string' && lemma.trim()) {
+            glossaryWordSet.add(lemma.toLowerCase());
+        }
+    });
+    return glossaryWordSet;
+};
+
+const calculateCoverageFromGlossary = (
+    articleData: any,
+    glossary: Record<string, any>
+): { coverage: number | null; uniqueWordCount: number; coveredWordCount: number } => {
+    const uniqueWords = extractUniqueWords(articleData);
+    const uniqueWordCount = uniqueWords.size;
+    if (uniqueWordCount === 0) {
+        return { coverage: null, uniqueWordCount: 0, coveredWordCount: 0 };
+    }
+
+    const glossaryWordSet = buildGlossaryWordSet(glossary);
+    if (glossaryWordSet.size === 0) {
+        return { coverage: 0, uniqueWordCount, coveredWordCount: 0 };
+    }
+
+    let coveredWordCount = 0;
+    uniqueWords.forEach(word => {
+        if (glossaryWordSet.has(word)) {
+            coveredWordCount += 1;
+        }
+    });
+
+    const coverage = (coveredWordCount / uniqueWordCount) * 100;
+    return { coverage, uniqueWordCount, coveredWordCount };
 };
 
 const formatCoverage = (value: number | null): string => {
     if (value === null || Number.isNaN(value)) return '未提供';
     const normalized = value <= 1 ? value * 100 : value;
-    const rounded = normalized >= 100 ? Math.round(normalized) : Math.round(normalized * 10) / 10;
+    const clamped = Math.max(0, Math.min(normalized, 100));
+    const rounded = clamped >= 100 ? Math.round(clamped) : Math.round(clamped * 10) / 10;
     return `${rounded}%`;
 };
 
@@ -84,19 +170,24 @@ export const PublishPreview: React.FC = () => {
 
     const buildSnapshot = (level: LevelKey): LevelSnapshot => {
         const article = level === '10' ? session?.context.articleJson : session?.context.articleJson7;
+        const articleData = article?.article || article || null;
         const glossary = (level === '10' ? session?.context.glossary : session?.context.glossary7) || {};
         const podcastScript = level === '10' ? session?.context.podcastScript || '' : session?.context.podcastScript7 || '';
         const podcastUrl = level === '10' ? session?.context.podcastUrl || '' : session?.context.podcastUrl7 || '';
-        const meta = article?.meta || {};
-        const paragraphs = Array.isArray(article?.paragraphs) ? article.paragraphs : [];
+        const meta = articleData?.meta || {};
+        const paragraphs = Array.isArray(articleData?.paragraphs) ? articleData.paragraphs : [];
         const glossaryKeys = Object.keys(glossary);
 
         const metaCoverage = getMetaCoverage(meta);
-        const computedCoverage = metaCoverage === null ? countParagraphWords(paragraphs) : metaCoverage;
+        const calculatedCoverage = metaCoverage === null
+            ? calculateCoverageFromGlossary(articleData, glossary)
+            : { coverage: metaCoverage, uniqueWordCount: 0, coveredWordCount: 0 };
         const coverageSource: LevelSnapshot['coverageSource'] = metaCoverage === null
-            ? (computedCoverage > 0 ? 'calculated' : null)
+            ? (calculatedCoverage.coverage !== null ? 'calculated' : null)
             : 'meta';
-        const coverageValue = coverageSource ? computedCoverage : null;
+        const coverageValue = coverageSource ? calculatedCoverage.coverage : null;
+        const uniqueWordCount = calculatedCoverage.uniqueWordCount;
+        const coveredWordCount = calculatedCoverage.coveredWordCount;
 
         const payload = article
             ? {
@@ -110,12 +201,15 @@ export const PublishPreview: React.FC = () => {
         return {
             level,
             article: article || null,
+            articleData,
             glossary,
             podcastScript,
             podcastUrl,
             meta,
             paragraphs,
             glossaryKeys,
+            uniqueWordCount,
+            coveredWordCount,
             coverageValue,
             coverageSource,
             payload,
@@ -152,7 +246,9 @@ export const PublishPreview: React.FC = () => {
                     label: '词汇覆盖率 (Coverage)',
                     passed: hasCoverage,
                     detail: hasCoverage
-                        ? `${formatCoverage(snapshot.coverageValue)}${snapshot.coverageSource === 'calculated' ? '（根据正文词数估算）' : ''}`
+                        ? `${formatCoverage(snapshot.coverageValue)}${snapshot.coverageSource === 'calculated'
+                            ? `（词汇表覆盖 ${snapshot.coveredWordCount}/${snapshot.uniqueWordCount} 个正文词）`
+                            : ''}`
                         : '缺少覆盖率信息',
                 },
                 {
