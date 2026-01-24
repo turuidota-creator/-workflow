@@ -115,9 +115,9 @@ export const VocabularyCompletion: React.FC = () => {
                         glossaryKeys: Object.keys(extracted).length,
                         sessionId: currentSession.id
                     });
-                    updateSession(currentSession.id, {
-                        context: { ...currentSession.context, [contextKey]: extracted }
-                    });
+                    updateSession(currentSession.id, prev => ({
+                        context: { ...prev.context, [contextKey]: extracted }
+                    }));
                 }
             }
         } catch (e) {
@@ -174,9 +174,9 @@ export const VocabularyCompletion: React.FC = () => {
                 if (shouldUpdateId) {
                     const idKey = level === '10' ? 'articleId' : 'articleId7';
                     console.log(`[VocabularyCompletion] Updating ${idKey}:`, { old: articleId, new: data.articleId });
-                    updateSession(latestSession.id, {
-                        context: { ...latestSession.context, [idKey]: data.articleId }
-                    });
+                    updateSession(latestSession.id, prev => ({
+                        context: { ...prev.context, [idKey]: data.articleId }
+                    }));
                 }
                 alert(`✅ Level ${level} 词汇已${articleId && !isLocalId ? '更新' : '上传'}至数据库`);
             } else {
