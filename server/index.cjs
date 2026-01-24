@@ -2719,6 +2719,8 @@ app.post('/api/publish', async (req, res) => {
             : `article_${timestamp}`;
 
         // If PocketBase is configured, try to publish there
+        let finalResult = null;
+
         if (pbUrl) {
             try {
                 console.log(`Publishing to PocketBase: ${pbUrl}`);
@@ -2825,13 +2827,13 @@ app.post('/api/publish', async (req, res) => {
                     });
 
                     if (updateRes.ok) {
-                        return res.json({
+                        finalResult = {
                             success: true,
                             articleId: payload.articleId,
                             glossaryCount: Object.keys(payload.glossary || {}).length,
                             url: `${pbUrl}/articles/${payload.articleId}`,
                             source: 'pocketbase'
-                        });
+                        };
                     } else {
                         const updateError = await updateRes.text();
                         console.error('PocketBase update error:', updateError);
@@ -2839,38 +2841,89 @@ app.post('/api/publish', async (req, res) => {
                     }
                 }
 
-                console.log('[Publish] Attempting POST to PocketBase...', {
-                    url: `${pbUrl}/api/collections/articles/records`,
-                    level: pbPayload.level,
-                    title: pbPayload.title_en?.substring(0, 50)
-                });
-
-                const articleRes = await fetch(`${pbUrl}/api/collections/articles/records`, {
-                    method: 'POST',
-                    headers: headers,
-                    body: JSON.stringify(pbPayload)
-                });
-
-                if (articleRes.ok) {
-                    const data = await articleRes.json();
-                    console.log('[Publish] SUCCESS! Created article ID:', data.id);
-                    return res.json({
-                        success: true,
-                        articleId: data.id,
-                        glossaryCount: Object.keys(payload.glossary || {}).length,
-                        url: `${pbUrl}/articles/${data.id}`,
-                        source: 'pocketbase'
+                if (!finalResult) {
+                    console.log('[Publish] Attempting POST to PocketBase...', {
+                        url: `${pbUrl}/api/collections/articles/records`,
+                        level: pbPayload.level,
+                        title: pbPayload.title_en?.substring(0, 50)
                     });
-                } else {
-                    const error = await articleRes.text();
-                    console.error('[Publish] PocketBase POST FAILED:', articleRes.status, error);
-                    // Fall through to local save
+
+                    const articleRes = await fetch(`${pbUrl}/api/collections/articles/records`, {
+                        method: 'POST',
+                        headers: headers,
+                        body: JSON.stringify(pbPayload)
+                    });
+
+                    if (articleRes.ok) {
+                        const data = await articleRes.json();
+                        console.log('[Publish] SUCCESS! Created article ID:', data.id);
+                        finalResult = {
+                            success: true,
+                            articleId: data.id,
+                            glossaryCount: Object.keys(payload.glossary || {}).length,
+                            url: `${pbUrl}/articles/${data.id}`,
+                            source: 'pocketbase'
+                        };
+                    } else {
+                        const error = await articleRes.text();
+                        console.error('[Publish] PocketBase POST FAILED:', articleRes.status, error);
+                        // Fall through to local save
+                    }
                 }
             } catch (e) {
                 console.error('PocketBase publish failed:', e);
                 // Fall through to local save
             }
         }
+
+        // ========================================================
+        // [New Feature] Auto-upload local podcast file if present
+        // ========================================================
+        if (finalResult && finalResult.success && finalResult.source === 'pocketbase') {
+            const tempUrl = payload.podcast_url || '';
+            if (tempUrl.startsWith('/temp/')) {
+                try {
+                    console.log(`[Publish] Auto-uploading podcast file from: ${tempUrl}`);
+                    const audioPath = tempUrl; // e.g. /temp/audio_123.mp3
+                    const filePath = path.join(PROJECT_ROOT, audioPath);
+
+                    if (fs.existsSync(filePath)) {
+                        const fileBuffer = await fs.promises.readFile(filePath);
+                        const formData = new FormData();
+                        formData.append('podcast_file', new Blob([fileBuffer]), path.basename(filePath));
+
+                        const { token } = await getPocketBaseAuth();
+                        const headers = {};
+                        if (token) headers['Authorization'] = token;
+
+                        const uploadRes = await fetch(`${pbUrl}/api/collections/articles/records/${finalResult.articleId}`, {
+                            method: 'PATCH',
+                            headers,
+                            body: formData
+                        });
+
+                        if (uploadRes.ok) {
+                            const record = await uploadRes.json();
+                            if (record.podcast_file) {
+                                finalResult.podcastUrl = `${pbUrl}/api/files/articles/${record.id}/${record.podcast_file}`;
+                                console.log(`[Publish] Podcast file uploaded successfully: ${finalResult.podcastUrl}`);
+                            }
+                        } else {
+                            console.error(`[Publish] Failed to upload podcast file: ${uploadRes.status}`);
+                        }
+                    } else {
+                        console.warn(`[Publish] Podcast file not found at: ${filePath}`);
+                    }
+                } catch (e) {
+                    console.error('[Publish] Error uploading podcast file:', e);
+                }
+            }
+        }
+
+        if (finalResult) {
+            return res.json(finalResult);
+        }
+
 
         // Fallback: Save locally
         const outputDir = path.join(PROJECT_ROOT, 'output', 'articles');

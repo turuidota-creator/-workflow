@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { useWorkflow } from '../../context/WorkflowContext';
 import { CheckCircle2, Eye, RefreshCw, Upload, XCircle } from 'lucide-react';
 
@@ -34,6 +34,16 @@ type LevelSnapshot = {
     coverageSource: 'meta' | 'calculated' | null;
     payload: Record<string, any> | null;
 };
+
+
+interface ScanResult {
+    totalArticleWords: number;
+    uniqueWordCount: number;
+    existingCount: number;
+    missingCount: number;
+    missingWords: any[];
+    coveragePercent: number;
+}
 
 const coverageMetaKeys = ['wordCoverage', 'word_coverage', 'coverage', 'coveragePercent'] as const;
 
@@ -168,6 +178,44 @@ export const PublishPreview: React.FC = () => {
         '7': { status: 'idle' }
     });
 
+    const [scanResults, setScanResults] = useState<Record<LevelKey, { coverage: number | null; loading: boolean }>>({
+        '10': { coverage: null, loading: false },
+        '7': { coverage: null, loading: false }
+    });
+
+    // Trigger scan on mount or when article changes
+    useEffect(() => {
+        const scanLevel = async (level: LevelKey) => {
+            const article = level === '10' ? session?.context.articleJson : session?.context.articleJson7;
+            if (!article) return;
+
+            setScanResults(prev => ({ ...prev, [level]: { ...prev[level], loading: true } }));
+
+            try {
+                const res = await fetch('/api/dictionary/scan', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ articleJson: article })
+                });
+                const data: ScanResult = await res.json();
+
+                if (!data || typeof data.coveragePercent !== 'number') {
+                    throw new Error('Invalid scan result');
+                }
+
+                setScanResults(prev => ({
+                    ...prev,
+                    [level]: { coverage: data.coveragePercent, loading: false }
+                }));
+            } catch (e) {
+                console.error(`Failed to scan level ${level}:`, e);
+                setScanResults(prev => ({ ...prev, [level]: { ...prev[level], loading: false } }));
+            }
+        };
+
+        if (session?.context.articleJson) scanLevel('10');
+        if (session?.context.articleJson7) scanLevel('7');
+    }, [session?.context.articleJson, session?.context.articleJson7]);
     const buildSnapshot = (level: LevelKey): LevelSnapshot => {
         const article = level === '10' ? session?.context.articleJson : session?.context.articleJson7;
         const articleData = article?.article || article || null;
@@ -179,12 +227,23 @@ export const PublishPreview: React.FC = () => {
         const glossaryKeys = Object.keys(glossary);
 
         const metaCoverage = getMetaCoverage(meta);
-        const calculatedCoverage = metaCoverage === null
-            ? calculateCoverageFromGlossary(articleData, glossary)
-            : { coverage: metaCoverage, uniqueWordCount: 0, coveredWordCount: 0 };
-        const coverageSource: LevelSnapshot['coverageSource'] = metaCoverage === null
-            ? (calculatedCoverage.coverage !== null ? 'calculated' : null)
-            : 'meta';
+
+        // Prefer scan result, then meta, then local calculation (fallback)
+        const scanCoverage = scanResults[level].coverage;
+
+        let calculatedCoverage = { coverage: null as number | null, uniqueWordCount: 0, coveredWordCount: 0 };
+        let coverageSource: LevelSnapshot['coverageSource'] = null;
+
+        if (scanCoverage !== null) {
+            calculatedCoverage = { coverage: scanCoverage, uniqueWordCount: 0, coveredWordCount: 0 };
+            coverageSource = 'calculated';
+        } else if (metaCoverage !== null) {
+            calculatedCoverage = { coverage: metaCoverage, uniqueWordCount: 0, coveredWordCount: 0 };
+            coverageSource = 'meta';
+        } else {
+            calculatedCoverage = calculateCoverageFromGlossary(articleData, glossary);
+            coverageSource = calculatedCoverage.coverage !== null ? 'calculated' : null;
+        }
         const coverageValue = coverageSource ? calculatedCoverage.coverage : null;
         const uniqueWordCount = calculatedCoverage.uniqueWordCount;
         const coveredWordCount = calculatedCoverage.coveredWordCount;
@@ -245,11 +304,13 @@ export const PublishPreview: React.FC = () => {
                     key: 'coverage',
                     label: '词汇覆盖率 (Coverage)',
                     passed: hasCoverage,
-                    detail: hasCoverage
-                        ? `${formatCoverage(snapshot.coverageValue)}${snapshot.coverageSource === 'calculated'
-                            ? `（词汇表覆盖 ${snapshot.coveredWordCount}/${snapshot.uniqueWordCount} 个正文词）`
-                            : ''}`
-                        : '缺少覆盖率信息',
+                    detail: scanResults[snapshot.level].loading
+                        ? '正在扫描词库...'
+                        : hasCoverage
+                            ? `${formatCoverage(snapshot.coverageValue)}${snapshot.coverageSource === 'calculated'
+                                ? `（词库覆盖 ${snapshot.coveredWordCount}/${snapshot.uniqueWordCount} 个正文词）`
+                                : ''}`
+                            : '缺少覆盖率信息',
                 },
                 {
                     key: 'podcast',
@@ -456,7 +517,11 @@ export const PublishPreview: React.FC = () => {
                         词汇数量：<span className="text-foreground">{snapshot.glossaryKeys.length}</span>
                     </div>
                     <div className="rounded-lg border border-white/5 bg-black/20 px-3 py-2">
-                        覆盖率：<span className="text-foreground">{formatCoverage(snapshot.coverageValue)}</span>
+                        覆盖率：<span className="text-foreground">
+                            {scanResults[level].loading
+                                ? '扫描中...'
+                                : formatCoverage(snapshot.coverageValue)}
+                        </span>
                     </div>
                     <div className="rounded-lg border border-white/5 bg-black/20 px-3 py-2">
                         播客脚本：<span className="text-foreground">{snapshot.podcastScript ? '已生成' : '缺失'}</span>
