@@ -77,7 +77,7 @@ export const StepViewer: React.FC = () => {
             <main className="flex-1 overflow-y-auto p-6 relative">
                 <div className="w-full max-w-[95%] mx-auto">
                     <div className="glass-card rounded-xl min-h-[500px] border border-white/5 p-1 shadow-2xl">
-                        <ActiveComponent />
+                        <ActiveComponent key={session.id} />
                     </div>
                 </div>
             </main>

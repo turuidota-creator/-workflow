@@ -35,6 +35,25 @@ export const ArticleGeneration: React.FC = () => {
         session?.context.generationState?.B?.error || ''
     );
 
+    // Sync state with session context when it changes (e.g. background generation finished)
+    React.useEffect(() => {
+        if (!session) return;
+
+        const stateA = session.context.generationState?.A;
+        if (stateA) {
+            if (stateA.status !== statusA) setStatusA(stateA.status as any);
+            if (stateA.json !== jsonA && stateA.json) setJsonA(stateA.json);
+            if (stateA.error !== errorA) setErrorA(stateA.error || '');
+        }
+
+        const stateB = session.context.generationState?.B;
+        if (stateB) {
+            if (stateB.status !== statusB) setStatusB(stateB.status as any);
+            if (stateB.json !== jsonB && stateB.json) setJsonB(stateB.json);
+            if (stateB.error !== errorB) setErrorB(stateB.error || '');
+        }
+    }, [session?.context.generationState]);
+
     // Selection
     const [selectedSide, setSelectedSide] = useState<'A' | 'B' | null>(null);
 
@@ -278,11 +297,13 @@ export const ArticleGeneration: React.FC = () => {
     const [viewModeA, setViewModeA] = useState<'json' | 'preview'>('preview');
     const [viewModeB, setViewModeB] = useState<'json' | 'preview'>('preview');
 
-    const handleRegenerateBriefingField = async (side: 'A' | 'B', field: BriefingFieldKey) => {
+    const handleRegenerateBriefingField = async (side: 'A' | 'B' | undefined, field: BriefingFieldKey) => {
+        if (!side) return;
         await generateSide(side, { briefingTarget: field });
     };
 
-    const handleRegenerateSentenceAnalysis = async (side: 'A' | 'B') => {
+    const handleRegenerateSentenceAnalysis = async (side: 'A' | 'B' | undefined) => {
+        if (!side) return;
         await generateSide(side, { analysisTarget: 'sentence_analysis' });
     };
 
@@ -449,11 +470,9 @@ export const ArticleGeneration: React.FC = () => {
                 {/* Content Area */}
                 <div className="flex-1 relative min-h-[600px] flex flex-col">
                     {status === 'generating' && (
-                        <div className="absolute inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm z-10">
-                            <div className="flex flex-col items-center gap-4">
-                                <RefreshCw className="w-8 h-8 animate-spin text-primary" />
-                                <span className="text-xs text-muted-foreground animate-pulse">正在以此风格生成文章...</span>
-                            </div>
+                        <div className="absolute top-2 right-2 flex items-center gap-2 bg-black/60 backdrop-blur-md text-xs px-3 py-1.5 rounded-full border border-primary/20 text-primary z-20 pointer-events-none shadow-xl animate-in fade-in zoom-in duration-300">
+                            <RefreshCw className="w-3 h-3 animate-spin" />
+                            <span className="animate-pulse">正在生成... (API返回后将覆盖当前内容)</span>
                         </div>
                     )}
 

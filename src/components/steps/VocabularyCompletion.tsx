@@ -4,6 +4,7 @@ import { Book, RefreshCw, Trash2, ChevronRight, Database, Plus, Check, AlertCirc
 import { cn } from '../../lib/utils';
 
 interface GlossaryEntry {
+    id?: string;
     word: string;
     lemma?: string;
     phonetic?: string;
@@ -11,6 +12,7 @@ interface GlossaryEntry {
     contextDefinition?: string;
     pos?: string;
     sentence?: string;
+    exampleSentence?: string;
     definitions?: { pos: string; zh: string; en: string }[];
     example?: string;
 }
@@ -532,8 +534,8 @@ export const VocabularyCompletion: React.FC = () => {
                                     </div>
                                 ))}
 
-                                {(entry.example || entry.sentence) && (
-                                    <p className="text-xs text-slate-500 mt-2 italic line-clamp-2">"{entry.example || entry.sentence}"</p>
+                                {(entry.example || entry.sentence || entry.exampleSentence) && (
+                                    <p className="text-xs text-slate-500 mt-2 italic line-clamp-2">"{entry.example || entry.sentence || entry.exampleSentence}"</p>
                                 )}
                             </div>
                         ))}

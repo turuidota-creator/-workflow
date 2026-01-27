@@ -1,10 +1,40 @@
+const fs = require('fs');
+const path = require('path');
+
+// ================= ENV LOADER (MUST BE FIRST) =================
+try {
+    const envPath = path.resolve(__dirname, '..', '.env');
+    console.log('[Config] Loading .env from:', envPath);
+    if (fs.existsSync(envPath)) {
+        const content = fs.readFileSync(envPath, 'utf-8');
+        content.split('\n').forEach(line => {
+            const trimmedLine = line.trim();
+            if (!trimmedLine || trimmedLine.startsWith('#')) return; // Skip empty lines and comments
+
+            const match = trimmedLine.match(/^([^=]+)=(.*)$/);
+            if (match) {
+                const key = match[1].trim();
+                let value = match[2].trim();
+                if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) {
+                    value = value.slice(1, -1);
+                }
+                process.env[key] = value;
+            }
+        });
+        console.log('[Config] Loaded .env variables');
+    } else {
+        console.warn('[Config] .env file NOT found at:', envPath);
+    }
+} catch (e) {
+    console.warn('[Config] Failed to load .env:', e.message);
+}
 
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
-const fs = require('fs');
-const path = require('path');
 const { spawn } = require('child_process');
+const { uploadFileToR2, deleteFileFromR2, getSignedAudioUrl } = require('./lib/r2.cjs');
+const { setupAudioRoutes } = require('./routes/audio.cjs');
 
 const app = express();
 const PORT = 3003;
@@ -62,9 +92,42 @@ if (getProxyUrl()) {
     console.log(`[Proxy] Proxy dispatcher configured: ${getProxyUrl()}`);
 }
 
+/**
+ * Fetch with retry logic
+ * @param {string} url 
+ * @param {object} options 
+ * @param {number} retries 
+ * @param {number} delay 
+ */
+async function fetchWithRetry(url, options, retries = 3, delay = 1000) {
+    for (let i = 0; i < retries; i++) {
+        try {
+            const response = await fetch(url, options);
+            if (!response.ok && response.status >= 500) {
+                throw new Error(`Server error: ${response.status}`);
+            }
+            return response;
+        } catch (error) {
+            console.warn(`[Fetch Retry] Attempt ${i + 1}/${retries} failed for ${url}: ${error.message}`);
+            if (i === retries - 1) throw error;
+            await new Promise(resolve => setTimeout(resolve, delay * (i + 1))); // Exponential backoff-ish
+
+            // Re-create dispatcher on failure if it's a network error, might help with stale connections
+            if (options.dispatcher) {
+                console.log('[Fetch Retry] Refreshing proxy dispatcher...');
+                proxyDispatcher = createProxyDispatcher();
+                options.dispatcher = proxyDispatcher;
+            }
+        }
+    }
+}
+
 app.use(cors());
 app.use(bodyParser.json({ limit: '50mb' }));
 app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
+
+// ================= ROUTE REGISTRATION =================
+setupAudioRoutes(app, getPocketBaseAuth);
 
 // ================= CONSTANTS =================
 const PROJECT_ROOT = path.resolve(__dirname, '..');
@@ -321,6 +384,62 @@ async function loadDictionaryFromPB() {
         return {};
     }
 }
+
+// ================= PROXY DEBUG ROUTE =================
+/**
+ * GET /api/debug/proxy
+ * Test proxy connectivity
+ */
+app.get('/api/debug/proxy', async (req, res) => {
+    try {
+        const proxyUrl = getProxyUrl();
+        console.log('[Proxy Debug] Testing connection with proxy:', proxyUrl);
+
+        if (!proxyUrl) {
+            return res.status(400).json({
+                status: 'error',
+                message: 'No proxy configured in .env (HTTPS_PROXY)'
+            });
+        }
+
+        const targetUrl = 'https://www.google.com';
+        const startTime = Date.now();
+
+        // Force refresh dispatcher for test
+        const testDispatcher = createProxyDispatcher();
+
+        const response = await fetch(targetUrl, {
+            method: 'HEAD',
+            dispatcher: testDispatcher,
+            headers: { 'User-Agent': 'curl/7.64.1' } // Mimic curl
+        });
+
+        const duration = Date.now() - startTime;
+
+        if (response.ok || response.status === 301 || response.status === 302) {
+            res.json({
+                status: 'ok',
+                proxy: proxyUrl,
+                latencyMs: duration,
+                target: targetUrl,
+                responseStatus: response.status
+            });
+        } else {
+            res.status(502).json({
+                status: 'error',
+                message: `Proxy request failed with status ${response.status}`,
+                proxy: proxyUrl
+            });
+        }
+    } catch (e) {
+        console.error('[Proxy Debug] Error:', e.message);
+        res.status(500).json({
+            status: 'error',
+            message: e.message,
+            stack: e.stack
+        });
+    }
+});
 
 // ================= API ROUTES =================
 
@@ -718,7 +837,7 @@ app.post('/api/dictionary/generate', async (req, res) => {
         const prompt = `Generate dictionary entries for the following English words. For each word, provide:
 - word: the word itself (lowercase)
 - phonetic: IPA pronunciation (without slashes)
-- definitions: array of objects with { pos: part of speech (e.g., "n.", "v.", "adj."), zh: Chinese definition, en: English definition }
+- definitions: array of objects with { pos: part of speech (e.g., "n.", "v.", "adj."), zh: Traditional Chinese definition (Taiwan usage/臺灣習慣), en: English definition }
 
 Return ONLY a valid JSON array, no markdown, no explanation. Example format:
 [{"word":"example","phonetic":"ɪɡˈzæmpəl","definitions":[{"pos":"n.","zh":"例子","en":"a thing that serves as a model"}]}]
@@ -729,7 +848,7 @@ Words to define: ${words.join(', ')}`;
 
         let geminiResponse;
         try {
-            geminiResponse = await fetch(
+            geminiResponse = await fetchWithRetry(
                 `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
                 {
                     method: 'POST',
@@ -1364,7 +1483,7 @@ app.post('/api/vocabulary', async (req, res) => {
             For each word, provide:
             - word: the word itself (lowercase)
             - phonetic: IPA pronunciation
-            - definitions: array of { pos: "noun"|"verb"|etc, zh: "中文释义", en: "English definition" }
+            - definitions: array of { pos: "noun"|"verb"|etc, zh: "繁體中文釋義 (臺灣習慣)", en: "English definition" }
             - example: a sentence from the article using this word
             Return JSON format: { "glossary": { "wordKey": { definition object } } }
             `;
@@ -2492,33 +2611,72 @@ app.post('/api/podcast-upload', async (req, res) => {
             return res.status(404).json({ error: 'Audio file not found.' });
         }
 
-        const fileBuffer = await fs.promises.readFile(filePath);
-        const formData = new FormData();
-        formData.append('podcast_file', new Blob([fileBuffer]), path.basename(filePath));
-        if (podcast_script !== undefined) {
-            formData.append('podcast_script', podcast_script);
+        // 1. Generate R2 Key
+        const date = new Date();
+        const yearMonth = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+        const randomSuffix = Math.random().toString(36).substring(2, 8);
+        const r2Key = `audio/${yearMonth}/${articleId}-${randomSuffix}.mp3`;
+
+        console.log(`[Podcast Upload] Starting R2 upload. Key: ${r2Key}, File: ${filePath}`);
+
+        // 2. Upload to R2
+        try {
+            const uploadSuccess = await uploadFileToR2(filePath, r2Key);
+            if (!uploadSuccess) {
+                console.error('[Podcast Upload] uploadFileToR2 returned false.');
+                return res.status(500).json({ error: 'Failed to upload to R2 storage (check server logs).' });
+            }
+        } catch (uploadErr) {
+            console.error('[Podcast Upload] EXCEPTION in uploadFileToR2:', uploadErr);
+            return res.status(500).json({ error: `Upload Exception: ${uploadErr.message}` });
         }
 
-        const headers = {};
+        console.log('[Podcast Upload] R2 upload successful. Updating PocketBase...');
+
+        // 3. Update PocketBase
+        const updatePayload = {
+            audioKey: r2Key,
+        };
+        if (podcast_script !== undefined) {
+            updatePayload.podcast_script = podcast_script;
+        }
+
+        const headers = { 'Content-Type': 'application/json' };
         if (token) headers['Authorization'] = token;
 
         const uploadRes = await fetch(`${pbUrl}/api/collections/articles/records/${articleId}`, {
             method: 'PATCH',
             headers,
-            body: formData
+            body: JSON.stringify(updatePayload)
         });
 
         if (!uploadRes.ok) {
             const errorText = await uploadRes.text();
+            // Rollback R2
+            await deleteFileFromR2(r2Key);
             return res.status(uploadRes.status).json({ error: errorText });
         }
 
         const record = await uploadRes.json();
-        const podcastUrl = record?.podcast_file
-            ? `${pbUrl}/api/files/articles/${record.id}/${record.podcast_file}`
-            : null;
 
-        return res.json({ success: true, articleId: record.id, podcastUrl });
+        // 4. Generate Signed URL for immediate usage
+        let signedUrl = null;
+        let expiresIn = 0;
+        const signedData = await getSignedAudioUrl(r2Key);
+        if (signedData) {
+            signedUrl = signedData.url;
+            expiresIn = signedData.expiresIn;
+        }
+
+        return res.json({
+            success: true,
+            articleId: record.id,
+            audioKey: r2Key, // For ref
+            podcastUrl: signedUrl, // Return signed URL as podcastUrl for frontend compatibility
+            audioUrl: signedUrl,   // New standard field
+            audioExpiresIn: expiresIn
+        });
+
     } catch (e) {
         console.error('Podcast upload error:', e);
         res.status(500).json({ error: e.message });
@@ -2877,45 +3035,82 @@ app.post('/api/publish', async (req, res) => {
         }
 
         // ========================================================
-        // [New Feature] Auto-upload local podcast file if present
+        // [New Feature] Auto-upload local podcast file to R2
         // ========================================================
         if (finalResult && finalResult.success && finalResult.source === 'pocketbase') {
             const tempUrl = payload.podcast_url || '';
             if (tempUrl.startsWith('/temp/')) {
                 try {
-                    console.log(`[Publish] Auto-uploading podcast file from: ${tempUrl}`);
+                    console.log(`[Publish] Auto-uploading podcast file to R2 from: ${tempUrl}`);
                     const audioPath = tempUrl; // e.g. /temp/audio_123.mp3
                     const filePath = path.join(PROJECT_ROOT, audioPath);
 
                     if (fs.existsSync(filePath)) {
-                        const fileBuffer = await fs.promises.readFile(filePath);
-                        const formData = new FormData();
-                        formData.append('podcast_file', new Blob([fileBuffer]), path.basename(filePath));
+                        // 1. Generate R2 Key
+                        const date = new Date();
+                        const yearMonth = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+                        // key format: audio/2026-01/<articleId>-<random>.mp3
+                        const randomSuffix = Math.random().toString(36).substring(2, 8);
+                        const r2Key = `audio/${yearMonth}/${finalResult.articleId}-${randomSuffix}.mp3`;
 
-                        const { token } = await getPocketBaseAuth();
-                        const headers = {};
-                        if (token) headers['Authorization'] = token;
+                        // 2. Upload to R2
+                        const uploadSuccess = await uploadFileToR2(filePath, r2Key);
 
-                        const uploadRes = await fetch(`${pbUrl}/api/collections/articles/records/${finalResult.articleId}`, {
-                            method: 'PATCH',
-                            headers,
-                            body: formData
-                        });
+                        if (uploadSuccess) {
+                            // 3. Update PocketBase
+                            const { token } = await getPocketBaseAuth();
+                            const headers = { 'Content-Type': 'application/json' };
+                            if (token) headers['Authorization'] = token;
 
-                        if (uploadRes.ok) {
-                            const record = await uploadRes.json();
-                            if (record.podcast_file) {
-                                finalResult.podcastUrl = `${pbUrl}/api/files/articles/${record.id}/${record.podcast_file}`;
-                                console.log(`[Publish] Podcast file uploaded successfully: ${finalResult.podcastUrl}`);
+                            console.log(`[Publish] Linking audioKey ${r2Key} to article ${finalResult.articleId}`);
+
+                            const patchRes = await fetch(`${pbUrl}/api/collections/articles/records/${finalResult.articleId}`, {
+                                method: 'PATCH',
+                                headers,
+                                body: JSON.stringify({
+                                    audioKey: r2Key,
+                                    // Optional: Clear legacy podcast_url if moving fully to R2, 
+                                    // but keeping it might be useful for legacy logic until fully migrated.
+                                    // For now, let's just set audioKey.
+                                })
+                            });
+
+                            if (patchRes.ok) {
+                                console.log('[Publish] PocketBase updated with audioKey.');
+                                finalResult.audioKey = r2Key;
+
+                                // 5. Generate signed URL for immediate playback
+                                const signedData = await getSignedAudioUrl(r2Key);
+                                if (signedData) {
+                                    finalResult.audioUrl = signedData.url;
+                                    finalResult.audioExpiresIn = signedData.expiresIn;
+                                    console.log('[Publish] Generated immediate signed URL.');
+                                }
+
+                                // 6. Cleanup local file (Optional but recommended)
+                                try {
+                                    fs.unlinkSync(filePath);
+                                    console.log('[Publish] Local temp file deleted.');
+                                } catch (cleanupErr) {
+                                    console.warn('[Publish] Failed to delete temp file:', cleanupErr);
+                                }
+
+                            } else {
+                                const errText = await patchRes.text();
+                                console.error(`[Publish] Failed to update PB with audioKey: ${patchRes.status} ${errText}`);
+
+                                // ROLLBACK: Delete from R2 to avoid orphans
+                                console.warn('[Publish] Rolling back R2 upload...');
+                                await deleteFileFromR2(r2Key);
                             }
                         } else {
-                            console.error(`[Publish] Failed to upload podcast file: ${uploadRes.status}`);
+                            console.error('[Publish] Failed to upload to R2.');
                         }
                     } else {
                         console.warn(`[Publish] Podcast file not found at: ${filePath}`);
                     }
                 } catch (e) {
-                    console.error('[Publish] Error uploading podcast file:', e);
+                    console.error('[Publish] Error processing R2 upload:', e);
                 }
             }
         }

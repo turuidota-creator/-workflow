@@ -187,8 +187,8 @@ Input: English article text (User Message).
 For each word, provide:
 - "word": Exact word as it appears in text (preserve original case)
 - "lemma": Dictionary form, lowercase (e.g., "running" → "run")
-- "definition": 通用词典释义 (中文，简洁)
-- "contextDefinition": 该文章语境下的精确释义 (中文，必填)
+- "definition": 通用詞典釋義 (繁體中文 (臺灣習慣)，簡潔)
+- "contextDefinition": 該文章語境下的精確釋義 (繁體中文 (臺灣習慣)，必填)
 - "pos": Part of speech (Must end with dot: n., v., adj., adv., prep., conj.)
 - "sentence": The exact sentence from text containing the word
 
@@ -201,8 +201,8 @@ The same lemma should only appear multiple times if it has DIFFERENT meanings in
   {
     "word": "curtain",
     "lemma": "curtain",
-    "definition": "帘子；幕布",
-    "contextDefinition": "铁幕（指政治隔离屏障）",
+    "definition": "簾子；幕布",
+    "contextDefinition": "鐵幕（指政治隔離屏障）",
     "pos": "n.",
     "sentence": "The Silicon Curtain now descends..."
   }
@@ -260,8 +260,8 @@ Output Format: Pure JSON object.
 Example Input: ["ubiquity", "negotiable"]
 Example Output:
 {
-  "ubiquity": { "word": "ubiquity", "phonetic": "/juːˈbɪkwəti/", "definitions": [{ "partOfSpeech": "n.", "meaning": "无处不在；普遍存在" }] },
-  "negotiable": { "word": "negotiable", "phonetic": "/nɪˈɡəʊʃiəbl/", "definitions": [{ "partOfSpeech": "adj.", "meaning": "可协商的" }] }
+  "ubiquity": { "word": "ubiquity", "phonetic": "/juːˈbɪkwəti/", "definitions": [{ "partOfSpeech": "n.", "meaning": "無處不在；普遍存在" }] },
+  "negotiable": { "word": "negotiable", "phonetic": "/nɪˈɡəʊʃiəbl/", "definitions": [{ "partOfSpeech": "adj.", "meaning": "可協商的" }] }
 }
 ```
 
