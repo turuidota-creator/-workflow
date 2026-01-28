@@ -1,0 +1,1486 @@
+{
+  "articleId": "article_1769529032601",
+  "article": {
+    "intro": {
+      "id": "intro-20260127",
+      "text": "2026年1月27日，通用汽車（GM）發布了樂觀的2026年財務預測，帶動股價大幅上漲。這顯示出這家傳統車企在電動車轉型策略上已初見成效，成功贏回了華爾街投資者的信心。",
+      "type": "intro"
+    },
+    "meta": {
+      "briefing": {
+        "grammar_analysis": "語法重點：本文使用標準的中級新聞英語，句構清晰。重點在於因果關係的表達（如 driven by, due to）以及新舊車企的對比（While...）。",
+        "market_implications": "傳統車企估值修復；電動車市場競爭格局從新創轉向巨頭主導。",
+        "scope": "全球汽車產業與美國股市。",
+        "what": "通用汽車發布強勁的2026年財測，股價大漲。",
+        "when": "2026年1月27日",
+        "who": "通用汽車 (GM)；執行長瑪麗·巴拉 (Mary Barra)。"
+      },
+      "date": "2026-01-27",
+      "id": "20260127_gm_shares_rise",
+      "level": "7",
+      "slug": "gm-shares-rise-2026-prospects",
+      "title": {
+        "en": "G.M. Shares Rise as Investors Are Encouraged by 2026 Prospects",
+        "id": "title-20260127",
+        "type": "title",
+        "zh": "通用汽車股價上揚：2026年展望提振投資者信心"
+      },
+      "topic": "財經",
+      "wordCount": 238
+    },
+    "paragraphs": [
+      {
+        "id": "p1",
+        "paragraph": {
+          "id": "p1-content",
+          "tokenizedSentences": [
+            {
+              "analysis": {
+                "explanation": "白話：這句話直接點出新聞的核心事件：時間、主體（通用汽車）以及發生了什麼（股價大漲）。",
+                "grammar": {
+                  "extension": "during a busy... (介詞短語作時間狀語)",
+                  "main": "General Motors saw its stock price surge",
+                  "structure_explanation": "saw... surge (感官動詞 see + 受詞 + 原形動詞，表示目睹整個過程)"
+                },
+                "keywords": [
+                  "surge",
+                  "significantly",
+                  "session"
+                ]
+              },
+              "id": "s1-p1",
+              "tokens": [
+                {
+                  "isWord": true,
+                  "text": "On"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "January"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "27"
+                },
+                {
+                  "isWord": false,
+                  "text": ","
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "General"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "Motors"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "saw"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "its"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "stock"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "price"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "surge"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "significantly"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "during"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "a"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "busy"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "global"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "trading"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "session"
+                },
+                {
+                  "isWord": false,
+                  "text": "."
+                }
+              ],
+              "zh": "1月27日，在全球交易時段的繁忙氛圍中，通用汽車的股價出現了顯著飆升。"
+            },
+            {
+              "analysis": {
+                "explanation": "白話：解釋了股價上漲的原因。投資者對報告反應熱烈，因為報告預測未來會賺大錢。",
+                "grammar": {
+                  "extension": "that predicts strong profits... (定語從句修飾 forecast)",
+                  "main": "Investors responded with enthusiasm",
+                  "structure_explanation": "to a new financial forecast (介詞 to 引導動作的對象)"
+                },
+                "keywords": [
+                  "enthusiasm",
+                  "forecast",
+                  "predicts"
+                ]
+              },
+              "id": "s2-p1",
+              "tokens": [
+                {
+                  "isWord": true,
+                  "text": "Investors"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "responded"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "with"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "enthusiasm"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "to"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "a"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "new"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "financial"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "forecast"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "that"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "predicts"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "strong"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "profits"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "for"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "the"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "year"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "2026"
+                },
+                {
+                  "isWord": false,
+                  "text": "."
+                }
+              ],
+              "zh": "投資者對一份預測2026年將有強勁利潤的新財務報告反應熱烈。"
+            },
+            {
+              "analysis": {
+                "explanation": "白話：描述了市場情緒的轉變。以前大家擔心GM轉型太貴，現在這個數據讓大家放心了。",
+                "grammar": {
+                  "extension": "but this fresh data has... (連接詞 but 連接轉折語氣)",
+                  "main": "The market had worried about costs",
+                  "structure_explanation": "had worried (過去完成式，表示在報告發布之前已經持續了一段時間的擔心)"
+                },
+                "keywords": [
+                  "transition",
+                  "effectively",
+                  "calmed"
+                ]
+              },
+              "id": "s3-p1",
+              "tokens": [
+                {
+                  "isWord": true,
+                  "text": "For"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "a"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "long"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "time"
+                },
+                {
+                  "isWord": false,
+                  "text": ","
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "the"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "market"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "had"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "worried"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "about"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "the"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "costs"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "of"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "transition"
+                },
+                {
+                  "isWord": false,
+                  "text": ","
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "but"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "this"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "fresh"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "data"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "has"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "effectively"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "calmed"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "those"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "fears"
+                },
+                {
+                  "isWord": false,
+                  "text": "."
+                }
+              ],
+              "zh": "長期以來，市場一直擔心轉型的成本問題，但這份最新數據有效地平息了這些擔憂。"
+            }
+          ]
+        },
+        "type": "paragraph"
+      },
+      {
+        "id": "p2",
+        "paragraph": {
+          "id": "p2-content",
+          "tokenizedSentences": [
+            {
+              "analysis": {
+                "explanation": "白話：說明這次成功的關鍵原因。不是小修小補，而是將重點轉移到了賺錢的電動車上。",
+                "grammar": {
+                  "extension": "but in a strategic shift... (not only... but... 的變體，強調後者)",
+                  "main": "The key reason lies in a shift",
+                  "structure_explanation": "toward profitable electric vehicles (介詞短語修飾 shift)"
+                },
+                "keywords": [
+                  "strategic",
+                  "shift",
+                  "profitable"
+                ]
+              },
+              "id": "s1-p2",
+              "tokens": [
+                {
+                  "isWord": true,
+                  "text": "The"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "key"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "reason"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "for"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "this"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "optimism"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "lies"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "in"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "the"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "company's"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "strategic"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "shift"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "toward"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "profitable"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "electric"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "vehicles"
+                },
+                {
+                  "isWord": false,
+                  "text": "."
+                }
+              ],
+              "zh": "這種樂觀情緒的關鍵原因，在於該公司向高利潤電動車的戰略轉移。"
+            },
+            {
+              "analysis": {
+                "explanation": "白話：介紹執行長瑪麗·巴拉的功勞。她一邊削減不必要的開支，一邊投資未來。",
+                "grammar": {
+                  "extension": "while investing heavily... (while 連接同時發生的動作，表示對比)",
+                  "main": "CEO Mary Barra has focused on cutting costs",
+                  "structure_explanation": "unnecessary costs (形容詞修飾名詞)"
+                },
+                "keywords": [
+                  "focused",
+                  "investing",
+                  "heavily"
+                ]
+              },
+              "id": "s2-p2",
+              "tokens": [
+                {
+                  "isWord": true,
+                  "text": "CEO"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "Mary"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "Barra"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "has"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "focused"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "on"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "cutting"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "unnecessary"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "costs"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "while"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "investing"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "heavily"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "in"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "new"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "technology"
+                },
+                {
+                  "isWord": false,
+                  "text": "."
+                }
+              ],
+              "zh": "執行長瑪麗·巴拉專注於削減不必要的成本，同時大力投資新技術。"
+            },
+            {
+              "analysis": {
+                "explanation": "白話：說明這個策略的結果。以前分析師不看好，現在不得不承認GM把規模變成了優勢。",
+                "grammar": {
+                  "extension": "that the company is turning... (名詞子句作 realize 的受詞)",
+                  "main": "Analysts now realize something",
+                  "structure_explanation": "turning size into an advantage (turn A into B，把A變成B)"
+                },
+                "keywords": [
+                  "realize",
+                  "advantage",
+                  "burden"
+                ]
+              },
+              "id": "s3-p2",
+              "tokens": [
+                {
+                  "isWord": true,
+                  "text": "Analysts"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "now"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "realize"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "that"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "the"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "company"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "is"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "turning"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "its"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "massive"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "size"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "into"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "a"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "major"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "advantage"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "rather"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "than"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "a"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "burden"
+                },
+                {
+                  "isWord": false,
+                  "text": "."
+                }
+              ],
+              "zh": "分析師現在意識到，該公司正在將其龐大的規模轉化為主要優勢，而不是負擔。"
+            }
+          ]
+        },
+        "type": "paragraph"
+      },
+      {
+        "id": "p3",
+        "paragraph": {
+          "id": "p3-content",
+          "tokenizedSentences": [
+            {
+              "analysis": {
+                "explanation": "白話：這是一個對比句。用 While 開頭，比較了新創公司的困難和GM的穩健。",
+                "grammar": {
+                  "extension": "while smaller startups struggle... (While 引導的從句表示對比)",
+                  "main": "This success stands in contrast to startups",
+                  "structure_explanation": "struggle to survive (struggle to do sth，努力做某事)"
+                },
+                "keywords": [
+                  "contrast",
+                  "startups",
+                  "struggle"
+                ]
+              },
+              "id": "s1-p3",
+              "tokens": [
+                {
+                  "isWord": true,
+                  "text": "This"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "success"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "stands"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "in"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "sharp"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "contrast"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "to"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "many"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "newer"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "electric"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "vehicle"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "startups"
+                },
+                {
+                  "isWord": false,
+                  "text": ","
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "which"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "struggle"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "to"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "find"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "cash"
+                },
+                {
+                  "isWord": false,
+                  "text": "."
+                }
+              ],
+              "zh": "這種成功與許多較新的電動車初創公司形成鮮明對比，後者正艱難地尋求現金。"
+            },
+            {
+              "analysis": {
+                "explanation": "白話：解釋GM為什麼能贏。因為它有舊業務賺來的錢，可以養新業務。",
+                "grammar": {
+                  "extension": "to fund its future... (不定詞表目的)",
+                  "main": "GM generates steady profits",
+                  "structure_explanation": "from its existing business (介詞短語表示來源)"
+                },
+                "keywords": [
+                  "generates",
+                  "steady",
+                  "fund"
+                ]
+              },
+              "id": "s2-p3",
+              "tokens": [
+                {
+                  "isWord": true,
+                  "text": "General"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "Motors"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "generates"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "steady"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "profits"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "from"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "its"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "existing"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "business"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "to"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "fund"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "its"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "future"
+                },
+                {
+                  "isWord": false,
+                  "text": "."
+                }
+              ],
+              "zh": "通用汽車從現有業務中產生穩定的利潤，用以資助其未來發展。"
+            },
+            {
+              "analysis": {
+                "explanation": "白話：總結全文觀點。證明了老公司只要願意改變，也能適應新時代。",
+                "grammar": {
+                  "extension": "by adapting quickly... (by + Ving 表示方式)",
+                  "main": "This proves that giants can win",
+                  "structure_explanation": "established giants (過去分詞作形容詞，指老牌巨頭)"
+                },
+                "keywords": [
+                  "proves",
+                  "established",
+                  "adapting"
+                ]
+              },
+              "id": "s3-p3",
+              "tokens": [
+                {
+                  "isWord": true,
+                  "text": "This"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "proves"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "that"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "established"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "giants"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "are"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "not"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "dying"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "out"
+                },
+                {
+                  "isWord": false,
+                  "text": ","
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "but"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "are"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "adapting"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "quickly"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "to"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "lead"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "the"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "next"
+                },
+                {
+                  "isWord": false,
+                  "text": " "
+                },
+                {
+                  "isWord": true,
+                  "text": "era"
+                },
+                {
+                  "isWord": false,
+                  "text": "."
+                }
+              ],
+              "zh": "這證明了老牌巨頭並沒有消亡，而是正在迅速適應以引領下一個時代。"
+            }
+          ]
+        },
+        "type": "paragraph"
+      }
+    ]
+  },
+  "level": "7",
+  "glossary": {}
+}

@@ -36,12 +36,16 @@ export const VocabularyCompletion: React.FC = () => {
     const [activeTab, setActiveTab] = useState<LevelTab>('10');
 
     // Level 10 States
-    const [status10, setStatus10] = useState<'idle' | 'generating' | 'success' | 'error'>('idle');
+    const [status10, setStatus10] = useState<'idle' | 'generating' | 'success' | 'error'>(
+        session?.context?.vocabularyLoading?.['10'] ? 'generating' : 'idle'
+    );
     const [glossary10, setGlossary10] = useState<Record<string, GlossaryEntry>>({});
     const [error10, setError10] = useState('');
 
     // Level 7 States
-    const [status7, setStatus7] = useState<'idle' | 'generating' | 'success' | 'error'>('idle');
+    const [status7, setStatus7] = useState<'idle' | 'generating' | 'success' | 'error'>(
+        session?.context?.vocabularyLoading?.['7'] ? 'generating' : 'idle'
+    );
     const [glossary7, setGlossary7] = useState<Record<string, GlossaryEntry>>({});
     const [error7, setError7] = useState('');
 
@@ -88,6 +92,19 @@ export const VocabularyCompletion: React.FC = () => {
             return;
         }
 
+        // Persist loading state
+        if (latestSession) {
+            updateSession(latestSession.id, {
+                context: {
+                    ...latestSession.context,
+                    vocabularyLoading: {
+                        ...(latestSession.context.vocabularyLoading || {}),
+                        [level]: true
+                    }
+                }
+            });
+        }
+
         setStatus('generating');
         setError('');
 
@@ -123,8 +140,23 @@ export const VocabularyCompletion: React.FC = () => {
                 }
             }
         } catch (e) {
+            const errString = String(e);
             setStatus('error');
-            setError(String(e));
+            setError(errString);
+        } finally {
+            // Clear loading state
+            const endSession = getActiveSession();
+            if (endSession) {
+                updateSession(endSession.id, {
+                    context: {
+                        ...endSession.context,
+                        vocabularyLoading: {
+                            ...(endSession.context.vocabularyLoading || {}),
+                            [level]: false
+                        }
+                    }
+                });
+            }
         }
     };
 
@@ -316,6 +348,31 @@ export const VocabularyCompletion: React.FC = () => {
                         {currentStatus === 'generating' ? <RefreshCw className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
                         {entries.length > 0 ? '重新生成' : '提取词汇'}
                     </button>
+
+                    {currentStatus === 'generating' && (
+                        <button
+                            onClick={() => {
+                                const setStatus = activeTab === '10' ? setStatus10 : setStatus7;
+                                setStatus('idle');
+                                // Also clear session state
+                                if (session) {
+                                    updateSession(session.id, {
+                                        context: {
+                                            ...session.context,
+                                            vocabularyLoading: {
+                                                ...(session.context.vocabularyLoading || {}),
+                                                [activeTab]: false
+                                            }
+                                        }
+                                    });
+                                }
+                            }}
+                            className="text-xs text-red-400 hover:text-red-300 underline underline-offset-2 ml-2"
+                            title="如果不慎卡住，点击此处重置状态"
+                        >
+                            重置状态
+                        </button>
+                    )}
 
                     <button
                         onClick={() => handleUpload(activeTab)}

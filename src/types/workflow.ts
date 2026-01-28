@@ -72,6 +72,17 @@ export interface WorkflowSession {
             A?: { status: string; json: string; error: string; };
             B?: { status: string; json: string; error: string; };
         };
+        // Loading States
+        researchLoading?: boolean;
+        rewriteLoading?: boolean;
+        vocabularyLoading?: {
+            '10'?: boolean;
+            '7'?: boolean;
+        };
+        audioLoading?: {
+            '10'?: boolean;
+            '7'?: boolean;
+        };
     };
 }
 

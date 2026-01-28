@@ -19,7 +19,9 @@ export const AudioSynthesis: React.FC = () => {
 
     // Separate states
     const [audio10, setAudio10] = useState<AudioState>({
-        status: session?.context.podcastUrl ? 'success' : 'idle',
+        status: session?.context?.audioLoading?.['10']
+            ? 'synthesizing'
+            : (session?.context.podcastUrl ? 'success' : 'idle'),
         url: session?.context.podcastUrl || '',
         error: '',
         progress: 0,
@@ -29,7 +31,9 @@ export const AudioSynthesis: React.FC = () => {
     });
 
     const [audio7, setAudio7] = useState<AudioState>({
-        status: session?.context.podcastUrl7 ? 'success' : 'idle',
+        status: session?.context?.audioLoading?.['7']
+            ? 'synthesizing'
+            : (session?.context.podcastUrl7 ? 'success' : 'idle'),
         url: session?.context.podcastUrl7 || '',
         error: '',
         progress: 0,
@@ -62,6 +66,19 @@ export const AudioSynthesis: React.FC = () => {
         }
 
         set(prev => ({ ...prev, status: 'synthesizing', error: '', progress: 0, uploadStatus: 'idle' }));
+
+        // Persist loading state
+        if (latestSession) {
+            updateSession(latestSession.id, {
+                context: {
+                    ...latestSession.context,
+                    audioLoading: {
+                        ...(latestSession.context.audioLoading || {}),
+                        [level]: true
+                    }
+                }
+            });
+        }
 
         const progressInterval = setInterval(() => {
             set(prev => {
@@ -98,6 +115,20 @@ export const AudioSynthesis: React.FC = () => {
         } catch (e) {
             clearInterval(progressInterval);
             set(prev => ({ ...prev, status: 'error', error: String(e), progress: 0 }));
+        } finally {
+            // Clear loading state
+            const endSession = getActiveSession();
+            if (endSession) {
+                updateSession(endSession.id, {
+                    context: {
+                        ...endSession.context,
+                        audioLoading: {
+                            ...(endSession.context.audioLoading || {}),
+                            [level]: false
+                        }
+                    }
+                });
+            }
         }
     };
 

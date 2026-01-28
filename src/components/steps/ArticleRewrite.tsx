@@ -15,7 +15,9 @@ export const ArticleRewrite: React.FC = () => {
 
     // Level 7 Article (State)
     const [status7, setStatus7] = useState<'idle' | 'generating' | 'success' | 'error'>(
-        session?.context.articleJson7 ? 'success' : 'idle'
+        session?.context.rewriteLoading
+            ? 'generating'
+            : (session?.context.articleJson7 ? 'success' : 'idle')
     );
     const [json7, setJson7] = useState<string>(
         session?.context.articleJson7 ? JSON.stringify(session.context.articleJson7, null, 2) : ''
@@ -64,6 +66,17 @@ export const ArticleRewrite: React.FC = () => {
                 briefingTarget: options.briefingTarget,
                 analysisTarget: options.analysisTarget
             };
+
+            // Persist loading state
+            const currentSession = getActiveSession();
+            if (currentSession) {
+                updateSession(currentSession.id, {
+                    context: {
+                        ...currentSession.context,
+                        rewriteLoading: true
+                    }
+                });
+            }
 
             if (options.briefingTarget || options.analysisTarget) {
                 // Partial update mode
@@ -157,6 +170,20 @@ export const ArticleRewrite: React.FC = () => {
             const errString = String(e);
             setStatus7('error');
             setError7(errString);
+        } finally {
+            // Clear loading state
+            if (status7 === 'generating') { // Only if we were strictly generating
+                // Note: status7 state update is async/batched.
+            }
+            const endSession = getActiveSession();
+            if (endSession) {
+                updateSession(endSession.id, {
+                    context: {
+                        ...endSession.context,
+                        rewriteLoading: false
+                    }
+                });
+            }
         }
     };
 

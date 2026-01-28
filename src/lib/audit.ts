@@ -49,13 +49,27 @@ export const runAudit = (jsonStr: string) => {
             sentences.forEach((s: any) => {
                 const analysis = s.analysis;
                 if (!analysis) return;
-                const grammarText = analysis.grammar || '';
+
+                const grammarVal = analysis.grammar;
                 const explanationText = analysis.explanation || '';
-                if (grammarText || explanationText) {
+
+                if (grammarVal || explanationText) {
                     hasSentenceAnalysis = true;
                 }
-                const grammarOk = grammarText ? /^[\u4e00-\u9fa5]/.test(grammarText.trim()) : true;
+
+                // Check grammar validity:
+                // 1. If string: must start with Chinese
+                // 2. If object: considered valid structure (new format)
+                // 3. If missing: valid (skip)
+                let grammarOk = true;
+                if (typeof grammarVal === 'string') {
+                    grammarOk = grammarVal.trim() ? /^[\u4e00-\u9fa5]/.test(grammarVal.trim()) : true;
+                } else if (typeof grammarVal === 'object' && grammarVal !== null) {
+                    grammarOk = true;
+                }
+
                 const explanationOk = explanationText ? /^[\u4e00-\u9fa5]/.test(explanationText.trim()) : true;
+
                 if (!grammarOk || !explanationOk) {
                     isSentenceAnalysisChineseStart = false;
                 }

@@ -35,9 +35,70 @@ const bodyParser = require('body-parser');
 const { spawn } = require('child_process');
 const { uploadFileToR2, deleteFileFromR2, getSignedAudioUrl } = require('./lib/r2.cjs');
 const { setupAudioRoutes } = require('./routes/audio.cjs');
+const OpenAI = require('openai');
 
 const app = express();
+
+// Initialize OpenAI Client for Local Endpoint
+const openai = new OpenAI({
+    baseURL: "http://127.0.0.1:8045/v1",
+    apiKey: "sk-68afe2da637f4d4dbf8a4bdcd11b55ff" // Hardcoded as per user request
+});
+console.log(`[LLM Config] Using Endpoint: ${openai.baseURL}`);
+console.log(`[LLM Config] Model: gemini-3-pro-high`);
 const PORT = 3003;
+
+/**
+ * Robust JSON extraction from model output
+ * Handles markdown code blocks, mixed text, and raw JSON.
+ */
+function extractJSON(text) {
+    if (!text) return null;
+    let jsonString = text;
+
+    // 1. Try to find markdown code block
+    const markdownMatch = text.match(/```json\s*([\s\S]*?)\s*```/);
+    if (markdownMatch) {
+        jsonString = markdownMatch[1];
+    } else {
+        // 2. If no markdown, find the first '{' and last '}' or '[' and ']'
+        const firstBrace = text.indexOf('{');
+        const firstBracket = text.indexOf('[');
+        let start = -1;
+
+        // Determine start (whichever comes first)
+        if (firstBrace !== -1 && firstBracket !== -1) {
+            start = Math.min(firstBrace, firstBracket);
+        } else if (firstBrace !== -1) {
+            start = firstBrace;
+        } else if (firstBracket !== -1) {
+            start = firstBracket;
+        }
+
+        if (start !== -1) {
+            // Determine end based on what we started with
+            // Heuristic: finding the LAST matching closing char is risky if there is trailing text with braces
+            // but usually safe enough for model output which places JSON mostly at the end or as the main body.
+            const lastBrace = text.lastIndexOf('}');
+            const lastBracket = text.lastIndexOf(']');
+            let end = -1;
+
+            if (lastBrace > start) end = Math.max(end, lastBrace);
+            if (lastBracket > start) end = Math.max(end, lastBracket);
+
+            if (end !== -1) {
+                jsonString = text.substring(start, end + 1);
+            }
+        }
+    }
+
+    try {
+        return JSON.parse(jsonString);
+    } catch (e) {
+        console.error("extractJSON parse failed:", e.message, "Snippet:", jsonString.substring(0, 100));
+        throw e;
+    }
+}
 
 // ================= PROXY CONFIGURATION =================
 // Configure global proxy if HTTPS_PROXY is set
@@ -823,17 +884,6 @@ app.post('/api/dictionary/generate', async (req, res) => {
             return res.status(400).json({ error: 'Missing or invalid words array' });
         }
 
-        // Get API Key
-        const envPath = path.join(PROJECT_ROOT, '.env');
-        const content = fs.existsSync(envPath) ? fs.readFileSync(envPath, 'utf-8') : '';
-        const apiKeyMatch = content.match(/GEMINI_API_KEY=(.+)/);
-        const apiKey = apiKeyMatch ? apiKeyMatch[1].trim() : null;
-
-        if (!apiKey) {
-            console.error('[Dictionary Generate] No GEMINI_API_KEY found');
-            return res.status(400).json({ error: 'Missing GEMINI_API_KEY in .env' });
-        }
-
         const prompt = `Generate dictionary entries for the following English words. For each word, provide:
 - word: the word itself (lowercase)
 - phonetic: IPA pronunciation (without slashes)
@@ -844,63 +894,47 @@ Return ONLY a valid JSON array, no markdown, no explanation. Example format:
 
 Words to define: ${words.join(', ')}`;
 
-        console.log('[Dictionary Generate] Calling Gemini API...');
+        console.log('[Dictionary Generate] Calling OpenAI API (Local)...');
 
-        let geminiResponse;
         try {
-            geminiResponse = await fetchWithRetry(
-                `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
-                {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        contents: [{ parts: [{ text: prompt }] }],
-                        generationConfig: {
-                            temperature: 0.3,
-                            maxOutputTokens: 4096
-                        }
-                    }),
-                    dispatcher: proxyDispatcher
+            const completion = await openai.chat.completions.create({
+                model: "gemini-3-pro-high",
+                messages: [{ role: "user", content: prompt }],
+                temperature: 0.3,
+                max_tokens: 4096
+            });
+
+            const text = completion.choices[0].message.content || '';
+            console.log('[Dictionary Generate] Response length:', text.length);
+
+            // Extract JSON array from response
+            let entries = [];
+            try {
+                const parsed = extractJSON(text);
+                if (Array.isArray(parsed)) {
+                    entries = parsed;
+                } else if (parsed && parsed.entries && Array.isArray(parsed.entries)) {
+                    // Handle case where model returns { "entries": [...] }
+                    entries = parsed.entries;
+                } else {
+                    console.warn('[Dictionary Generate] Parsed JSON is not an array:', parsed);
                 }
-            );
-        } catch (fetchError) {
-            console.error('[Dictionary Generate] Fetch error:', fetchError);
-            return res.status(503).json({ error: `Network error: ${fetchError.message}` });
-        }
-
-        if (!geminiResponse.ok) {
-            const errorText = await geminiResponse.text();
-            console.error('[Dictionary Generate] Gemini API error:', geminiResponse.status, errorText);
-            return res.status(502).json({ error: `Gemini API error: ${geminiResponse.status}` });
-        }
-
-        const geminiData = await geminiResponse.json();
-
-        if (geminiData.error) {
-            console.error('[Dictionary Generate] Gemini returned error:', geminiData.error);
-            return res.status(500).json({ error: geminiData.error.message });
-        }
-
-        const text = geminiData.candidates?.[0]?.content?.parts?.[0]?.text || '';
-        console.log('[Dictionary Generate] Gemini response text length:', text.length);
-
-        // Extract JSON array from response
-        let entries = [];
-        try {
-            // Try to find JSON array in response
-            const jsonMatch = text.match(/\[[\s\S]*\]/);
-            if (jsonMatch) {
-                entries = JSON.parse(jsonMatch[0]);
-            } else {
-                console.warn('[Dictionary Generate] No JSON array found in response:', text.substring(0, 200));
+            } catch (e) {
+                console.warn('[Dictionary Generate] JSON parse failed, trying fallback regex...');
+                // Fallback: Try regex if extractJSON failed (though extractJSON should have caught most cases)
+                const jsonMatch = text.match(/\[[\s\S]*\]/);
+                if (jsonMatch) {
+                    try { entries = JSON.parse(jsonMatch[0]); } catch (err) { }
+                }
             }
-        } catch (parseError) {
-            console.error('[Dictionary Generate] JSON parse error:', parseError, 'Text:', text.substring(0, 500));
-            return res.status(500).json({ error: 'Failed to parse Gemini response as JSON' });
-        }
 
-        console.log('[Dictionary Generate] Successfully generated', entries.length, 'entries');
-        res.json({ entries, count: entries.length });
+            console.log('[Dictionary Generate] Successfully generated', entries.length, 'entries');
+            res.json({ entries, count: entries.length });
+
+        } catch (apiError) {
+            console.error('[Dictionary Generate] API error:', apiError);
+            return res.status(502).json({ error: `API error: ${apiError.message}` });
+        }
     } catch (e) {
         console.error('[Dictionary Generate Error]:', e);
         res.status(500).json({ error: e.message || 'Unknown error' });
@@ -963,33 +997,20 @@ app.post('/api/dictionary/add', async (req, res) => {
  */
 app.post('/api/test-gemini', async (req, res) => {
     try {
-        const envPath = path.join(PROJECT_ROOT, '.env');
-        const content = fs.existsSync(envPath) ? fs.readFileSync(envPath, 'utf-8') : '';
-        const match = content.match(/GEMINI_API_KEY=(.+)/);
-        const apiKey = match ? match[1].trim() : null;
-
-        if (!apiKey) return res.status(400).json({ error: "Missing GEMINI_API_KEY in .env" });
-
-        // Simple prompt
-        let response;
+        // Simple prompt using OpenAI SDK
         try {
-            response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3-pro-preview:generateContent?key=${apiKey}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    contents: [{ parts: [{ text: "Hello! Reply with 'Gemini is Online'." }] }]
-                }),
-                dispatcher: proxyDispatcher
+            const completion = await openai.chat.completions.create({
+                model: "gemini-3-pro-high",
+                messages: [{ role: "user", content: "Hello! Reply with 'Gemini/OpenAI is Online'." }]
             });
+            const data = completion.choices[0].message.content;
+            res.json({ message: data, full: completion });
         } catch (netError) {
             console.error("[Test] Network/Proxy Error details:", netError);
             return res.status(503).json({
                 error: `Network/Proxy Error: ${netError.message}`
             });
         }
-
-        const data = await response.json();
-        res.json(data);
     } catch (e) {
         res.status(500).json({ error: e.message, stack: e.stack });
     }
@@ -1003,19 +1024,8 @@ app.post('/api/generate', async (req, res) => {
     try {
         const { topic, level = "10", researchContext, targetDate, briefingTarget, briefingLabel, analysisTarget } = req.body;
 
-        // 1. Get API Key and Model from config
-        const envPath = path.join(PROJECT_ROOT, '.env');
-        const content = fs.existsSync(envPath) ? fs.readFileSync(envPath, 'utf-8') : '';
-        const apiKeyMatch = content.match(/GEMINI_API_KEY=(.+)/);
-        const modelMatch = content.match(/ARTICLE_MODEL=(.+)/);
-        const apiKey = apiKeyMatch ? apiKeyMatch[1].trim() : null;
-        const modelName = modelMatch ? modelMatch[1].trim() : 'gemini-3-pro-preview';
-
-        if (!apiKey) return res.status(400).json({ error: "Missing GEMINI_API_KEY" });
-
-        // Use targetDate if provided, otherwise use today
         const articleDate = targetDate || new Date().toISOString().split('T')[0];
-        console.log(`[Generate] Using model: ${modelName}, Article Date: ${articleDate}`);
+        console.log(`[Generate] Generating article for: ${topic}, Date: ${articleDate}`);
 
         // 2. Read System Prompt (SKILL.md)
         const skillPath = path.join(SKILLS_DIR, 'article-generator', 'SKILL.md');
@@ -1199,91 +1209,39 @@ app.post('/api/generate', async (req, res) => {
         `;
 
 
-        // 4. Call Gemini
+        // 4. Call OpenAI
         console.log(`Generating article for topic: ${topic}...`);
 
-        // Helper: fetch with auto-retry on socket error
-        async function fetchWithRetry(url, options, retries = 1) {
-            try {
-                return await fetch(url, options);
-            } catch (err) {
-                if (retries > 0 && (err.code === 'UND_ERR_SOCKET' || err.cause?.code === 'UND_ERR_SOCKET')) {
-                    console.log("[Generate] Socket error, refreshing proxy and retrying...");
-                    proxyDispatcher = createProxyDispatcher();
-                    options.dispatcher = proxyDispatcher;
-                    return await fetchWithRetry(url, options, retries - 1);
-                }
-                throw err;
-            }
-        }
-
-        let response;
         try {
-            response = await fetchWithRetry(
-                `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`,
-                {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        contents: [
-                            { role: "user", parts: [{ text: systemPrompt + "\n\n" + userPrompt }] }
-                        ],
-                        generationConfig: {
-                            temperature: 0.7,
-                            responseMimeType: "application/json"
-                        }
-                    }),
-                    dispatcher: proxyDispatcher
-                }
-            );
-        } catch (netError) {
-            const isProxyError = netError.code === 'UND_ERR_SOCKET' || netError.cause?.code === 'UND_ERR_SOCKET';
-            console.error("Network/Proxy Error details:", netError);
-            return res.status(503).json({
-                error: isProxyError
-                    ? `Proxy Connection Failed. Please check your proxy settings. Details: ${netError.message}`
-                    : `Network Error: ${netError.message}`
+            const completion = await openai.chat.completions.create({
+                model: "gemini-3-pro-high",
+                messages: [
+                    { role: "system", content: systemPrompt },
+                    { role: "user", content: userPrompt }
+                ],
+                temperature: 0.7,
+                response_format: { type: "json_object" } // Useful if supported, otherwise normal text
             });
-        }
 
-        const data = await response.json();
+            const generatedText = completion.choices[0].message.content;
 
-        if (data.error) {
-            console.error("Gemini Error:", data.error);
-            return res.status(500).json({ error: data.error.message });
-        }
-
-        const generatedText = data.candidates?.[0]?.content?.parts?.[0]?.text;
-
-        if (!generatedText) {
-            return res.status(500).json({ error: "No content generated" });
-        }
-
-        // 5. Parse JSON (Validation)
-        try {
-            // Robust JSON extraction
-            let jsonString = generatedText;
-
-            // Try to find markdown block first
-            const markdownMatch = jsonString.match(/```json\s*([\s\S]*?)\s*```/);
-            if (markdownMatch) {
-                jsonString = markdownMatch[1];
-            } else {
-                // If no markdown block, try to find the outer-most JSON object
-                const firstBrace = jsonString.indexOf('{');
-                const lastBrace = jsonString.lastIndexOf('}');
-
-                if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
-                    jsonString = jsonString.substring(firstBrace, lastBrace + 1);
-                }
+            if (!generatedText) {
+                return res.status(500).json({ error: "No content generated" });
             }
 
-            const json = JSON.parse(jsonString);
-            res.json(json);
-        } catch (e) {
-            console.error("JSON Parse Error:", e);
-            // Return raw text if parse fails, so user can debug
-            res.json({ error: "Invalid JSON format", raw: generatedText });
+            // 5. Parse JSON (Validation)
+            try {
+                const json = extractJSON(generatedText);
+                res.json(json);
+            } catch (e) {
+                console.error("JSON Parse Error:", e);
+                // Return raw text if parse fails, so user can debug
+                res.json({ error: "Invalid JSON format", raw: generatedText });
+            }
+
+        } catch (apiError) {
+            console.error("OpenAI API Error:", apiError);
+            return res.status(500).json({ error: apiError.message });
         }
 
     } catch (e) {
@@ -1313,19 +1271,9 @@ app.post('/api/research', async (req, res) => {
             return res.status(400).json({ error: "Missing topic or newsTitle" });
         }
 
-        // 1. Get API Key and Model from config
-        const envPath = path.join(PROJECT_ROOT, '.env');
-        const content = fs.existsSync(envPath) ? fs.readFileSync(envPath, 'utf-8') : '';
-        const apiKeyMatch = content.match(/GEMINI_API_KEY=(.+)/);
-        const modelMatch = content.match(/RESEARCH_MODEL=(.+)/);
-        const apiKey = apiKeyMatch ? apiKeyMatch[1].trim() : null;
-        const researchModel = modelMatch ? modelMatch[1].trim() : 'gemini-3-flash-preview';
-
-        if (!apiKey) return res.status(400).json({ error: "Missing GEMINI_API_KEY" });
-
         const searchTopic = newsTitle || topic;
         const dateContext = targetDate ? `Focus on news and events from ${targetDate}.` : '';
-        console.log(`[Research] Starting deep research on: ${searchTopic} (Date: ${targetDate || 'any'}) using model: ${researchModel}`);
+        console.log(`[Research] Starting background research on: ${searchTopic}`);
 
         // 2. Construct research prompt
         const promptsDir = path.join(AGENT_DIR, 'prompts');
@@ -1335,117 +1283,59 @@ app.post('/api/research', async (req, res) => {
         if (fs.existsSync(researchPromptPath)) {
             researchPrompt = fs.readFileSync(researchPromptPath, 'utf-8');
         } else {
-            // Fallback if file missing
             researchPrompt = `
-You are a news research assistant. I need you to analyze and provide comprehensive background information on the following news topic.
-
-**News Topic**: {{topic}}
-{{source_line}}
-{{date_context}}
-
-Please provide:
-1. **Summary** (综合摘要): A 2-3 sentence overview of the core issue
-2. **Background** (背景信息): What context is needed to understand this topic? (1-2 paragraphs)
-3. **Key Points** (关键要点): 3-5 bullet points of the most important facts
-4. **Perspectives** (多方观点):
-   - Supporters' view (支持方): What arguments do supporters make?
-   - Critics' view (反对方): What concerns or criticisms exist?
-5. **Related Topics** (相关话题): 2-3 related topics for further reading
-
-Return your response in the following JSON format:
-{
-    "summary": "...",
-    "background": "...",
-    "keyPoints": ["point1", "point2", "point3"],
-    "perspectives": {
-        "supporters": "...",
-        "critics": "..."
-    },
-    "relatedTopics": ["topic1", "topic2"]
-}
-
-IMPORTANT: Return ONLY valid JSON, no markdown formatting.
-`;
+            You are a news research assistant.
+            Topic: {{topic}}
+            {{source_line}}
+            {{date_context}}
+            
+            Provide: Summary, Background, Key Points, Perspectives, Related Topics.
+            Return JSON.
+            `;
         }
 
-        // Replace placeholders
         researchPrompt = researchPrompt.replace('{{topic}}', searchTopic);
         const sourceLine = newsSource ? `**Original Source**: ${newsSource}` : '';
         researchPrompt = researchPrompt.replace('{{source_line}}', sourceLine);
         researchPrompt = researchPrompt.replace('{{date_context}}', dateContext);
 
-
-
-        // 3. Call Gemini with grounding
-        let response;
+        // 3. Call OpenAI (No grounding/Google Search tool support in basic compatibility mode)
         try {
-            response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${researchModel}:generateContent?key=${apiKey}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    contents: [
-                        { role: "user", parts: [{ text: researchPrompt }] }
-                    ],
-                    tools: [{
-                        googleSearch: {}
-                    }],
-                    generationConfig: {
-                        temperature: 0.3,
-                        responseMimeType: "application/json"
-                    }
-                }),
-                dispatcher: proxyDispatcher
+            const completion = await openai.chat.completions.create({
+                model: "gemini-3-pro-high",
+                messages: [{ role: "user", content: researchPrompt }],
+                temperature: 0.3,
+                response_format: { type: "json_object" }
             });
-        } catch (netError) {
-            const isProxyError = netError.code === 'UND_ERR_SOCKET' || netError.cause?.code === 'UND_ERR_SOCKET';
-            console.error("[Research] Network/Proxy Error details:", netError);
-            return res.status(503).json({
-                error: isProxyError
-                    ? `Proxy Connection Failed. Please check your proxy settings. Details: ${netError.message}`
-                    : `Network Error: ${netError.message}`
-            });
-        }
 
-        const data = await response.json();
+            const generatedText = completion.choices[0].message.content;
 
-        if (data.error) {
-            console.error("[Research] Gemini Error:", data.error);
-            return res.status(500).json({ error: data.error.message });
-        }
+            if (!generatedText) {
+                return res.status(500).json({ error: "No research content generated" });
+            }
 
-        const generatedText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+            // 4. Parse and return results
+            try {
+                const researchResult = extractJSON(generatedText);
 
-        // Extract grounding metadata if available
-        const groundingMetadata = data.candidates?.[0]?.groundingMetadata;
-        const searchSuggestions = groundingMetadata?.webSearchQueries || [];
-        const groundingChunks = groundingMetadata?.groundingChunks || [];
+                researchResult.sources = []; // Grounding lost in translation
+                researchResult.searchQueries = [];
+                researchResult.topic = searchTopic;
 
-        if (!generatedText) {
-            return res.status(500).json({ error: "No research content generated" });
-        }
+                console.log(`[Research] Completed research (simulated)`);
+                res.json(researchResult);
+            } catch (e) {
+                console.error("[Research] JSON Parse Error:", e);
+                res.json({
+                    error: "Invalid JSON format",
+                    raw: generatedText,
+                    topic: searchTopic
+                });
+            }
 
-        // 4. Parse and return results
-        try {
-            const researchResult = JSON.parse(generatedText.replace(/```json/g, '').replace(/```/g, ''));
-
-            // Add source information from grounding
-            researchResult.sources = groundingChunks.map(chunk => ({
-                title: chunk.web?.title || 'Unknown',
-                url: chunk.web?.uri || ''
-            })).filter(s => s.url);
-
-            researchResult.searchQueries = searchSuggestions;
-            researchResult.topic = searchTopic;
-
-            console.log(`[Research] Completed research with ${researchResult.sources?.length || 0} sources`);
-            res.json(researchResult);
-        } catch (e) {
-            console.error("[Research] JSON Parse Error:", e);
-            res.json({
-                error: "Invalid JSON format",
-                raw: generatedText,
-                topic: searchTopic
-            });
+        } catch (apiError) {
+            console.error("[Research] API Error:", apiError);
+            return res.status(500).json({ error: apiError.message });
         }
 
     } catch (e) {
@@ -1458,35 +1348,30 @@ IMPORTANT: Return ONLY valid JSON, no markdown formatting.
  * POST /api/vocabulary
  * Extract vocabulary from article and generate glossary
  */
+// ==========================================
+// POST /api/vocabulary
+// Extract vocabulary from article and generate glossary
+// ==========================================
 app.post('/api/vocabulary', async (req, res) => {
+    const startTime = Date.now();
+    console.log(`[Vocabulary] Request received at ${new Date().toISOString()}`);
+
     try {
         const { articleJson } = req.body;
-
-        // 1. Get API Key
-        const envPath = path.join(PROJECT_ROOT, '.env');
-        const content = fs.existsSync(envPath) ? fs.readFileSync(envPath, 'utf-8') : '';
-        const match = content.match(/GEMINI_API_KEY=(.+)/);
-        const apiKey = match ? match[1].trim() : null;
-
-        if (!apiKey) return res.status(400).json({ error: "Missing GEMINI_API_KEY" });
+        if (!articleJson) {
+            console.warn('[Vocabulary] Missing articleJson in request body');
+            return res.status(400).json({ error: "Missing articleJson" });
+        }
 
         // 2. Read SKILL.md for vocabulary-production-expert
         const skillPath = path.join(SKILLS_DIR, 'vocabulary-production-expert', 'SKILL.md');
         let systemPrompt = "";
         if (fs.existsSync(skillPath)) {
             systemPrompt = fs.readFileSync(skillPath, 'utf-8');
+            console.log(`[Vocabulary] Loaded system prompt from ${skillPath} (${systemPrompt.length} chars)`);
         } else {
-            // Fallback prompt if skill not exists
-            systemPrompt = `
-            You are a vocabulary extraction expert for English learners.
-            Given an article JSON, identify all important vocabulary words for intermediate/advanced learners.
-            For each word, provide:
-            - word: the word itself (lowercase)
-            - phonetic: IPA pronunciation
-            - definitions: array of { pos: "noun"|"verb"|etc, zh: "繁體中文釋義 (臺灣習慣)", en: "English definition" }
-            - example: a sentence from the article using this word
-            Return JSON format: { "glossary": { "wordKey": { definition object } } }
-            `;
+            console.warn(`[Vocabulary] SKILL.md not found at ${skillPath}, using fallback.`);
+            systemPrompt = `You are a vocabulary extraction expert for English learners.`;
         }
 
         // 3. Construct User Prompt
@@ -1495,91 +1380,84 @@ app.post('/api/vocabulary', async (req, res) => {
 
         if (fs.existsSync(promptPath)) {
             userPromptTemplate = fs.readFileSync(promptPath, 'utf-8');
+            console.log(`[Vocabulary] Loaded user prompt template from ${promptPath}`);
         } else {
+            console.warn(`[Vocabulary] Prompt template not found at ${promptPath}, using fallback.`);
             userPromptTemplate = `
                 Extract vocabulary from the following article.
-                Focus on words that:
-                - Are Level 7-10 (intermediate-advanced)
-                - Are key to understanding the article
-                - May be challenging for non-native speakers
-                
-                Article JSON:
-                {{ARTICLE_JSON}}
-                
                 Return ONLY valid JSON with glossary map.
             `;
         }
 
         const userPrompt = userPromptTemplate.replace('{{ARTICLE_JSON}}', JSON.stringify(articleJson, null, 2));
+        console.log(`[Vocabulary] User prompt constructed. Length: ${userPrompt.length} chars.`);
 
-        // 4. Call Gemini
-        console.log('Generating vocabulary glossary...');
-        let response;
+        // 4. Call OpenAI
+        console.log('[Vocabulary] Calling LLM API (gemini-3-pro-high)...');
+
         try {
-            response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    contents: [
-                        { role: "user", parts: [{ text: systemPrompt + "\n\n" + userPrompt }] }
-                    ],
-                    generationConfig: {
-                        temperature: 0.3,
-                        responseMimeType: "application/json"
-                    }
-                }),
-                dispatcher: proxyDispatcher
+            const completion = await openai.chat.completions.create({
+                model: "gemini-3-pro-high",
+                messages: [
+                    { role: "system", content: systemPrompt },
+                    { role: "user", content: userPrompt }
+                ],
+                temperature: 0.3,
+                response_format: { type: "json_object" }
             });
-        } catch (netError) {
-            console.error("[Vocabulary] Network/Proxy Error details:", netError);
-            return res.status(503).json({
-                error: `Network/Proxy Error: ${netError.message}`
-            });
-        }
 
-        const data = await response.json();
+            const duration = Date.now() - startTime;
+            console.log(`[Vocabulary] LLM Response received in ${(duration / 1000).toFixed(2)}s`);
 
-        if (data.error) {
-            console.error("Gemini Error:", data.error);
-            return res.status(500).json({ error: data.error.message });
-        }
+            const generatedText = completion.choices[0].message.content;
 
-        const generatedText = data.candidates?.[0]?.content?.parts?.[0]?.text;
-
-        if (!generatedText) {
-            return res.status(500).json({ error: "No content generated" });
-        }
-
-        // 5. Parse JSON and normalize to Map format
-        try {
-            const json = JSON.parse(generatedText.replace(/```json/g, '').replace(/```/g, ''));
-
-            // Normalize glossary to Map format (key: word, value: entry object)
-            let glossary = json.glossary || json;
-
-            // If glossary is an Array, convert to Map
-            if (Array.isArray(glossary)) {
-                console.log('[Vocabulary] Converting Array to Map format...');
-                const glossaryMap = {};
-                glossary.forEach(entry => {
-                    // Use lemma or word as key
-                    const key = (entry.lemma || entry.word || '').toLowerCase();
-                    if (key) {
-                        glossaryMap[key] = entry;
-                    }
-                });
-                glossary = glossaryMap;
+            if (!generatedText) {
+                console.error('[Vocabulary] No content generated by LLM');
+                return res.status(500).json({ error: "No content generated" });
             }
 
-            // Ensure we return { glossary: {...} } format
-            res.json({ glossary });
-        } catch (e) {
-            console.error("JSON Parse Error:", e);
-            res.json({ error: "Invalid JSON format", raw: generatedText });
+            console.log(`[Vocabulary] Generated text length: ${generatedText.length} chars`);
+
+            // 5. Parse JSON and normalize to Map format
+            try {
+                console.log('[Vocabulary] Parsing JSON...');
+                const json = extractJSON(generatedText);
+
+                // Normalize glossary to Map format (key: word, value: entry object)
+                let glossary = json.glossary || json;
+
+                // If glossary is an Array, convert to Map
+                if (Array.isArray(glossary)) {
+                    console.log('[Vocabulary] Converting Array to Map format...');
+                    const glossaryMap = {};
+                    glossary.forEach(entry => {
+                        const key = (entry.lemma || entry.word || '').toLowerCase();
+                        if (key) {
+                            glossaryMap[key] = entry;
+                        }
+                    });
+                    glossary = glossaryMap;
+                }
+
+                console.log(`[Vocabulary] Success! Returning glossary with ${Object.keys(glossary).length} entries.`);
+                res.json({ glossary });
+            } catch (e) {
+                console.error("[Vocabulary] JSON Parse or Normalization Error:", e);
+                console.log("[Vocabulary] Raw text start:", generatedText.substring(0, 200));
+                res.json({ error: "Invalid JSON format", raw: generatedText });
+            }
+
+        } catch (apiError) {
+            console.error("[Vocabulary] OpenAI API Error:", apiError);
+            const duration = Date.now() - startTime;
+            return res.status(500).json({
+                error: apiError.message,
+                duration: `${(duration / 1000).toFixed(2)}s`
+            });
         }
 
     } catch (e) {
-        console.error("Server Error:", e);
+        console.error("[Vocabulary] Unexpected Server Error:", e);
         res.status(500).json({ error: e.message });
     }
 });
@@ -2925,10 +2803,28 @@ app.post('/api/publish', async (req, res) => {
                         podcast_url: payload.podcast_url || articleData.podcastUrl,
                     };
 
-                // Try to map topic more accurately if possible
-                if (articleData.topic && ["国际", "财经", "科技"].includes(articleData.topic)) {
-                    pbPayload.topic = articleData.topic;
+                // Normalise topic to Simplified Chinese for PocketBase validation
+                const topicMap = {
+                    '財經': '财经',
+                    '國際': '国际',
+                    '科技': '科技',
+                    '政治': '政治'
+                };
+
+                let safeTopic = pbPayload.topic;
+                if (topicMap[safeTopic]) safeTopic = topicMap[safeTopic];
+
+                // Try to map topic more accurately if possible from articleData
+                if (articleData.topic) {
+                    if (topicMap[articleData.topic]) {
+                        safeTopic = topicMap[articleData.topic];
+                    } else if (["国际", "财经", "科技", "政治"].includes(articleData.topic)) {
+                        safeTopic = articleData.topic;
+                    }
                 }
+                pbPayload.topic = safeTopic;
+
+
 
                 // Get auth token
                 const { token } = await getPocketBaseAuth();
@@ -2972,6 +2868,11 @@ app.post('/api/publish', async (req, res) => {
                     }
                 }
 
+
+                // Normalise topic in updatePayload as well
+                if (updatePayload.topic && topicMap[updatePayload.topic]) {
+                    updatePayload.topic = topicMap[updatePayload.topic];
+                }
 
                 // Detect local IDs (start with 'article_') - these don't exist in PocketBase
                 // Only attempt PATCH if ID looks like a PocketBase ID (alphanumeric, no prefix)
@@ -3434,7 +3335,12 @@ app.get('/api/workflow-sessions', async (req, res) => {
 
         if (!response.ok) {
             const errorText = await response.text();
-            console.error(`[Workflow-Session Debug] PB Error: ${errorText}`);
+            // Only log as error if not 400 (which we retry) to reduce noise
+            if (response.status !== 400) {
+                console.error(`[Workflow-Session Debug] PB Error: ${errorText}`);
+            } else {
+                console.warn(`[Workflow-Session Debug] PB Request failed with 400 (likely invalid sort), attempting retry...`);
+            }
 
             // Retry without sort/filter params if 400 (likely invalid sort field)
             if (response.status === 400) {

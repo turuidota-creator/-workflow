@@ -113,6 +113,28 @@ export const ArticleGeneration: React.FC = () => {
         setStatus('generating');
         setError('');
 
+        // Persist "generating" state immediately so it survives unmount/remount
+        if (shouldPersist && latestSession) {
+            updateSession(latestSession.id, (prevSession) => {
+                const currentState = prevSession.context.generationState || {};
+                // Preserve existing JSON to prevent content flashing/loss
+                const existingState = currentState[side] || {};
+                return {
+                    context: {
+                        ...prevSession.context,
+                        generationState: {
+                            ...currentState,
+                            [side]: {
+                                ...existingState,
+                                status: 'generating',
+                                error: ''
+                            }
+                        }
+                    }
+                };
+            });
+        }
+
         try {
             const res = await fetch('/api/generate', {
                 method: 'POST',
